@@ -603,18 +603,24 @@ function createTopToolbar(){
   var icon_run_refextract = "<img id='img_run_refextract' class='bibEditImgCtrlDisabled' \n\
                              src='/img/ref_extract.png' width='42px' \n\
                              height='40px' title='Run reference extractor on this record' />";
+  var icon_run_asm = "<img id='img_run_asm' class='bibEditImgCtrlDisabled' \n\
+                      src='/img/author_special_mode-40x40.png' width='40px' \n\
+                      height='40px' title='Run author special mode' />";
 
 
   var toolbar_html = "<div class='floatRight'>" + icon_doc_preview + "</div>" +
                      "<div class='floatRight'>" + icon_open_pdf + "</div>" +
                      "<div class='floatRight'>" + icon_print + "</div>";
   toolbar_html += "<div class='floatLeft'>" + icon_run_refextract + "</div>";
+  //var toolbar_html = "<div class='floatRight'>" + icon_doc_preview + "</div>" + "<div class='floatRight'>" + icon_open_pdf + "</div>";
+  //toolbar_html += "<div class='floatLeft'>" + icon_run_asm +"</div>" + "<div class='floatLeft'>" + icon_run_refextract + "</div>";
   $('#Toptoolbar').html(toolbar_html);
 
   $('#img_preview').bind('click', onPreviewClick);
   $('#img_open_pdf').bind('click', onOpenPDFClick);
   $('#img_print').bind('click', onPrintClick);
   $('#img_run_refextract').bind('click', onRefExtractClick);
+  $('#img_run_asm').bind('click', onASMClick);
 
   $('#img_preview').unbind('click').removeClass(
     'bibEditImgCtrlEnabled').addClass('bibEditImgCtrlDisabled');
@@ -623,6 +629,8 @@ function createTopToolbar(){
   $('#img_print').unbind('click').removeClass(
     'bibEditImgCtrlEnabled').addClass('bibEditImgCtrlDisabled');
   $('#img_run_refextract').unbind('click').removeClass(
+    'bibEditImgCtrlEnabled').addClass('bibEditImgCtrlDisabled');
+  $('#img_run_asm').unbind('click').removeClass(
     'bibEditImgCtrlEnabled').addClass('bibEditImgCtrlDisabled');
 }
 
@@ -640,6 +648,8 @@ function updateToolbar(enable) {
           'bibEditImgCtrlDisabled').addClass('bibEditImgCtrlEnabled');
         }
         $('.revisionLine').show();
+        $('#img_run_asm').unbind('click', onASMClick).bind('click', onASMClick).removeClass(
+        'bibEditImgCtrlDisabled').addClass('bibEditImgCtrlEnabled');
     }
     else {
         $('#img_preview').unbind('click', onPreviewClick).removeClass(
@@ -650,6 +660,8 @@ function updateToolbar(enable) {
         'bibEditImgCtrlEnabled').addClass('bibEditImgCtrlDisabled');
         $('#img_run_refextract').unbind('click', onRefExtractClick).removeClass(
         'bibEditImgCtrlEnabled').addClass('bibEditImgCtrlDisabled');
+        $('#img_run_asm').unbind('click', onASMClick).removeClass(
+        'bibEditImgCtrlENabled').addClass('bibEditImgCtrlDisabled');
         $('.revisionLine').hide();
         $('#bibEditMessage').hide();
     }
