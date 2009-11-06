@@ -25,6 +25,9 @@ pylib_DATA = bibrecord_config.py \
              refextract_tests.py \
              xmlmarc2textmarc.py \
              textmarc2xmlmarc.py \
+			 editauthor_engine.py \
+			 editauthor_templates.py \
+			 editauthor_webinterface.py \
              bibedit_config.py \
              bibedit_dblayer.py \
              bibedit_engine.py \
@@ -39,7 +42,8 @@ pylib_DATA = bibrecord_config.py \
 
 jsdir=$(localstatedir)/www/js
 
-js_DATA = bibedit_display.js \
+js_DATA = editauthor.js \
+		  bibedit_display.js \
           bibedit_engine.js \
           bibedit_keys.js \
           bibedit_menu.js \
@@ -48,7 +52,12 @@ js_DATA = bibedit_display.js \
 	  marcxml.js \
 	  bibedit_clipboard.js
 
-EXTRA_DIST = $(pylib_DATA) \
-             $(js_DATA)
+cssdir=$(localstatedir)/www/img
 
-CLEANFILES = *~ *.tmp *.pyc
+css_DATA = editauthor.css ui-anim_basic_16x16.gif
+
+EXTRA_DIST = $(pylib_DATA) \
+             $(js_DATA) \
+			 $(css_DATA)
+
+CLEANFILES = *~ *.tmp *.pyc *.orig

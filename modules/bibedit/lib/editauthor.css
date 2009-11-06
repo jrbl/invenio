@@ -1,0 +1,202 @@
+/* Begin: editauthor.css: Stylesheet for AuthorSpecialMode */
+* {
+    box-sizing: border-box; /* CSS3 provisional */
+    -moz-box-sizing: border-box; /* mozilla / firefox */
+    -ms-box-sizing: border-box; /* IE */
+    border: none;
+    border-spacing: 0 0;
+    padding: 0 0 0 0;
+    margin: 0 0 0 0;
+    font-size: normal;
+}
+
+table#asm_uitable {
+    table-layout: fixed;
+    background-color: #22aa66;
+    border: none;
+    border-spacing: 0 0;
+    padding: 0 0 0 0;
+    margin: 0 0 0 0;
+}
+
+td {
+    border: none;
+    border-spacing: 0 0;
+    padding: 0 0 0 0;
+    margin: 0 0 0 0;
+}
+
+th {
+    border: none;
+    border-spacing: 0 0;
+    padding: 0 0 0 0;
+    margin: 0 0 0 0;
+}
+
+tr.current_row {
+    background-color: #ffcc99;
+}
+
+#maxRowsBox {
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+}
+
+/*.ui-dialog {
+    width: 95%;
+}
+
+.ui-dialog-title {
+    color: white;
+    background-color: #6699cc;
+    width: 100%;
+}
+*/
+
+#TableHeaders {
+    display: block;
+}
+
+.allrows {
+    height: 1.1em;
+}
+
+.rownum {
+    width: 40px;
+    min-width: 40px;
+    max-width: 40px;
+    overflow: hide;
+    text-align: right;
+    color: #115432;
+}
+
+.rownuminner {
+    /* color: #115432; */
+    height: 1.1em;
+/*    font-size: xx-small; */ /* for some reason we can't set this without making the whole row small.  why? */
+}
+
+.author_box {
+    width: 110px;
+    min-width: 120px;
+    max-width: 120px;
+    overflow: hide;
+    text-align: left;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+.author_head {
+    text-align: center;
+}
+
+.affil_box {
+    width: 200px;
+    min-width: 200px;
+    max-width: 200px;
+    overflow: hide;
+    text-align: left;
+}
+
+.affil_head {
+    text-align: center;
+}
+
+.column_content {
+    text-align: center;
+    width: 60px;
+}
+
+.author_box_td {
+    border-right: 2px;
+    margin-right: 4px;
+    padding-left: 2px;
+}
+
+#TableContents {
+    display: block;
+    overflow: auto;
+    height: 400px; /* FIXME: can this be done w/o px? */
+}
+
+.column_no {
+    font-size: .4em;
+}
+
+.column_label {
+    vertical-align: top;
+}
+
+.column_label a {
+    color: black;
+    font-weight: normal;
+    text-decoration: none;
+    font-size: small;
+}
+
+ #submit_button {
+/*    background-color: #019cf9;
+    color: white;
+    font-weight: normal;
+    font-size: large; */
+    border-color: black;
+    border-style: solid;
+    border-width: 1px;
+    margin: 2px 2px 2px 0px;
+} 
+
+/* #ui-active-menuitem {
+    color: #ffffff;
+    background-color: #22dd66;
+}
+
+.ui-autocomplete-loading { 
+    background: white url('/img/ui-anim_basic_16x16.gif') right center no-repeat; 
+}
+
+.ui-corner-all {
+    -moz-border-radius: 4px 4px 4px 4px;
+}
+
+.ui-widget-content a {
+    background-color: #333333;
+    color: #ffffff;
+}
+
+.ui-widget-overlay {
+    -moz-background-clip: border;
+    -moz-background-origin: padding;
+    -moz-background-size: auto auto;
+    background-attachment: scroll;
+    background-position: 50% 50%;
+    background-repeat: repeat;
+    background-color: #666666;
+    opacity: 0.5;
+    left: 0;
+    position: absolute;
+    top: 0;
+}
+
+.ui-widget {
+    font-family: Trebuchet MS,Tahoma,Verdana,Arial,sans-serif;
+    font-size: 1.1em;
+}
+
+.ui-menu .ui-menu-item a {
+    display: block;
+    line-height: .9;
+    padding: 0.2em 0.4em;
+    text-decoration: none;
+    background-color: #333333;
+    color: #ffffff;
+}
+
+.ui-menu {
+    list-style: none outside none;
+}
+
+.ui-autocomplete {
+    cursor: default;
+} */
+/* End: editauthor.css */
