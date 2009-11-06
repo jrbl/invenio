@@ -1364,6 +1364,84 @@ function getPreview(dialog, onSuccess) {
        });
 }
 
+/************* Reference extraction in BibEdit ***************/
+
+function onRefExtractClick() {
+   /*
+    * Handle reference extraction button
+    *
+    * 1) Create dialog box while loading
+    * 2) Send request to the server to extract references
+    * 3) Update dialog box with references extracted
+    * 4) If user approves, redraw interface with new content and update
+    *    cache in server
+    * 
+    */
+
+   /* Create the modal dialog that will contain the references */
+   var dialogReferences = createDialog("Loading...", "Extracting references...", 750, 700);
+
+    /* Create a request to extract references */
+    var bibrecord, textmarc, xmlrecord;
+    createReq({recID: gRecID, requestType: 'refextract'},
+        function(json){
+            bibrecord = json['ref_bibrecord'];
+            textmarc = json['ref_textmarc'];
+            xmlrecord = json['ref_xmlrecord'];
+            if (!xmlrecord) {
+                dialogReferences.contentParagraph.css('margin-top', '50px');
+                dialogReferences.contentSpan.html("The record does not have a PDF file ");
+                dialogReferences.dialogDiv.dialog({
+                    title: "PDF not found",
+                    height: '200',
+                    width: '350',
+                    buttons: {
+                        "Accept" : function() {
+                                    $( this ).remove();
+                                   }
+                    }
+                });
+            }
+            /* References were extracted */
+            else {
+                addContentToDialog(dialogReferences, textmarc, "Do you want to apply the following references?");
+                dialogReferences.dialogDiv.dialog({
+                    title: "Apply references",
+                    buttons: {
+                        "Apply references": function() {
+                                                /* Update global record with the updated version */
+                                                gRecord = bibrecord;
+                                                /* Update cache in the server to have the updated record */
+                                                createReq({recID: gRecID, recXML: xmlrecord, requestType: 'updateCacheRef'});
+                                                /* Redraw whole content table and enable submit button */
+                                                $('#bibEditTable').remove();
+                                                displayRecord();
+                                                redrawFields();
+                                                reColorFields();
+                                                $('#btnSubmit').removeAttr('disabled');
+                                                $('#btnSubmit').css('background-color', 'lightgreen');
+                                                $( this ).remove();
+                                            },
+                        Cancel: function() {
+                                    $( this ).remove();
+                                }
+                }});
+            }
+        });
+}
+
+function onASMClick(){
+    /*
+     * Handle 'ASM' button (author special mode).
+     */
+    var asmwin = window.open(
+            "/record/editauthors/?recid="+gRecID,
+            "Author Special Mode",
+            "top=20,width=900,height=600,toolbar=1,resizeable=1,scrollbars=1");
+    asmwin.focus();
+}
+
+>>>>>>> bdf34a4... AuthorSpecialMode: 1st release candidate
 function onCancelClick(){
   /*
    * Handle 'Cancel' button (cancel editing).

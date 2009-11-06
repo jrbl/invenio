@@ -18,6 +18,7 @@
 imgdir=$(localstatedir)/www/img
 
 img_DATA = add-small.png \
+           add-small-spacer.png \
            add.png \
            answer_bad.gif \
            arrow_down.gif \
@@ -47,7 +48,8 @@ img_DATA = add-small.png \
            aid_to_other.png \
            aid_to_other_gray.png \
            ajax-loader.gif \
-	         application_pdf.png \
+		   application_pdf.png \
+		   author_special_mode-40x40.png \
            balloon_arrow_left_shadow.png \
            balloon_bottom_left_shadow.png \
            balloon_bottom_shadow.png \
@@ -182,6 +184,7 @@ img_DATA = add-small.png \
            smchk_rd.gif \
            sn.gif \
            sp.gif \
+		   spacer_1x1_transparent.png \
            star-icon-30x30.gif \
            star_dot-icon-30x30.gif \
            star_empty-icon-30x30.gif \
@@ -254,7 +257,7 @@ img_DATA = add-small.png \
            wb-unsubscribe.png \
            white_field.gif \
            wsignout.gif \
-	         compare.png \
+		   compare.png \
            document-preview.png \
            ui-anim_basic_16x16.gif
 

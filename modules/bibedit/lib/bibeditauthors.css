@@ -1,0 +1,206 @@
+/* Begin: bibeditauthors.css: Stylesheet for AuthorSpecialMode */
+* {                          
+    border-spacing: 0 0;
+    font-size: normal;
+    border-color: #393939;
+    border-style: solid;
+    border-width: 0px; /* 1 for debug, 0 for normal */
+} 
+
+table#asm_uitable {
+    table-layout: fixed;
+    background-color: white;
+    border-spacing: 0 0;
+}
+
+td {
+    border-spacing: 0 0;
+    padding-left: 1px;
+    padding-right: 1px;
+}
+
+div.header {
+    border-spacing: 0 0;
+    padding-left: 1px;
+    padding-right: 1px;
+}
+
+div.header.allrows {
+    border-spacing: 0 0;
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+th {
+    border-spacing: 0 0;
+    padding: 0 0 0 0;
+}
+
+tr.even_row {
+    background-color: #bbbbff;
+}
+
+tr.current_row {
+    background-color: #ffcc99;
+}
+
+#maxRowsBox {
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+}
+
+img#add_row_img_spacer {
+    width: 20px;
+}
+
+h3#paper_title {
+    font-weight: bolder;
+    font-size: 120%;
+    font-variant: small-caps;
+    margin-top: 0px;
+    margin-bottom: 5px;
+    width: 100%;
+}
+
+.allrows {
+    height: 1.1em;
+}
+
+#NonTableHeaders {
+    clear: both;
+}
+
+.header_container {
+    clear: both;
+    background-color: #bbbbff;
+    border-bottom: 1px solid #aeaeae;
+}
+
+.rownum {
+    text-align: right;
+    color: #777777;
+}
+
+.rownuminner {
+    height: 1.1em;
+/*    font-size: xx-small; */ /* for some reason we can't set this without making the whole row small.  why? */
+}
+
+.author_box {
+    text-align: left;
+}
+
+.author_head {
+    text-align: center;
+}
+
+.affil_box {
+    overflow: hide;
+    text-align: left;
+}
+
+.affil_head {
+    text-align: center;
+}
+
+.column_content {
+    text-align: center;
+}
+
+.author_box_td {
+    border-right: 1px solid #aeaeae;
+}
+
+#TableContents {
+    display: block;
+    overflow: auto;
+}
+
+.column_no {
+    font-size: .8em;
+}
+
+.column_label {
+    vertical-align: top;
+}
+
+.column_label a {
+    color: black;
+    font-weight: normal;
+    text-decoration: none;
+    font-size: normal;
+}
+
+ #submit_button {
+    border-color: black;
+    border-style: solid;
+    border-width: 1px;
+    margin: 2px 2px 2px 0px;
+} 
+
+/* jQuery-UI Theming used for:
+ * - Autocomplete menu
+ */
+#ui-active-menuitem {
+    color: black;
+    background-color: #bbbbff;
+}
+
+.ui-autocomplete-loading { 
+    background: white url('/img/ui-anim_basic_16x16.gif') right center no-repeat; 
+}
+
+.ui-corner-all {
+    -moz-border-radius: 4px 4px 4px 4px;
+}
+
+.ui-widget-content a {
+    background-color: white;
+    color: black;
+}
+
+.ui-widget-overlay {
+    -moz-background-clip: border;
+    -moz-background-origin: padding;
+    -moz-background-size: auto auto;
+    background-attachment: scroll;
+    background-position: 50% 50%;
+    background-repeat: repeat;
+    background-color: #666666;
+    opacity: 0.5;
+    left: 0;
+    position: absolute;
+    top: 0;
+}
+
+.ui-widget {
+    /* font-family: Trebuchet MS,Tahoma,Verdana,Arial,sans-serif; */
+    font-size: .8em;
+}
+
+.ui-menu .ui-menu-item a {
+    display: block;
+    line-height: .8;
+    padding: 0.2em 0.4em;
+    text-decoration: none;
+    background-color: white;
+    color: black;
+}
+
+.ui-menu {
+    list-style: none outside none;
+}
+
+.ui-autocomplete {
+    cursor: default;
+} 
+
+.header {
+    float: left;
+    border-spacing: 0 0;
+    padding: 0 0 0 0;
+    margin: 0 0 0 0;
+}
+
+/* End: bibeditauthors.css */

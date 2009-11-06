@@ -24,8 +24,6 @@ This module binds together Invenio's modules and maps them to
 their corresponding URLs (ie, /search to the websearch modules,...)
 """
 
-__revision__ = \
-    "$Id$"
 
 from invenio.webinterface_handler import create_handler
 from invenio.errorlib import register_exception
@@ -229,7 +227,6 @@ if CFG_DEVEL_SITE:
     test_exports = ['httptest']
 else:
     test_exports = []
-
 
 class WebInterfaceInvenio(WebInterfaceSearchInterfacePages):
     """ The global URL layout is composed of the search API plus all
