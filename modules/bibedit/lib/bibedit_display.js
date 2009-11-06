@@ -584,33 +584,71 @@ function createGeneralControlsPanel(){
   return result;
 }
 
-function createTopToolbar(){
-  /* Generate BibEdit top toolbar */
+function createTopToolbar(dontReally){
+  /* Generate BibEdit top toolbar 
+   * 
+   * XXX: Toolbar configuration lives in toolbar creation (if corrected update
+          updateToolbar too.)
+   *
+   * If dontReally is true, we don't put buttons in the toolbar, but only return
+   * the table describing the buttons we would have.
+   */
 
-  $('.navtrailboxbody').after('<td class="revisionLine"></td>');
-  // When Special modes are available there will be a loop through all of
-  // them and the appropriate icons will be added
-  
-  var toolbar_html = "<div id='topToolbarRight'><img id='img_preview' class='bibEditImgCtrlDisabled' src='/img/document-preview.png' ";
-  toolbar_html += "width='40px' height='40px' title='Preview record' /></div>";
-  toolbar_html += "<div id='top_toolbar_hr'><hr></div>"
+  var icon_side = 40;
+  var toolbar_button_set = {
+      /* title or human label    id or null     url of img to use        func to bind or icon_side multiplier */
+      'Preview record':      ['img_preview', '/img/document-preview.png',          onPreviewClick],
+      '40 px gap 1':         [null,          '/img/spacer_1x1_transparent.png',    3],
+      'Author Special Mode': ['img_asm',     '/img/author_special_mode-40x40.png', onASMClick],
+  }
 
-  $('.headline_div').html(toolbar_html);
-  $('#img_preview').bind('click', onPreviewClick);
+  if (!dontReally) {
+      $('.navtrailboxbody').after('<td class="revisionLine"></td>');
+      $('.headline_div').html("<div id='topToolbarRight'><span id='topToolbarRightButtonBox' class='toolbarButtonBox'></span></div>");
 
-  $('#img_preview').unbind('click').removeClass(
-    'bibEditImgCtrlEnabled').addClass('bibEditImgCtrlDisabled');
+      var keyCounter = 0;
+      jQuery.each(toolbar_button_set, function (title, contents) {
+              var id  = contents[0];
+              var sel = '#'+id;
+              var url = contents[1];
+              var fn  = contents[2];
+
+              if (id) {      // a button
+                  keyCounter += 1;
+                  var imghtml =  '<img id="'+id+'" class="bibEditImgCtrlDisabled" src="'+url+'" width="'+icon_side+'px" ';
+                      imghtml += 'height="'+icon_side+'px" title="'+title+'" />';
+                  $('#topToolbarRightButtonBox').append(imghtml);
+              } else {       // a spacer
+                  keyCounter += fn;
+                  $('#topToolbarRightButtonBox').append('<img src="'+url+'" width="'+(fn*icon_side)+'px" height="'+icon_side+'px" />');
+              }
+      });
+
+      /* Dynamically calculate left pad to right-align the button set */
+      var toolbar_leftpad = $('.headline_div').width();
+      toolbar_leftpad = toolbar_leftpad - (keyCounter * icon_side);
+      $('#topToolbarRight').css('padding-left', ''+toolbar_leftpad+'px');
+
+  }
+
+  return toolbar_button_set;
 }
 
 function updateToolbar(enable) {
-    if (enable === true) {
-        $('#img_preview').bind('click', onPreviewClick).removeClass(
-        'bibEditImgCtrlDisabled').addClass('bibEditImgCtrlEnabled');
-    }
-    else {
-        $('#img_preview').unbind('click', onPreviewClick).removeClass(
-        'bibEditImgCtrlEnabled').addClass('bibEditImgCtrlDisabled');
-    }
+
+                       /* turn this .....         into this */
+    var before_after = ['bibEditImgCtrlDisabled', 'bibEditImgCtrlEnabled']
+    if (!enable) before_after.reverse();
+    var before = before_after[0];
+    var after  = before_after[1];
+
+    var toolbar_button_set = createTopToolbar(true); // XXX: Toolbar configuration lives in toolbar creation
+
+    jQuery.each(toolbar_button_set, function (title, contents) {
+        var id = '#'+contents[0];
+        var fn = contents[2];
+        $(id).bind('click', fn).removeClass(before).addClass(after);
+    });
 }
 
 /// end of the Holding Pen Connected functions
