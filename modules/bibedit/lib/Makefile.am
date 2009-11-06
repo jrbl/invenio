@@ -51,4 +51,4 @@ js_DATA = bibedit_display.js \
 EXTRA_DIST = $(pylib_DATA) \
              $(js_DATA)
 
-CLEANFILES = *~ *.tmp *.pyc
+CLEANFILES = *~ *.tmp *.pyc *.orig
