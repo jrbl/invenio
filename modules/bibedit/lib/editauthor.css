@@ -1,0 +1,56 @@
+/* Begin: editauthor.css: Stylesheet for AuthorSpecialMode */
+table#asm_uitable {
+    background-color: #22aa66;
+}
+
+.column_no {
+    font-size: .4em;
+}
+
+.column_label a {
+    color: black;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+#ui-active-menuitem {
+    color: #ffffff;
+    background-color: #22dd66;
+}
+
+.ui-autocomplete-loading { 
+    background: white url('/img/ui-anim_basic_16x16.gif') right center no-repeat; 
+}
+
+.ui-corner-all {
+    -moz-border-radius: 4px 4px 4px 4px;
+}
+
+.ui-widget-content a {
+    /* color: #333333; */
+    background-color: #333333;
+    color: #ffffff;
+}
+
+.ui-widget {
+    font-family: Trebuchet MS,Tahoma,Verdana,Arial,sans-serif;
+    font-size: 1.1em;
+}
+
+.ui-menu .ui-menu-item a {
+    display: block;
+    line-height: .9;
+    padding: 0.2em 0.4em;
+    text-decoration: none;
+    background-color: #333333;
+    color: #ffffff;
+}
+
+.ui-menu {
+    list-style: none outside none;
+}
+
+.ui-autocomplete {
+    cursor: default;
+}
+/* End: editauthor.css */
