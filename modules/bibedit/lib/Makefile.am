@@ -24,6 +24,7 @@ pylib_DATA = bibrecord_config.py \
              refextract.py \
              xmlmarc2textmarclib.py \
 			 editauthor_webinterface.py \
+			 editauthor_templates.py \
              bibedit_config.py \
              bibeditold_dblayer.py \
              bibedit_dblayer.py \
