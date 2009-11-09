@@ -6,8 +6,8 @@ class Template:
         t += "the records to work with."
         return self.tPara(t, id='FIXME_index')
 
-    def record(self, form):
-         return self.tPara("Record ID: %s" % form['recID'], id='FIXME_record')
+    def record(self, record_id, affiliations):
+         return self.tPara("Record ID: %s" % record_id, id='FIXME_record')
 
     def tPara(self, s, indent=0, id=''):
         t = ' '*indent + "<p id=%s>\n" % id
