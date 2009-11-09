@@ -1,8 +1,8 @@
 
 import invenio.webpage
-import invenio.urlutils
-import invenio.config
+import invenio.template
 from invenio.webinterface_handler import WebInterfaceDirectory, wash_urlargd
+
 
 class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
     """Handle URLs is the /editauthors tree"""
@@ -12,6 +12,7 @@ class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
 
     def __init__(self):
         self.title = "BibEdit: Author Special Mode"
+        self.template = invenio.template.load('editauthor')
 
     def index(self, request, form):
         
@@ -22,9 +23,8 @@ class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
         if f['recID'] != -1:
             return self.rec(request, f)
 
-        text = "FIXME: This is a page for selecting the record to work with."
         return invenio.webpage.page(title = self.title,
-                                    body  = text, 
+                                    body  = self.template.index(),
                                     req   = request,)
 
     def rec(self, request, form):
@@ -32,9 +32,9 @@ class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
         if not form.has_key('recID') or form['recID'] == -1:
             return self.index(request, {})
         else:
-            text = "<p>Record ID: %s</p>" % form['recID']
+            text = self.template.record(form)
 
         return invenio.webpage.page(title = self.title,
-                                    body  = text, 
+                                    body  = text,
                                     req   = request,)
 
