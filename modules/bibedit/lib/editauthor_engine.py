@@ -47,6 +47,7 @@ def name2affils(name, skip_id):
     for recID in search_results:
         if recID == skip_id: continue
         for author, affiliation in auPairs(recID):
+            if author == None: break
             if name.lower() in author.lower():
                 if affiliation != None:
                     previousGood = affiliation
@@ -58,6 +59,29 @@ def recid2names(id):
     for author, junk in auPairs(id):
         yield author
 
+def flattenByCounts(l, histogram=False):
+    """Build a list sorted by frequency.
+
+    @param l: a list of items with possible repetitions
+    @param histogram: if True, return list is (item, count) pairs
+    @return: a list without repetitions, items sorted by frequency
+    """
+
+    def freq_sort(a, b):
+        if counts[a] < counts[b]:
+            return 1
+        elif counts[b] < counts[a]:
+            return -1
+        else: return 0
+
+    counts = {}
+    for item in l:
+        if item not in counts:
+            counts[item] = l.count(item)
+    if not histogram:
+        return sorted(counts.keys(), cmp=freq_sort)
+    return sorted([(key, counts[key]) for key in counts], cmp=freq_sort)
+        
 
 if __name__ == "__main__":
     """Exploratory test harness"""

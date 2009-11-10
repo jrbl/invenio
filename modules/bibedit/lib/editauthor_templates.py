@@ -1,3 +1,5 @@
+import invenio.editauthor_engine as engine
+
 class Template:
 
     def index(self):
@@ -6,8 +8,18 @@ class Template:
         t += "the records to work with."
         return self.tPara(t, id='FIXME_index')
 
-    def record(self, record_id, affiliations):
-         return self.tPara("Record ID: %s" % record_id, id='FIXME_record')
+    def record(self, record_id, authors, affiliations):
+        a_width = len(affiliations) 
+        t = '<table>\n<tr><th>name</th>'
+        for aff in affiliations:
+            t += "<th>%s</th>" % aff
+        t += '</tr>\n'
+        for author in authors:
+            t += "<tr><td>%s</td>" % author
+            t += "<td> </td>" * a_width
+            t += "<tr>\n"
+        t += '</table>\n'
+        return t
 
     def tPara(self, s, indent=0, id=''):
         t = ' '*indent + "<p id=%s>\n" % id
@@ -21,5 +33,5 @@ class Template:
         for i in l:
             t += ' '*indent + " <li>%s</li>\n" % str(i)
         t += ' '*indent + '</ul>\n'
-        return s
+        return t
 

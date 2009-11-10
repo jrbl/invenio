@@ -36,16 +36,16 @@ class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
         record_id = form['recID']
 
         authors = engine.recid2names(record_id)
-        affils = {}
+        affils = []
+        auths = []
         for author in authors:
+            auths.append(author)
             for id, name, inst in engine.name2affils(author, record_id):
-                if affil != None:
-                    if not affils.has_key(author):
-                        affils[author] = [inst]
-                    else:
-                        affils[author].append(inst)
+                if inst != None:
+                    affils.append(inst)
+        affils = engine.flattenByCounts(affils)
 
-        text = self.template.record(record_id, affils)
+        text = self.template.record(record_id, auths, affils)
 
         return invenio.webpage.page(title = self.title,
                                     body  = text,
