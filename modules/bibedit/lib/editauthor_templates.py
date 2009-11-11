@@ -1,22 +1,37 @@
-import invenio.editauthor_engine as engine
+import invenio.config
 
 class Template:
 
+    def __init__(self):
+        """Establish some variables we can use throughout"""
+        self.javascript = ['jquery.min.js']
+
+    def setup_scripts(self):
+        """Output a bunch of <script> bits."""
+        t = ''
+        for script in self.javascript:
+            t += ("<script type=\"text/javascript\" src=\"%s/js/%s\">" % 
+                                       (invenio.config.CFG_SITE_URL, script))
+            t += "</script>\n" 
+        return t
+
     def index(self):
         """structure of the index page, with form elements etc."""
-        t = "This page is a placeholder for where you can select "
-        t += "the records to work with."
-        return self.tPara(t, id='FIXME_index')
+        t = self.setup_scripts()
+        t += self.tPara("This page is a placeholder for where you can select" +
+                        " the records to work with.", id='FIXME_index')
+        return t
 
     def record(self, record_id, authors, affiliations):
         a_width = len(affiliations) 
-        t = '<table>\n<tr><th>name</th>'
+        t = self.setup_scripts()
+        t += '<table>\n<tr><th>name</th>'
         for aff in affiliations:
             t += "<th>%s</th>" % aff
         t += '</tr>\n'
         for author in authors:
             t += "<tr><td>%s</td>" % author
-            t += "<td> </td>" * a_width
+            t += "<td></td>" * a_width
             t += "<tr>\n"
         t += '</table>\n'
         return t
