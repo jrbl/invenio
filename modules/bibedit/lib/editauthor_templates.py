@@ -22,15 +22,15 @@ class Template:
                         " the records to work with.", id='FIXME_index')
         return t
 
-    def record(self, record_id, authors, affiliations):
-        a_width = len(affiliations) 
+    def record(self, record_id, auth_inst_pairs, allplaces):
+        a_width = len(allplaces) 
         t = self.setup_scripts()
-        t += '<table>\n<tr><th>name</th>'
-        for aff in affiliations:
-            t += "<th>%s</th>" % aff
+        t += '<table>\n<tr><th>name</th><th>affiliations</th>'
+        for place in allplaces:
+            t += "<th>%s</th>" % place
         t += '</tr>\n'
-        for author in authors:
-            t += "<tr><td>%s</td>" % author
+        for author, institution in auth_inst_pairs:
+            t += "<tr><td>%s</td><td>%s</td>" % (author, institution)
             t += "<td></td>" * a_width
             t += "<tr>\n"
         t += '</table>\n'
