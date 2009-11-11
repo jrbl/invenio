@@ -14,6 +14,7 @@ class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
     def __init__(self):
         self.title = "BibEdit: Author Special Mode"
         self.template = invenio.template.load('editauthor')
+        self.columns_to_show = 10
 
     def index(self, request, form):
         
@@ -36,16 +37,19 @@ class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
         record_id = form['recID']
 
         authors = engine.recid2names(record_id)
-        affils = []
-        auths = []
+        allplaces = []
+        auth_inst_pairs = []
         for author in authors:
-            auths.append(author)
+            thisauth = False
             for id, name, inst in engine.name2affils(author, record_id):
                 if inst != None:
-                    affils.append(inst)
-        affils = engine.flattenByCounts(affils)
+                    if not thisauth:
+                        thisauth = True
+                        auth_inst_pairs.append( (name, inst) )
+                    allplaces.append( inst )
+        allplaces = engine.flattenByCounts(allplaces)[:self.columns_to_show]
 
-        text = self.template.record(record_id, auths, affils)
+        text = self.template.record(record_id, auth_inst_pairs, allplaces)
 
         return invenio.webpage.page(title = self.title,
                                     body  = text,
