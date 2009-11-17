@@ -44,7 +44,8 @@ pylib_DATA = bibrecord_config.py \
 
 jsdir=$(localstatedir)/www/js
 
-js_DATA = bibedit_display.js \
+js_DATA = editauthor.js \
+		  bibedit_display.js \
           bibedit_engine.js \
           bibedit_keys.js \
           bibedit_menu.js \

@@ -4,7 +4,7 @@ class Template:
 
     def __init__(self):
         """Establish some variables we can use throughout"""
-        self.javascript = ['jquery.min.js']
+        self.javascript = ['jquery.min.js', 'editauthor.js']
 
     def setup_scripts(self):
         """Output a bunch of <script> bits."""
@@ -25,15 +25,16 @@ class Template:
     def record(self, record_id, auth_inst_pairs, allplaces):
         a_width = len(allplaces) 
         t = self.setup_scripts()
-        t += '<table>\n<tr><th>name</th><th>affiliations</th>'
-        for place in allplaces:
-            t += "<th>%s</th>" % place
-        t += '</tr>\n'
-        for author, institution in auth_inst_pairs:
-            t += "<tr><td>%s</td><td>%s</td>" % (author, institution)
-            t += "<td></td>" * a_width
-            t += "<tr>\n"
-        t += '</table>\n'
+        t += '<form>\n <table bgcolor="#ff2200">\n  <thead id="TableHeaders">\n  </thead>\n'
+        t += '  <tbody id="TableContents">\n  </tbody>\n </table>\n</form>\n'
+        #for place in allplaces:
+        #    t += "<th>%s</th>" % place
+        #t += '</tr></thead>\n<tbody>'
+        #for author, institution in auth_inst_pairs:
+        #    t += "<tr><td>%s</td><td>%s</td>" % (author, institution)
+        #    t += "<td></td>" * a_width
+        #    t += "<tr>\n"
+        #t += '</tbody></table>\n'
         return t
 
     def tPara(self, s, indent=0, id=''):
