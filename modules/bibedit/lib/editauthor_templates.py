@@ -1,5 +1,7 @@
 import invenio.config
 
+import simplejson            # FIXME: remember to be defensive
+
 class Template:
 
     def __init__(self):
@@ -22,19 +24,13 @@ class Template:
                         " the records to work with.", id='FIXME_index')
         return t
 
-    def record(self, record_id, auth_inst_pairs, allplaces):
-        a_width = len(allplaces) 
+    def record(self, record_id, author_list, affiliations):
         t = self.setup_scripts()
+        t += '<script type="text/javascript">\nshared_data["authors"] =' + simplejson.dumps(author_list) + ';\n'
+        t += 'shared_data["affiliations"] = ' + simplejson.dumps(affiliations) + ';\n</script>\n'
         t += '<form>\n <table bgcolor="#ff2200">\n  <thead id="TableHeaders">\n  </thead>\n'
         t += '  <tbody id="TableContents">\n  </tbody>\n </table>\n</form>\n'
-        #for place in allplaces:
-        #    t += "<th>%s</th>" % place
-        #t += '</tr></thead>\n<tbody>'
-        #for author, institution in auth_inst_pairs:
-        #    t += "<tr><td>%s</td><td>%s</td>" % (author, institution)
-        #    t += "<td></td>" * a_width
-        #    t += "<tr>\n"
-        #t += '</tbody></table>\n'
+
         return t
 
     def tPara(self, s, indent=0, id=''):
