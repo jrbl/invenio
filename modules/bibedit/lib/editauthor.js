@@ -3,50 +3,61 @@
  **********************/
 
 //TODO ITEMS: 
-// Integration with Invenio 
 // * MORE/BETTER/MORE CONSISTENT JSDOC.
 // * Dynamic columns: adding cols with box entries, hiding columns
+// * Continue integration with Invenio (output to MARCXML and BibUpload)
 // * REFACTOR TO USE jQUERY UTILITIES, map, apply AND SELECTORS BETTER.  (TOO MANY FOR LOOPS)
 // * Integration with BibKnowledge
 
-config = {
-  'hash': window.location.hash,
-};
-
+/** 
+ * NB: Initialization values for debug purposes only.
+ */
 shared_data = {
-  'affiliations': new Array("CERN", "DESY", "SLAC", "Fermilab", "SUNY", "Brookhaven", "NASA Jet Propulsion Laboratory"),
-  'authors': new Array(
-    new Array("Tibor Simko", "CERN"),
-    new Array("Bryan Pendleton", "CMU", "PARC"),
-    new Array("Anette Holtkamp", "CERN", "DESY"),
-    new Array("Joe Blaylock", "SLAC", "CERN", "Indiana University"), 
-    new Array("Travis Brooks", "Stanford", "SLAC", "CERN")
-  ),
+  'affiliations': ["CERN", "DESY", "SLAC", "Fermilab", "SUNY", "Brookhaven", "NASA Jet Propulsion Laboratory"],
+  'authors': [ ["Tibor Simko", "CERN"], ["Anette Holtkamp", "CERN", "DESY"], 
+               ["Joe Blaylock", "SLAC", "CERN", "Indiana University"], ["Travis Brooks", "Stanford", "SLAC", "CERN"] ],
 };
 
+/** 
+ * main(): this target fires as soon as the DOM is ready, which may be before
+ *         the page download is complete.  Everything else is driven from here.
+ */
 $(document).ready(
   function() {
     // simple substitution
     updateTableHeader(shared_data['affiliations']);
     updateTableBody(shared_data['authors'], shared_data['affiliations']);
+    // event handlers
     addCheckBoxHandlers(shared_data);
     addTextBoxHandlers(shared_data );
     // for DEBUG only; makes working js parse obvious
     $('table').attr("bgcolor", "#91ff91");
+    // $('.col2').hide(); // DEBUG
   }
 );
 
 /**
  * Dynamically create the table columns necessary to hold a list of institutions
- * @param {Array} list_of_institutions A list of strings representing institution names.
+ * 
+ * @param {Array} inst_list A list of strings representing institution names.
  */
-function updateTableHeader(list_of_institutions) {
-  var computed_text = '<tr><th>name</th><th>affiliation</th>';
-  for (name in list_of_institutions) {
-    computed_text += '<th>'+list_of_institutions[name]+'</th>'
-  }
-  computed_text += '</tr>\n'
-  $('#TableHeaders').html(computed_text);
+function updateTableHeader(inst_list) {
+    var computed_text = '<tr><th>#</th><th>name</th><th>affiliation</th>';
+    for (var i = 0; i < inst_list.length; i++) {
+        var label = inst_list[i];
+        var sliced = '';
+        if (label.length > 10) {
+            sliced = label.slice(0,7)+'...';
+        } else {
+            sliced = label;
+            for (var j = 10 - label.length; j > 0; j--) {
+                sliced += '&nbsp;';
+            }
+        }
+        computed_text += '<th title="'+label+'" class="col'+i+'">'+sliced+'</th>';
+    }
+    computed_text += '</tr>\n';
+    $('#TableHeaders').html(computed_text);
 }
 
 /**
@@ -64,7 +75,7 @@ function updateTableBody(author_list, institution_list) {
       if (even) {
         row_class = 'row_even';
       }
-      computed_body += '\n<tr id="table_row_'+row+'" class="'+row_class+'">';
+      computed_body += '\n<tr id="table_row_'+row+'" class="'+row_class+' row'+row+'"><td class="rownum">'+ (row+1) +'</td>';
 
       // name
       computed_body += '<td><input type="text" id="author_'+row+'" value="'+author_list[row][0]+'"></td>';
@@ -75,11 +86,11 @@ function updateTableBody(author_list, institution_list) {
       computed_body += '"></td>';
 
       // checkboxes
-      //for (var institution = 0; institution < cols; institution++) {
-      for (institution in institution_list) {
+      for (var institution in institution_list) {
         var name = institution_list[institution];
         var name_row = name+'_'+row;
-        computed_body += '<td><input type="checkbox" name="'+name+'" id="checkbox_'+row+'_'+institution+'" value="'+name_row+'"';
+        computed_body += '<td><input type="checkbox" name="'+name+'" title="'+institution_list[institution];
+        computed_body +=           '" class="col'+institution+'" id="checkbox_'+row+'_'+institution+'" value="'+name_row+'"';
         for (var place = 1; place < author_list[row].length; place++) {
           if (author_list[row][place] == name) {
             computed_body += ' checked';

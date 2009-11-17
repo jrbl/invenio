@@ -9,14 +9,13 @@ def auPairs(recID):
     record = create_record(print_record(recID, 'xm'))[0]
     
     def extract(l):
-        a = None
-        u = None
+        retVal = [None]
         for key, val in l:
             if key == 'a':
-                a = val
+                retVal[0] = val
             elif key == 'u':
-                u = val
-        return a, u
+                retVal.append(val)
+        return retVal
 
     try:
         yield extract( record['100'][0][0] )
@@ -46,18 +45,18 @@ def name2affils(name, skip_id):
 
     for recID in search_results:
         if recID == skip_id: continue
-        for author, affiliation in auPairs(recID):
-            if author == None: break
-            if name.lower() in author.lower():
-                if affiliation != None:
-                    previousGood = affiliation
-                    yield recID, author, affiliation
+        for author_list  in auPairs(recID):
+            if author_list[0] == None: break
+            if name.lower() in author_list[0].lower():
+                if len(author_list) > 1:
+                    previousGood = author_list[1]
+                    yield recID, author_list[0], author_list[1:]
                 else:
-                    yield recID, author, previousGood
+                    yield recID, author_list[0], [previousGood]
 
 def recid2names(id):
-    for author, junk in auPairs(id):
-        yield author
+    for author_list in auPairs(id):
+        yield author_list[0]
 
 def flattenByCounts(l, histogram=False):
     """Build a list sorted by frequency.
@@ -95,7 +94,10 @@ if __name__ == "__main__":
     search_names = recid2names(search_for)
 
     for name in search_names:
-        for recID, auth, affil in name2affils(name, search_for):
-            if affil != None:
-                print '\t%5d %35s %35s' % (recID, '"'+auth+'"', '"'+affil+'"')
+        for recID, auth, affils in name2affils(name, search_for):
+            if affils[0] != None:
+                print '\t%5d %35s' % (recID, '"'+auth+'"'),
+                for affil in affils:
+                    print '%35s' % '"' + affil + '"',
+                print
 

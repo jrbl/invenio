@@ -36,20 +36,16 @@ class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
 
         record_id = form['recID']
 
-        authors = engine.recid2names(record_id)
-        allplaces = []
-        auth_inst_pairs = []
-        for author in authors:
-            thisauth = False
-            for id, name, inst in engine.name2affils(author, record_id):
-                if inst != None:
-                    if not thisauth:
-                        thisauth = True
-                        auth_inst_pairs.append( (name, inst) )
-                    allplaces.append( inst )
-        allplaces = engine.flattenByCounts(allplaces)[:self.columns_to_show]
+        author_list_gen = engine.auPairs(record_id)
 
-        text = self.template.record(record_id, auth_inst_pairs, allplaces)
+        author_list = []
+        place_list = []
+        for group in author_list_gen:
+            author_list.append(group)
+            place_list.extend(group[1:])
+        place_list = engine.flattenByCounts(place_list)
+
+        text = self.template.record(record_id, author_list, place_list)
 
         return invenio.webpage.page(title = self.title,
                                     body  = text,
