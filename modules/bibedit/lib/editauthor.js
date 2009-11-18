@@ -26,14 +26,13 @@ shared_data = {
 $(document).ready(
   function() {
     // simple substitution
-    updateTableHeader(shared_data['affiliations']);
-    updateTableBody(shared_data['authors'], shared_data['affiliations']);
+    updateTableHeader(shared_data);
+    updateTableBody(shared_data);
     // event handlers
     addCheckBoxHandlers(shared_data);
     addTextBoxHandlers(shared_data );
     // for DEBUG only; makes working js parse obvious
     $('table').attr("bgcolor", "#91ff91");
-    // $('.col2').hide(); // DEBUG
   }
 );
 
@@ -42,7 +41,8 @@ $(document).ready(
  * 
  * @param {Array} inst_list A list of strings representing institution names.
  */
-function updateTableHeader(inst_list) {
+function updateTableHeader(shared_data) {
+    var inst_list = shared_data['affiliations']
     var computed_text = '<tr><th>#</th><th>name<br><a href="#" class="show_link">Show All Columns</a></th><th>affiliation</th>';
     for (var i = 0; i < inst_list.length; i++) {
         var label = inst_list[i];
@@ -79,7 +79,9 @@ function updateTableHeader(inst_list) {
  * @param {Array} author_list A list of author_institution pairs
  * @param {Array} institution_list A list of institutions for checkbox columns
  */
-function updateTableBody(author_list, institution_list) {
+function updateTableBody(shared_data) {
+    var author_list = shared_data['authors'];
+    var institution_list = shared_data['affiliations'];
     var cols = institution_list.length;
     var even = false;
     var computed_body = '';
