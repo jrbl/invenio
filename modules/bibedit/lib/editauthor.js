@@ -55,21 +55,19 @@ function updateTableHeader(shared_data) {
                 sliced += '&nbsp;';
             }
         }
-        computed_text += '<th title="'+label+'" class="col'+i+'">'+sliced+'<br><a href="#" class="hide_link" name="'+i+'">Hide</a></th>';
+        computed_text += '<th class="col'+i+'"><a title="'+label+' - Click to hide." href="#" class="hide_link" name="'+i+'">'+sliced+'</a></th>';
     }
     computed_text += '</tr>\n';
     $('#TableHeaders').html(computed_text);
 
-    function activateShowLink(myname, inst_list) {
-        var i = myname
-        //for (var i = 0; i < inst_list.length; i++) {
-            $('.empty'+i).remove();
-            $('.col'+i).show();
-        //}
+    function activateShowLink(i, inst_list) {
+        $('.empty'+i).remove();
+        $('.col'+i).show();
     }
     function activateHideLinks(me) {
         var col = me.name;
-        $('.col'+col).before('<td class="empty'+col+'" style="border-style: hidden solid hidden solid;"></td>');
+        var title = me.title.replace("hide", "expand");
+        $('.col'+col).before('<td title="'+title+'" class="empty'+col+'" style="border-style: hidden solid hidden solid;"></td>');
         $('.empty'+col).click( function() { activateShowLink(col, inst_list) });
         $('.col'+col).hide();
     }
