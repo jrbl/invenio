@@ -42,8 +42,23 @@ $(document).ready(
  * @param {Array} inst_list A list of strings representing institution names.
  */
 function updateTableHeader(shared_data) {
+
+    function activateShowLink(i, inst_list) {
+        $('.empty'+i).remove();
+        $('.col'+i).show();
+    }
+
+    function activateHideLinks(me) {
+        var col = me.name;
+        var title = me.title.replace("hide", "expand");
+        $('.col'+col).before('<td title="'+title+'" class="empty'+col+'" style="border-style: hidden solid hidden solid;"></td>');
+        $('.empty'+col).click( function() { activateShowLink(col, inst_list) });
+        $('.col'+col).hide();
+    }
+
     var inst_list = shared_data['affiliations']
     var computed_text = '<tr><th>#</th><th>name</th><th>affiliation</th>';
+
     for (var i = 0; i < inst_list.length; i++) {
         var label = inst_list[i];
         var sliced = '';
@@ -59,18 +74,6 @@ function updateTableHeader(shared_data) {
     }
     computed_text += '</tr>\n';
     $('#TableHeaders').html(computed_text);
-
-    function activateShowLink(i, inst_list) {
-        $('.empty'+i).remove();
-        $('.col'+i).show();
-    }
-    function activateHideLinks(me) {
-        var col = me.name;
-        var title = me.title.replace("hide", "expand");
-        $('.col'+col).before('<td title="'+title+'" class="empty'+col+'" style="border-style: hidden solid hidden solid;"></td>');
-        $('.empty'+col).click( function() { activateShowLink(col, inst_list) });
-        $('.col'+col).hide();
-    }
     $('a.hide_link').click( function() { activateHideLinks(this) });
 }
 
