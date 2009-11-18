@@ -43,7 +43,7 @@ $(document).ready(
  */
 function updateTableHeader(shared_data) {
     var inst_list = shared_data['affiliations']
-    var computed_text = '<tr><th>#</th><th>name<br><a href="#" class="show_link">Show All Columns</a></th><th>affiliation</th>';
+    var computed_text = '<tr><th>#</th><th>name</th><th>affiliation</th>';
     for (var i = 0; i < inst_list.length; i++) {
         var label = inst_list[i];
         var sliced = '';
@@ -60,16 +60,19 @@ function updateTableHeader(shared_data) {
     computed_text += '</tr>\n';
     $('#TableHeaders').html(computed_text);
 
-    function activateShowLink(me, inst_list) {
-        for (var i = 0; i < inst_list.length; i++) {
+    function activateShowLink(myname, inst_list) {
+        var i = myname
+        //for (var i = 0; i < inst_list.length; i++) {
+            $('.empty'+i).remove();
             $('.col'+i).show();
-        }
+        //}
     }
     function activateHideLinks(me) {
         var col = me.name;
+        $('.col'+col).before('<td class="empty'+col+'" style="border-style: hidden solid hidden solid;"></td>');
+        $('.empty'+col).click( function() { activateShowLink(col, inst_list) });
         $('.col'+col).hide();
     }
-    $('a.show_link').click( function() { activateShowLink(this, inst_list) });
     $('a.hide_link').click( function() { activateHideLinks(this) });
 }
 
