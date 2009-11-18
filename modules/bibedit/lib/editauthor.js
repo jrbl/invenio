@@ -5,6 +5,7 @@
 //TODO ITEMS: 
 // * MORE/BETTER/MORE CONSISTENT JSDOC.
 // * Dynamic columns: adding cols with box entries, hiding columns
+// ** Make this prettier: use callbacks to insert dummy columns with borders which can be clicked to re-expand
 // * Continue integration with Invenio (output to MARCXML and BibUpload)
 // * REFACTOR TO USE jQUERY UTILITIES, map, apply AND SELECTORS BETTER.  (TOO MANY FOR LOOPS)
 // * Integration with BibKnowledge
@@ -42,7 +43,7 @@ $(document).ready(
  * @param {Array} inst_list A list of strings representing institution names.
  */
 function updateTableHeader(inst_list) {
-    var computed_text = '<tr><th>#</th><th>name</th><th>affiliation</th>';
+    var computed_text = '<tr><th>#</th><th>name<br><a href="#" class="show_link">Show All Columns</a></th><th>affiliation</th>';
     for (var i = 0; i < inst_list.length; i++) {
         var label = inst_list[i];
         var sliced = '';
@@ -54,14 +55,27 @@ function updateTableHeader(inst_list) {
                 sliced += '&nbsp;';
             }
         }
-        computed_text += '<th title="'+label+'" class="col'+i+'">'+sliced+'</th>';
+        computed_text += '<th title="'+label+'" class="col'+i+'">'+sliced+'<br><a href="#" class="hide_link" name="'+i+'">Hide</a></th>';
     }
     computed_text += '</tr>\n';
     $('#TableHeaders').html(computed_text);
+
+    function activateShowLink(me, inst_list) {
+        for (var i = 0; i < inst_list.length; i++) {
+            $('.col'+i).show();
+        }
+    }
+    function activateHideLinks(me) {
+        var col = me.name;
+        $('.col'+col).hide();
+    }
+    $('a.show_link').click( function() { activateShowLink(this, inst_list) });
+    $('a.hide_link').click( function() { activateHideLinks(this) });
 }
 
 /**
  * Dynamically create the table cells necessary to hold everything
+ *
  * @param {Array} author_list A list of author_institution pairs
  * @param {Array} institution_list A list of institutions for checkbox columns
  */
@@ -86,11 +100,11 @@ function updateTableBody(author_list, institution_list) {
       computed_body += '"></td>';
 
       // checkboxes
-      for (var institution in institution_list) {
-        var name = institution_list[institution];
+      for (var i = 0; i < institution_list.length; i++) {
+        var name = institution_list[i];
         var name_row = name+'_'+row;
-        computed_body += '<td><input type="checkbox" name="'+name+'" title="'+institution_list[institution];
-        computed_body +=           '" class="col'+institution+'" id="checkbox_'+row+'_'+institution+'" value="'+name_row+'"';
+        computed_body += '<td><input type="checkbox" name="'+name+'" title="'+institution_list[i];
+        computed_body +=           '" class="col'+i+'" id="checkbox_'+row+'_'+i+'" value="'+name_row+'"';
         for (var place = 1; place < author_list[row].length; place++) {
           if (author_list[row][place] == name) {
             computed_body += ' checked';
@@ -142,6 +156,9 @@ function addCheckBoxHandlers_changeHandler(shared_data, me) {
   }
 }
 
+/**
+ *Sync the contents of shared_data into this row's affils box
+ */
 function addCheckBoxHandlers_inputSync(shared_data, myrow, myname) {
   $('#affils_'+myrow).attr("value", shared_data['authors'][myrow].slice(1).join(';'));
 }
