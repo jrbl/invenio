@@ -4,7 +4,6 @@
 
 //TODO ITEMS: 
 // * MORE/BETTER/MORE CONSISTENT JSDOC.
-// * Dynamic columns: adding cols with box entries, hiding columns
 // * Continue integration with Invenio (output to MARCXML and BibUpload)
 // * REFACTOR TO USE jQUERY UTILITIES, map, apply AND SELECTORS BETTER.  (TOO MANY FOR LOOPS)
 // * Integration with BibKnowledge
@@ -13,65 +12,78 @@
  * NB: Initialization values for debug purposes only.
  */
 shared_data = {
-  'affiliations': ["CERN", "DESY", "SLAC", "Fermilab", "SUNY", "Brookhaven", "NASA Jet Propulsion Laboratory"],
-  'authors': [ ["Tibor Simko", "CERN"], ["Anette Holtkamp", "CERN", "DESY"], 
-               ["Joe Blaylock", "SLAC", "CERN", "Indiana University"], ["Travis Brooks", "Stanford", "SLAC", "CERN"] ],
-
+  'affiliations': [], 
+  'authors':      [ [], ], 
+  'folded':       [],
 };
 
 /** 
- * main(): this target fires as soon as the DOM is ready, which may be before
- *         the page download is complete.  Everything else is driven from here.
+ * main: this target fires as soon as the DOM is ready, which may be before
+ *       the page download is complete.  Everything else is driven from here.
  */
 $(document).ready(
   function() {
     // simple substitution
-    createTableHeader(shared_data['affiliations']);
-    createTableBody(shared_data);
-    // event handlers
-    //addCheckBoxHandlers(shared_data); // added by updateTableBody now
-    //addTextBoxHandlers(shared_data ); // added by updateTableBody now
+    initTable(shared_data);
+
     // for DEBUG only; makes working js parse obvious
     $('table').attr("bgcolor", "#91ff91");
   }
 );
 
 /**
- * Throw up a loading message and call updateTableHeaders...
+ * Throw up a loading message and call updateTable*
  * 
  * @param {Array} shared_data Passed to children
  */
-function createTableHeader(inst_list) {
+function initTable(shared_data) {
     $('#TableHeaders').html('<p id="loading_msg">Loading; please wait...</p>');
-    updateTableHeaders(inst_list);
+    $('#TableContents').html('<p id="loading_msg">Loading; please wait...</p>');
+    updateTable(shared_data);
+}
+
+/** 
+ * "fold" a column in the table.
+ * 
+ * @param {int} col The column number to fold
+ * @param {String} title The mouseover floating text for the element
+ */
+function foldColumn(col, title) {
+    $('.col'+col).before('<td title="'+title+'" class="empty'+col+'" style="border-style: hidden solid hidden solid;"></td>');
+    $('.empty'+col).click( 
+        function() { 
+            $('.empty'+col).remove();
+            $('.col'+col).show();
+            shared_data['folded'].splice($.inArray(col, shared_data['folded']));
+        });
+    $('.col'+col).hide();
 }
 
 /**
- * Create and set the table columns necessary to hold a list of institutions
+ * Create the HTML representation of a table representing shared_data, assign
+ * event handlers, and maintain folding status.
  * 
- * @param {Array} shared_data The dictionary of shared state; uses 'affiliations'
+ * @param {Array} shared_data The dictionary of shared state
  */
-function updateTableHeaders(inst_list) {
+function updateTable(shared_data) {
 
-    //var inst_list = shared_data['affiliations']
+    $('#TableHeaders').html( generateTableHeader(shared_data['affiliations']) );
+    $('a.hide_link').click( 
+        function() { 
+            shared_data['folded'].push(this.name); 
+            foldColumn(this.name, "Click to expand.") 
+        });
 
-    function activateShowLink(i, inst_list) {
-        $('.empty'+i).remove();
-        $('.col'+i).show();
+    $('#TableContents').html( generateTableBody(shared_data) );
+
+    addCheckBoxHandlers(shared_data);
+    addTextBoxHandlers(shared_data);
+
+    for (var i in shared_data['folded']) {
+        if (shared_data['folded'][i]  != null) {
+            foldColumn(shared_data['folded'][i], "Click to expand.");
+        }
     }
-
-    function activateHideLinks(me) {
-        var col = me.name;
-        var title = me.title.replace("hide", "expand");
-        $('.col'+col).before('<td title="'+title+'" class="empty'+col+'" style="border-style: hidden solid hidden solid;"></td>');
-        $('.empty'+col).click( function() { activateShowLink(col, inst_list) });
-        $('.col'+col).hide();
-    }
-
-    var text = calculateTableHeader(inst_list)
-
-    $('#TableHeaders').html(text);
-    $('a.hide_link').click( function() { activateHideLinks(this) });
 }
 
 /**
@@ -80,9 +92,8 @@ function updateTableHeaders(inst_list) {
  * @param {Array} shared_data The dictionary of shared state; uses 'affiliations'
  * @returns {String} The computed HTML of the table header line
  */
-function calculateTableHeader(inst_list) {
+function generateTableHeader(inst_list) {
 
-    //var inst_list = shared_data['affiliations']
     var computed_text = '<tr><th>#</th><th>name</th><th>affiliation</th>';
 
     for (var i = 0; i < inst_list.length; i++) {
@@ -102,18 +113,6 @@ function calculateTableHeader(inst_list) {
     return computed_text;
 }
 
-function createTableBody(shared_data) {
-    $('#TableContents').html('<p id="loading_msg">Loading; please wait...</p>');
-    updateTableBody(shared_data);
-}
-
-function updateTableBody(shared_data) {
-    var text = generateTableBody(shared_data);
-    $('#TableContents').html(text);
-    addCheckBoxHandlers(shared_data);
-    addTextBoxHandlers(shared_data);
-}
-
 /**
  * Dynamically create the table cells necessary to hold everything
  *
@@ -124,15 +123,10 @@ function generateTableBody(shared_data) {
     var author_list = shared_data['authors'];
     var institution_list = shared_data['affiliations'];
     var cols = institution_list.length;
-    var even = false;
     var computed_body = '';
     for (var row = 0; row < author_list.length; row++) {
 
-      var row_class = 'row_odd';
-      if (even) {
-        row_class = 'row_even';
-      }
-      computed_body += '\n<tr id="table_row_'+row+'" class="'+row_class+' row'+row+'"><td class="rownum">'+ (row+1) +'</td>';
+      computed_body += '\n<tr id="table_row_'+row+'" class="row'+row+'"><td class="rownum">'+ (row+1) +'</td>';
 
       // name
       computed_body += '<td><input type="text" id="author_'+row+'" value="'+author_list[row][0]+'"></td>';
@@ -156,8 +150,6 @@ function generateTableBody(shared_data) {
         computed_body += '></td>';
       }
       computed_body += '</tr>\n';
-
-      even = !even;
     };
 
     return computed_body;
@@ -233,14 +225,8 @@ function addTextBoxHandlers_blurHandler(shared_data, me) {
       }
   }
   me.value = newRow.join(';');
-  updateTableHeaders(shared_data['affiliations']);
   newRow.unshift(myname);
   shared_data['authors'][myrow] = newRow;
-  updateTableBody(shared_data);
-  /*$.map(shared_data['affiliations'], function(aff, i) {
-    $('#checkbox_'+myrow+'_'+i).attr('checked', ($.inArray(aff, newRow) != -1));
-  }); */
-  /*newRow.unshift(myname);
-  shared_data['authors'][myrow] = newRow; */
+  updateTable(shared_data);
 }
 
