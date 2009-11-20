@@ -23,8 +23,11 @@ shared_data = {
  */
 $(document).ready(
   function() {
-    // simple substitution
+    // environment initialization/table building
     initTable(shared_data);
+
+    // startup behaviors
+    $('#affils_0').focus()
 
     // for DEBUG only; makes working js parse obvious
     $('table').attr("bgcolor", "#91ff91");
@@ -129,10 +132,10 @@ function generateTableBody(shared_data) {
       computed_body += '\n<tr id="table_row_'+row+'" class="row'+row+'"><td class="rownum">'+ (row+1) +'</td>';
 
       // name
-      computed_body += '<td><input type="text" id="author_'+row+'" value="'+author_list[row][0]+'"></td>';
+      computed_body += '<td><input type="text" class="author_box" id="author_'+row+'" value="'+author_list[row][0]+'"></td>';
 
       // affiliations
-      computed_body += '<td><input type="text" id="affils_'+row+'" value="';
+      computed_body += '<td><input type="text" class="affil_box" id="affils_'+row+'" value="';
       computed_body += author_list[row].slice(1).join(';');
       computed_body += '"></td>';
 
@@ -204,7 +207,8 @@ function addCheckBoxHandlers_inputSync(shared_data, myrow, myname) {
  * @param {Object} shared_data The global state object which the handlers mutate
  */
 function addTextBoxHandlers(shared_data) {
-  $('input[type="text"]').blur( function() { addTextBoxHandlers_blurHandler(shared_data, this) } );
+  //$('input[type="text"]').blur( function() { addTextBoxHandlers_blurHandler(shared_data, this) } );
+  $('.affil_box').blur( function() { addTextBoxHandlers_blurHandler(shared_data, this) } );
 }
 
 /**
