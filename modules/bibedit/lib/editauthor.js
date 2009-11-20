@@ -71,7 +71,7 @@ function updateTable(shared_data) {
     $('a.hide_link').click( 
         function() { 
             shared_data['folded'].push(this.name); 
-            foldColumn(this.name, "Click to expand.") 
+            foldColumn(this.name, this.title.replace('hide', 'expand'));
         });
 
     $('#TableContents').html( generateTableBody(shared_data) );
