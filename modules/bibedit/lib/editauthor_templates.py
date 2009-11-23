@@ -28,8 +28,10 @@ class Template:
         t = self.setup_scripts()
         t += '<script type="text/javascript">\nshared_data["authors"] =' + simplejson.dumps(author_list) + ';\n'
         t += 'shared_data["affiliations"] = ' + simplejson.dumps(affiliations) + ';\n</script>\n'
-        t += '<form>\n <table bgcolor="#ff2200">\n  <thead id="TableHeaders">\n  </thead>\n'
-        t += '  <tbody id="TableContents">\n  </tbody>\n </table>\n</form>\n'
+        t += '<form method="post" action="'+invenio.config.CFG_SITE_URL+'/editauthors/process">\n'
+        t += '<table bgcolor="#ff2200">\n  <thead id="TableHeaders">\n  </thead>\n'
+        t += '  <tbody id="TableContents">\n  </tbody>\n </table>\n<span id="formbuttons">'
+        t += '<input id="submit_button" type=submit value="Submit"></span></form>\n'
 
         return t
 
@@ -46,4 +48,3 @@ class Template:
             t += ' '*indent + " <li>%s</li>\n" % str(i)
         t += ' '*indent + '</ul>\n'
         return t
-

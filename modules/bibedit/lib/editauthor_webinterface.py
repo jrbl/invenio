@@ -9,7 +9,7 @@ class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
     """Handle URLs is the /editauthors tree"""
 
     # List of valid URLs on this path
-    _exports = ['', 'rec']
+    _exports = ['', '/', 'rec', 'process']
 
     def __init__(self):
         self.title = "BibEdit: Author Special Mode"
@@ -51,3 +51,26 @@ class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
                                     body  = text,
                                     req   = request,)
 
+    def process(self, request, form):
+        def debugPrint(form):
+            washing = {}
+            t = ''
+            import pprint
+            import cStringIO
+            buf = cStringIO.StringIO()
+            pp = pprint.PrettyPrinter(stream=buf, indent=4, width=120)
+            t = "<pre>\n"
+            pp.pprint(form)
+            t += buf.getvalue()
+            #buf.close()
+            #for key in form.keys():
+            #    t += '"%s" -> "%s"<br />\n' % (key, repr(form[key]));
+            t += "\n</pre>\n"
+            return t
+
+        return invenio.webpage.page(title = 'FIXME',
+                                    body  = debugPrint(form),
+                                    req   = request,)
+
+    def __call__(self, request, form):
+        return self.index(request, form)
