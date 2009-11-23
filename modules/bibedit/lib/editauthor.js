@@ -123,39 +123,51 @@ function generateTableHeader(inst_list) {
  * @param {Array} institution_list A list of institutions for checkbox columns
  */
 function generateTableBody(shared_data) {
-    var author_list = shared_data['authors'];
-    var institution_list = shared_data['affiliations'];
-    var cols = institution_list.length;
     var computed_body = '';
-    for (var row = 0; row < author_list.length; row++) {
-
-      computed_body += '\n<tr id="table_row_'+row+'" class="row'+row+'"><td class="rownum">'+ (row+1) +'</td>';
-
-      // name
-      computed_body += '<td><input type="text" class="author_box" id="author_'+row+'" value="'+author_list[row][0]+'"></td>';
-
-      // affiliations
-      computed_body += '<td><input type="text" class="affil_box" id="affils_'+row+'" value="';
-      computed_body += author_list[row].slice(1).join(';');
-      computed_body += '"></td>';
-
-      // checkboxes
-      for (var i = 0; i < institution_list.length; i++) {
-        var name = institution_list[i];
-        var name_row = name+'_'+row;
-        computed_body += '<td><input type="checkbox" name="'+name+'" title="'+institution_list[i];
-        computed_body +=           '" class="col'+i+'" id="checkbox_'+row+'_'+i+'" value="'+name_row+'"';
-        for (var place = 1; place < author_list[row].length; place++) {
-          if (author_list[row][place] == name) {
-            computed_body += ' checked';
-          }
-        }
-        computed_body += '></td>';
-      }
-      computed_body += '</tr>\n';
-    };
-
+    for (var row = 0; row < shared_data['authors'].length; row++) {
+        computed_body += generateTableRow(row, shared_data['authors'][row], shared_data['affiliations']);
+    }
     return computed_body;
+}
+
+/**
+ * Emit a single row a dynamically generated table.
+ * 
+ * @param {Integer} row The row index (0-based)
+ * @param {Array} auth_affils [author_name, affiliation1, ...]
+ * @param {Array} institutions The list of possible affiliations
+ * @return {String} The HTML to be emitted to the browser
+ */
+function generateTableRow(row, auth_affils, institutions) {
+
+    var rowStr = '';
+    // preamble
+    rowStr += '\n<tr id="table_row_'+row+'" class="row'+row+'"><td class="rownum">'+ (row+1) +'</td>';
+        
+    // author name
+    rowStr += '<td><input type="text" class="author_box" name="author_'+row+'" id="author_'+row+'" value="'+auth_affils[0]+'"></td>'
+            
+    // affiliations
+    rowStr += '<td><input type="text" class="affil_box" name="affils_'+row+'" id="affils_'+row+'" value="';
+    rowStr += auth_affils.slice(1).join(';');
+    rowStr += '"></td>';
+
+    // checkboxes
+    for (var i = 0; i < institutions.length; i++) {
+        var inst_name = institutions[i];
+        var name_row = inst_name+'_'+row;
+        rowStr += '<td><input type="checkbox" name="'+inst_name+'" title="'+institutions[i];
+        rowStr +=           '" class="col'+i+'" id="checkbox_'+row+'_'+i+'" value="'+name_row+'"';
+        for (var place = 1; place < auth_affils.length; place++) {
+            if (auth_affils[place] == inst_name) {
+                rowStr += ' checked';
+            }
+        }
+        rowStr += '></td>';
+    }
+    rowStr += '</tr>\n';
+    
+    return rowStr;
 }
 
 /**
@@ -172,14 +184,14 @@ function addCheckBoxHandlers(shared_data) {
  */
 function addCheckBoxHandlers_changeHandler(shared_data, me) {
   var myrow = me.value.substring(me.value.lastIndexOf('_')+1);
-  var authors = shared_data['authors'];
-  var myaffils = authors[myrow].slice(1);
-  var cb_loc = $.inArray(me.name, myaffils);
+  var myaffils = shared_data['authors'][myrow].slice(1);
+  var myname = me.value.slice(0, me.value.indexOf('_'));
+  var cb_loc = $.inArray(myname, myaffils);
 
   if ((me.checked == true) && (cb_loc == -1)) {
       // we want it, but it's not here
-      shared_data['authors'][myrow].push(me.name);
-      addCheckBoxHandlers_inputSync(shared_data, myrow, me.name);
+      shared_data['authors'][myrow].push(myname);
+      addCheckBoxHandlers_inputSync(shared_data, myrow, myname);
   } else if ((me.checked == true) && (cb_loc != -1)) {
       // we want it, but it's already here
       return;
@@ -190,7 +202,7 @@ function addCheckBoxHandlers_changeHandler(shared_data, me) {
       // we don't want it, and it's here
       cb_loc += 1; // XXX: index taken from slice, but used in a splice
       shared_data['authors'][myrow].splice(cb_loc, 1);
-      addCheckBoxHandlers_inputSync(shared_data, myrow, me.name);
+      addCheckBoxHandlers_inputSync(shared_data, myrow, myname);
   }
 }
 
