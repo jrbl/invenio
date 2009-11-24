@@ -1,21 +1,24 @@
 #!/usr/bin/env python
+"""Utility functions to ease the manipulation of records."""
 
 from invenio.search_engine import search_pattern, print_record
-from invenio.bibrecord import create_record, record_get_field_values, record_get_field_value
+from invenio.bibrecord import create_record
 
 
-def auPairs(recID):
+def auPairs(recid):
+    """Generate [author, affiliation ...] lists for input record id."""
     yieldedSomething = False
-    record = create_record(print_record(recID, 'xm'))[0]
-    
-    def extract(l):
-        retVal = [None]
-        for key, val in l:
-            if key == 'a':
-                retVal[0] = val
-            elif key == 'u':
-                retVal.append(val)
-        return retVal
+    record = create_record(print_record(recid, 'xm'))[0]
+
+    def extract(lst):
+        """Helper builds individual [author, affil ...] lists."""
+        value = [None]
+        for code, text in lst:
+            if code == 'a':
+                value[0] = text
+            elif code == 'u':
+                value.append(text)
+        return value
 
     try:
         yield extract( record['100'][0][0] )
@@ -23,7 +26,8 @@ def auPairs(recID):
     except KeyError:
         pass
     except TypeError, msg:
-        print "ERROR: TypError in\nrecID = %s\nrec = %s\n%s" % (recID, record, msg)
+        print "ERROR: TypError in\nrecid = %s\nrec = %s\n%s" % \
+              (recid, record, msg)
 
     try:
         fields = record['700']
@@ -37,28 +41,31 @@ def auPairs(recID):
         yield extract( tuplist )
 
 def name2affils(name, skip_id):
-    """Given an author name pattern, find all possible prior affiliations""" 
+    """Given an author name pattern, find all possible prior affiliations"""
 
-    previousGood = None
+    prev_good = None
 
     search_results = sorted( search_pattern( p=name, ap=1 ), reverse=True )
 
-    for recID in search_results:
-        if recID == skip_id: continue
-        for author_list  in auPairs(recID):
-            if author_list[0] == None: break
+    for recid in search_results:
+        if recid == skip_id:
+            continue
+        for author_list  in auPairs(recid):
+            if author_list[0] == None:
+                break
             if name.lower() in author_list[0].lower():
                 if len(author_list) > 1:
-                    previousGood = author_list[1]
-                    yield recID, author_list[0], author_list[1:]
+                    prev_good = author_list[1]
+                    yield recid, author_list[0], author_list[1:]
                 else:
-                    yield recID, author_list[0], [previousGood]
+                    yield recid, author_list[0], [prev_good]
 
-def recid2names(id):
-    for author_list in auPairs(id):
+def recid2names(recid):
+    """Given a record ID, generate a list of authors' names."""
+    for author_list in auPairs(recid):
         yield author_list[0]
 
-def flattenByCounts(l, histogram=False):
+def flattenByCounts(lst, histogram=False):
     """Build a list sorted by frequency.
 
     @param l: a list of items with possible repetitions
@@ -74,16 +81,17 @@ def flattenByCounts(l, histogram=False):
         else: return 0
 
     counts = {}
-    for item in l:
+    for item in lst:
         if item not in counts:
-            counts[item] = l.count(item)
+            counts[item] = lst.count(item)
     if not histogram:
         return sorted(counts.keys(), cmp=freq_sort)
     return sorted([(key, counts[key]) for key in counts], cmp=freq_sort)
-        
 
+
+#######################################
+# Exploratory test harness
 if __name__ == "__main__":
-    """Exploratory test harness"""
 
     import sys
 
@@ -93,8 +101,8 @@ if __name__ == "__main__":
 
     search_names = recid2names(search_for)
 
-    for name in search_names:
-        for recID, auth, affils in name2affils(name, search_for):
+    for author_name in search_names:
+        for recID, auth, affils in name2affils(author_name, search_for):
             if affils[0] != None:
                 print '\t%5d %35s' % (recID, '"'+auth+'"'),
                 for affil in affils:
