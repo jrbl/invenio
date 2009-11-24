@@ -30,7 +30,7 @@ $(document).ready(
     $('#affils_0').focus()
 
     // for DEBUG only; makes working js parse obvious
-    $('table').attr("bgcolor", "#91ff91");
+    $('table').css("bgcolor", "#91ff91");
   }
 );
 
@@ -231,20 +231,30 @@ function addCheckBoxHandlers_inputSync(shared_data, myrow, myname) {
  * @param {Object} shared_data The global state object which the handlers mutate
  */
 function addTextBoxHandlers(shared_data) {
-  //$('input[type="text"]').blur( function() { addTextBoxHandlers_blurHandler(shared_data, this) } );
-  $('.affil_box').blur( function() { addTextBoxHandlers_blurHandler(shared_data, this) } );
+  $('.author_box').blur( function() { addAuthBoxHandlers_blurHandler(shared_data, this) } );
+  $('.affil_box').blur( function() { addAffilBoxHandlers_blurHandler(shared_data, this) } );
 }
 
 /**
- * Sync the text box to shared_data, then sync shared_data to the checkboxes
+ * Scrub user input in the author box, then sync it to shared_data and redraw.
  */
-function addTextBoxHandlers_blurHandler(shared_data, me) {
+function addAuthBoxHandlers_blurHandler(shared_data, me) {
+  var myrow = me.id.substring(me.id.lastIndexOf('_')+1);
+  var myname = escapeHTML(me.value);
+  shared_data['authors'][myrow][0] = myname;
+  updateTable(shared_data);
+}
+
+/**
+ * Sync the affiliations box to shared_data, then sync shared_data to the checkboxes
+ */
+function addAffilBoxHandlers_blurHandler(shared_data, me) {
   var myrow = me.id.substring(me.id.lastIndexOf('_')+1);
   var myname = shared_data['authors'][myrow][0];
   var newRow = $.map(me.value.split(';'), function(s, i) {
       s = $.trim(s);
-      if (s == '') return null;
-      else return s;
+      if (s == '') return null;   /* drop empty strings */
+      else return escapeHTML(s);  /* otherwise, sanitize & return */
   });
   for (var item in newRow) {
       var datum = newRow[item];
@@ -258,3 +268,13 @@ function addTextBoxHandlers_blurHandler(shared_data, me) {
   updateTable(shared_data);
 }
 
+/**
+ * Replace special characters '&', '<' and '>' with HTML-safe sequences.
+ * This functions is called on content before displaying it.
+ */
+function escapeHTML(value){
+  value = value.replace(/&/g, '&amp;'); // Must be done first!
+  value = value.replace(/</g, '&lt;');
+  value = value.replace(/>/g, '&gt;');
+  return value;
+}
