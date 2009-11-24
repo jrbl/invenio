@@ -30,8 +30,9 @@ class Template:
         t += 'shared_data["affiliations"] = ' + simplejson.dumps(affiliations) + ';\n</script>\n'
         t += '<form method="post" action="'+invenio.config.CFG_SITE_URL+'/editauthors/process">\n'
         t += '<table bgcolor="#ff2200">\n  <thead id="TableHeaders">\n  </thead>\n'
-        t += '  <tbody id="TableContents">\n  </tbody>\n </table>\n<span id="formbuttons">'
-        t += '<input id="submit_button" type=submit value="Submit"></span></form>\n'
+        t += '  <tbody id="TableContents">\n  </tbody>\n </table>\n<span id="formbuttons"><input name="recID" type="hidden" value="' + str(record_id)
+        t += '"<input id="submit_button" type=submit value="Submit" class="control_button">'
+        t += '</span></form>\n'
 
         return t
 
