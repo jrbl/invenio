@@ -97,7 +97,8 @@ function updateTable(shared_data) {
  */
 function generateTableHeader(inst_list) {
 
-    var computed_text = '<tr><th>#</th><th>name</th><th>affiliation</th>';
+    var computed_text = '<tr><th>#</th><th title="Author\'s name, one per line.">name</th>';
+    computed_text += '<th title="Institutional affiliations.  Semicolon-separated list.">affiliation</th>';
 
     for (var i = 0; i < inst_list.length; i++) {
         var label = inst_list[i];
@@ -140,34 +141,45 @@ function generateTableBody(shared_data) {
  */
 function generateTableRow(row, auth_affils, institutions) {
 
-    var rowStr = '';
+    var str = '';
     // preamble
-    rowStr += '\n<tr id="table_row_'+row+'" class="row'+row+'"><td class="rownum">'+ (row+1) +'</td>';
+    str += '\n<tr id="table_row_'+row+'" class="row'+row+'"><td class="rownum">'+ (row+1) +'</td>';
         
     // author name
-    rowStr += '<td><input type="text" class="author_box" name="author_'+row+'" id="author_'+row+'" value="'+auth_affils[0]+'"></td>'
+    str += '<td><input type="text" class="author_box" id="author_'+row+'" name="autho'+row+'" value="'+auth_affils[0]+'"';
+    if (row == 0) {
+        str += ' title="100a: first author"';
+    } else {
+        str += ' title="700a: additional author"';
+    }
+    str += '></td>'
             
     // affiliations
-    rowStr += '<td><input type="text" class="affil_box" name="affils_'+row+'" id="affils_'+row+'" value="';
-    rowStr += auth_affils.slice(1).join(';');
-    rowStr += '"></td>';
+    str += '<td><input type="text" class="affil_box" id="affils_'+row+'" name="insts'+row+'" value="';
+    str += auth_affils.slice(1).join(';') + '"';
+    if (row == 0) {
+        str += ' title="100u: first author\'s affiliations"';
+    } else {
+        str += ' title="700u: additional author\'s affiliations"';
+    }
+    str += '></td>';
 
     // checkboxes
     for (var i = 0; i < institutions.length; i++) {
         var inst_name = institutions[i];
         var name_row = inst_name+'_'+row;
-        rowStr += '<td><input type="checkbox" name="'+inst_name+'" title="'+institutions[i];
-        rowStr +=           '" class="col'+i+'" id="checkbox_'+row+'_'+i+'" value="'+name_row+'"';
+        str += '<td><input type="checkbox" title="'+institutions[i];
+        str +=           '" class="col'+i+'" id="checkbox_'+row+'_'+i+'" value="'+name_row+'"';
         for (var place = 1; place < auth_affils.length; place++) {
             if (auth_affils[place] == inst_name) {
-                rowStr += ' checked';
+                str += ' checked';
             }
         }
-        rowStr += '></td>';
+        str += '></td>';
     }
-    rowStr += '</tr>\n';
+    str += '</tr>\n';
     
-    return rowStr;
+    return str;
 }
 
 /**
