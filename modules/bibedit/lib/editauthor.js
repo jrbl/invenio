@@ -12,9 +12,10 @@
  * NB: Initialization values for debug purposes only.
  */
 shared_data = {
-  'affiliations': [], 
-  'authors':      [ [], ], 
-  'folded':       [],
+  'affiliations': [],             // list of possible institutional affiliations
+  'authors':      [ [], ],        // set of all [author, affiliation1, affiliation2 ...]
+  'folded':       [],             // which columns are currently hidden
+  'row_cut':      [],             // the row recently removed from the data set with 'cut'
 };
 
 /** 
@@ -25,13 +26,13 @@ $(document).ready(
   function() {
     // environment initialization/table building
     initTable(shared_data);
-    initKeystrokes();
+    initKeystrokes(shared_data);
 
     // startup behaviors
     $('#affils_0').focus()
 
     // for DEBUG only; makes working js parse obvious
-    $('table').attr("bgcolor", "#91ff91");
+    $('table').attr("bgcolor", "#FF66FF");
 
   }
 );
@@ -184,6 +185,53 @@ function generateTableRow(row, auth_affils, institutions) {
     return str;
 }
 
+/** 
+ * Remove a row from the displayed table and put its data onto a holding stack.
+ * 
+ * @param {Event} event The javascript event object associated with this cut.
+ */
+function updateTableCutRow(event) {
+    var target_id = event.target.getAttribute('id');
+    var row_element = event.target.parentNode.parentNode;
+    var row = $('#TableContents tr').index(row_element);
+    var shared_data = event.data.extra_data;
+
+    if ((row < 0) || (row > (shared_data.length -1)))
+        return
+    shared_data['row_cut'] = shared_data['authors'][row];
+    shared_data['authors'].splice(row, 1);
+    updateTable(shared_data);
+    if (row == $('#TableContents tr').length) {
+        tag = target_id.slice(0, target_id.lastIndexOf('_')+1);
+        alert(tag+row);
+        $('#'+tag+row).focus();
+    } else
+        $('#'+target_id).focus();
+    event.preventDefault();
+}
+
+/** 
+ * Insert a row from the holding stack onto the displayed table.
+ * 
+ * @param {Event} event The javascript event object associated with this paste.
+ */
+function updateTablePasteRow(event) {
+    var target_id = event.target.getAttribute('id');
+    var row_element = event.target.parentNode.parentNode;
+    var row = $('#TableContents tr').index(row_element) +1;
+    var shared_data = event.data.extra_data;
+    var cut = shared_data['row_cut'];
+
+    if ((row < 1) || (row > shared_data.length))
+        return
+    if (cut == null)
+        return
+    shared_data['authors'].splice(row, 0, cut);
+    updateTable(shared_data);
+    $('#'+target_id).focus();
+    event.preventDefault();
+}
+
 /**
  * Adds change handlers to checkboxes so table row state gets toggled correctly
  *
@@ -284,24 +332,41 @@ function escapeHTML(value){
 /**
  * Bind keyboard events to particular keystrokes; called after table initialization3
  */
-function initKeystrokes() {
-    $(document).bind('keydown', {combi: 'tab'}, keystrokeTab);
-    $(document).bind('keydown', {combi: 'shift+tab'}, keystrokeTab);
-    $(document).bind('keydown', 
-                     {combi: 'ctrl+shift+s', disableInInput: true}, 
-                     function(event) {
-                        $('#submit_button').trigger('click'); 
-                        event.preventDefault(); 
-                     }); 
-    /*$(document).bind('keydown', 
-                     {combi: 'shift+s', disableInInput: true},
-                     function(event) {
-                        var btnSubmit = $('#submit_button');
-                        if (!btnSubmit.attr('disabled')) {
-                            btnSubmit.trigger('click');
-                            event.preventDefault();
-                        }   
-                     });  */
+function initKeystrokes(shared_data) {
+    var keybindings = {
+        'tab'     : ['Move forward through affiliations', 
+                     'tab', 
+                     keystrokeTab],
+        'stab'    : ['Move backward through affiliations', 
+                     'shift+tab', 
+                     keystrokeTab],
+        'submit'  : ['Submit the changes.  No input field should be selected.', 
+                     'alt+ctrl+shift+s', 
+                     function(event) { 
+                         $('#submit_button').click();  
+                         event.preventDefault(); }],
+        'cutRow'  : ['Cut this author row.',
+                     'alt+ctrl+shift+x',
+                     updateTableCutRow,
+                     {extra_data: shared_data}],
+        'pasteRow': ['Paste an author row after this row.',
+                     'alt+ctrl+shift+v',
+                     updateTablePasteRow,
+                     {extra_data: shared_data}],
+    };
+
+    jQuery.each(keybindings, function(junk, val) {
+        data_dictionary = {combi: val[1]};
+        if (val.length == 4) {
+            for (key in val[3]) {
+                data_dictionary[key] = val[3][key];
+            }
+        } 
+        $(document).bind('keydown', data_dictionary, val[2]);
+    });
+
+    // Extra stuff worth doing 
+    $('#submit_button').attr('title', keybindings['submit'][1] + ' to Submit');
 
 }
 
@@ -310,26 +375,17 @@ function initKeystrokes() {
  */
 function keystrokeTab(event){
     if (event.target.nodeName == 'INPUT'){
-        var affilCells = $('.affil_box');
+        var entryCells = $('#TableContents input[type="text"]');
         var element = event.target;
-        var start_i = 0;
-        var start = $(affilCells).eq(0);
-        var end_i = $(affilCells).size() - 1;
-        var end = $(affilCells).eq($(affilCells).size() - 1);
+        var end_i = $(entryCells).size() - 1;
         var move = 1;
 
         if (event.shiftKey) 
             move = -1;
 
-        //if ((!event.shiftKey) && ($(affilCells).index(element) == end_i))                          /* tab forward off end */
-        //    $(affilCells).eq(start_i).focus();
-        //else if (event.shiftKey && ($(affilCells).index(element) == start_i))                      /* shift-tab backward off start */
-        //    end.focus();
-        //else                                                                                       /* otherwise move +/- 1 from here */
-
-            $(affilCells).eq($(affilCells).index(element)+move).focus();
-        if (((!event.shiftKey) && ($(affilCells).index(element) != end_i)) || 
-           ( event.shiftKey && ($(affilCells).index(element) != start_i)  ))
+        $(entryCells).eq($(entryCells).index(element)+move).focus();
+        if (((!event.shiftKey) && ($(entryCells).index(element) != end_i)) || 
+           ( event.shiftKey && ($(entryCells).index(element) != 0)  ))
             event.preventDefault();
     }
 }
