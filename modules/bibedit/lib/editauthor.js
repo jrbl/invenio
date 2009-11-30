@@ -25,12 +25,14 @@ $(document).ready(
   function() {
     // environment initialization/table building
     initTable(shared_data);
+    initKeystrokes();
 
     // startup behaviors
     $('#affils_0').focus()
 
     // for DEBUG only; makes working js parse obvious
-    $('table').css("bgcolor", "#91ff91");
+    $('table').attr("bgcolor", "#91ff91");
+
   }
 );
 
@@ -278,3 +280,57 @@ function escapeHTML(value){
   value = value.replace(/>/g, '&gt;');
   return value;
 }
+
+/**
+ * Bind keyboard events to particular keystrokes; called after table initialization3
+ */
+function initKeystrokes() {
+    $(document).bind('keydown', {combi: 'tab'}, keystrokeTab);
+    $(document).bind('keydown', {combi: 'shift+tab'}, keystrokeTab);
+    $(document).bind('keydown', 
+                     {combi: 'ctrl+shift+s', disableInInput: true}, 
+                     function(event) {
+                        $('#submit_button').trigger('click'); 
+                        event.preventDefault(); 
+                     }); 
+    /*$(document).bind('keydown', 
+                     {combi: 'shift+s', disableInInput: true},
+                     function(event) {
+                        var btnSubmit = $('#submit_button');
+                        if (!btnSubmit.attr('disabled')) {
+                            btnSubmit.trigger('click');
+                            event.preventDefault();
+                        }   
+                     });  */
+
+}
+
+/**
+ * Handle key tab (save content and jump to next content field).
+ */
+function keystrokeTab(event){
+    if (event.target.nodeName == 'INPUT'){
+        var affilCells = $('.affil_box');
+        var element = event.target;
+        var start_i = 0;
+        var start = $(affilCells).eq(0);
+        var end_i = $(affilCells).size() - 1;
+        var end = $(affilCells).eq($(affilCells).size() - 1);
+        var move = 1;
+
+        if (event.shiftKey) 
+            move = -1;
+
+        //if ((!event.shiftKey) && ($(affilCells).index(element) == end_i))                          /* tab forward off end */
+        //    $(affilCells).eq(start_i).focus();
+        //else if (event.shiftKey && ($(affilCells).index(element) == start_i))                      /* shift-tab backward off start */
+        //    end.focus();
+        //else                                                                                       /* otherwise move +/- 1 from here */
+
+            $(affilCells).eq($(affilCells).index(element)+move).focus();
+        if (((!event.shiftKey) && ($(affilCells).index(element) != end_i)) || 
+           ( event.shiftKey && ($(affilCells).index(element) != start_i)  ))
+            event.preventDefault();
+    }
+}
+

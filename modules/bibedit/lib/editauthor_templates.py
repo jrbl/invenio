@@ -7,7 +7,8 @@ class Template:
 
     def __init__(self):
         """Establish some variables we can use throughout"""
-        self.javascript = ['jquery.min.js', 'editauthor.js']
+        self.javascript = ['jquery.min.js', 'jquery.hotkeys.min.js', 
+                           'editauthor.js']
 
     def setup_scripts(self):
         """Output a bunch of <script> bits."""
