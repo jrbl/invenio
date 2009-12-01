@@ -186,6 +186,23 @@ function generateTableRow(row, auth_affils, institutions) {
 }
 
 /** 
+ * Put a row's data onto a holding stack.
+ * 
+ * @param {Event} event The javascript event object associated with this copy.
+ */
+function updateTableCopyRow(event) {
+    var target_id = event.target.getAttribute('id');
+    var row_element = event.target.parentNode.parentNode;
+    var row = $('#TableContents tr').index(row_element);
+    var shared_data = event.data.extra_data;
+
+    if ((row < 0) || (row > (shared_data.length -1)))
+        return
+    shared_data['row_cut'] = shared_data['authors'][row];
+    event.preventDefault();
+}
+
+/** 
  * Remove a row from the displayed table and put its data onto a holding stack.
  * 
  * @param {Event} event The javascript event object associated with this cut.
@@ -199,6 +216,8 @@ function updateTableCutRow(event) {
     if ((row < 0) || (row > (shared_data.length -1)))
         return
     shared_data['row_cut'] = shared_data['authors'][row];
+
+    updateTableCopyRow(event);
     shared_data['authors'].splice(row, 1);
     updateTable(shared_data);
     if (row == $('#TableContents tr').length) {
@@ -349,6 +368,10 @@ function initKeystrokes(shared_data) {
                      'alt+ctrl+shift+x',
                      updateTableCutRow,
                      {extra_data: shared_data}],
+        'copyRow' : ['Copy this author row.',
+                     'alt+ctrl+shift+c',
+                     updateTableCopyRow,
+                     {extra_data: shared_data}],
         'pasteRow': ['Paste an author row after this row.',
                      'alt+ctrl+shift+v',
                      updateTablePasteRow,
@@ -383,6 +406,7 @@ function keystrokeTab(event){
         if (event.shiftKey) 
             move = -1;
 
+        //$(entryCells).eq($(entryCells).index(element)).blur();
         $(entryCells).eq($(entryCells).index(element)+move).focus();
         if (((!event.shiftKey) && ($(entryCells).index(element) != end_i)) || 
            ( event.shiftKey && ($(entryCells).index(element) != 0)  ))
