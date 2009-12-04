@@ -257,29 +257,29 @@ function updateTablePasteRow(event) {
  * @param {Object} shared_data The global state object which the handlers mutate
  */
 function addCheckBoxHandlers(shared_data) {
-  $('input[type="checkbox"]').click( function() { addCheckBoxHandlers_changeHandler(shared_data, this) } );
+  $('input[type="checkbox"]').click( function() { addCheckBoxHandlers_changeHandler(shared_data, this.value, this.checked) } );
 }
 
 /**
  * Search the affiliations for an author looking for this checkbox.
  */
-function addCheckBoxHandlers_changeHandler(shared_data, me) {
-  var myrow = me.value.substring(me.value.lastIndexOf('_')+1);
+function addCheckBoxHandlers_changeHandler(shared_data, myvalue, mystatus) {
+  var myrow = myvalue.substring(myvalue.lastIndexOf('_')+1);
   var myaffils = shared_data['authors'][myrow].slice(1);
-  var myname = me.value.slice(0, me.value.indexOf('_'));
+  var myname = myvalue.slice(0, myvalue.indexOf('_'));
   var cb_loc = $.inArray(myname, myaffils);
 
-  if ((me.checked == true) && (cb_loc == -1)) {
+  if ((mystatus == true) && (cb_loc == -1)) {
       // we want it, but it's not here
       shared_data['authors'][myrow].push(myname);
       addCheckBoxHandlers_inputSync(shared_data, myrow, myname);
-  } else if ((me.checked == true) && (cb_loc != -1)) {
+  } else if ((mystatus == true) && (cb_loc != -1)) {
       // we want it, but it's already here
       return;
-  } else if ((me.checked == false) && (cb_loc == -1)) {
+  } else if ((mystatus == false) && (cb_loc == -1)) {
       // we don't want it, and it's not here
       return;
-  } else if ((me.checked == false) && (cb_loc != -1)) {
+  } else if ((mystatus == false) && (cb_loc != -1)) {
       // we don't want it, and it's here
       cb_loc += 1; // XXX: index taken from slice, but used in a splice
       shared_data['authors'][myrow].splice(cb_loc, 1);
@@ -300,40 +300,43 @@ function addCheckBoxHandlers_inputSync(shared_data, myrow, myname) {
  * @param {Object} shared_data The global state object which the handlers mutate
  */
 function addTextBoxHandlers(shared_data) {
-  $('.author_box').blur( function() { addAuthBoxHandlers_blurHandler(shared_data, this) } );
-  $('.affil_box').blur( function() { addAffilBoxHandlers_blurHandler(shared_data, this) } );
+  var size = shared_data.authors.length;
+  function inner(ii) {
+      $('#author_'+ii).change( function() { addAuthBoxHandlers_changeHandler(shared_data, ii, this.value) } );
+      $('#affils_'+ii).change( function() { addAffilBoxHandlers_changeHandler(shared_data, ii, this.value) } );
+  };
+  for (var i = 0; i < size; i++) {
+      inner(i);
+  };
 }
 
 /**
  * Scrub user input in the author box, then sync it to shared_data and redraw.
  */
-function addAuthBoxHandlers_blurHandler(shared_data, me) {
-  var myrow = me.id.substring(me.id.lastIndexOf('_')+1);
-  var myname = escapeHTML(me.value);
-  shared_data['authors'][myrow][0] = myname;
+function addAuthBoxHandlers_changeHandler(shared_data, row, value) {
+  shared_data['authors'][row][0] = escapeHTML(value);
   updateTable(shared_data);
 }
 
 /**
  * Sync the affiliations box to shared_data, then sync shared_data to the checkboxes
  */
-function addAffilBoxHandlers_blurHandler(shared_data, me) {
-  var myrow = me.id.substring(me.id.lastIndexOf('_')+1);
-  var myname = shared_data['authors'][myrow][0];
-  var newRow = $.map(me.value.split(';'), function(s, i) {
-      s = $.trim(s);
+function addAffilBoxHandlers_Handler(shared_data, row, value) {
+  var myname = shared_data['authors'][row][0];
+  var newRow = jQuery.map(value.split(';'), function(s, v) {
+      s = jQuery.trim(s);
       if (s == '') return null;   /* drop empty strings */
       else return escapeHTML(s);  /* otherwise, sanitize & return */
   });
-  for (var item in newRow) {
-      var datum = newRow[item];
-      if ($.inArray(datum, shared_data['affiliations']) == -1) {
+  for (var i in newRow) {
+      var datum = newRow[i];
+      if (jQuery.inArray(datum, shared_data['affiliations']) == -1) {
         shared_data['affiliations'].push(datum);
       }
   }
-  me.value = newRow.join(';');
+  value = newRow.join(';');
   newRow.unshift(myname);
-  shared_data['authors'][myrow] = newRow;
+  shared_data['authors'][row] = newRow;
   updateTable(shared_data);
 }
 
@@ -353,12 +356,16 @@ function escapeHTML(value){
  */
 function initKeystrokes(shared_data) {
     var keybindings = {
-        'tab'     : ['Move forward through affiliations', 
+/*        'tab'     : ['Move forward through affiliations', 
                      'tab', 
-                     keystrokeTab],
+                     keystrokeTab,
+                     {extra_data: shared_data},
+                     '#TableContents input[type="text"]'],
         'stab'    : ['Move backward through affiliations', 
                      'shift+tab', 
-                     keystrokeTab],
+                     keystrokeTab,
+                     {extra_data: shared_data},
+                     '#TableContents input[type="text"]'], */
         'submit'  : ['Submit the changes.  No input field should be selected.', 
                      'alt+ctrl+shift+s', 
                      function(event) { 
@@ -380,12 +387,16 @@ function initKeystrokes(shared_data) {
 
     jQuery.each(keybindings, function(junk, val) {
         data_dictionary = {combi: val[1]};
-        if (val.length == 4) {
+        target = document;
+        if (val.length >= 4) {
             for (key in val[3]) {
                 data_dictionary[key] = val[3][key];
             }
         } 
-        $(document).bind('keydown', data_dictionary, val[2]);
+        if (val.length >= 5) {
+            target = val[4];
+        }
+        $(document).bind('keypress', data_dictionary, val[2]);
     });
 
     // Extra stuff worth doing 
@@ -400,17 +411,33 @@ function keystrokeTab(event){
     if (event.target.nodeName == 'INPUT'){
         var entryCells = $('#TableContents input[type="text"]');
         var element = event.target;
+        var element_i = $(entryCells).index(element);
         var end_i = $(entryCells).size() - 1;
+        var shared_data = event.data.extra_data;
         var move = 1;
 
-        if (event.shiftKey) 
-            move = -1;
+        if (event.shiftKey) {
+            if (element_i == 0)
+                move = end_i;
+            else
+                move = -1;
+        } else {
+            if (element_i == end_i)
+                move = -end_i;
+            else
+                move = 1;
+        }
 
-        //$(entryCells).eq($(entryCells).index(element)).blur();
-        $(entryCells).eq($(entryCells).index(element)+move).focus();
-        if (((!event.shiftKey) && ($(entryCells).index(element) != end_i)) || 
-           ( event.shiftKey && ($(entryCells).index(element) != 0)  ))
-            event.preventDefault();
+        //$(entryCells).eq(element_i)[0].blur();
+        //$(entryCells).eq(element_i)[0].triggerHandler("blur");
+        //addAffilBoxHandlers_blurHandler(shared_data, $(entryCells).eq(element_i)[0]);
+        $(entryCells).eq(element_i+move).focus();
+
+        //$(entryCells).eq(element_i+move).triggerHandler("focus");
+        //for (key in $(entryCells).eq(element_i)[0])
+            //document.write(key + '<br />\n');
+            //document.write($(entryCells).eq(element_i).val)
+        event.preventDefault();
     }
 }
 
