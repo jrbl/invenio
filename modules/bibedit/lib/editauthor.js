@@ -185,72 +185,6 @@ function generateTableRow(row, auth_affils, institutions) {
     return str;
 }
 
-/** 
- * Put a row's data onto a holding stack.
- * 
- * @param {Event} event The javascript event object associated with this copy.
- */
-function updateTableCopyRow(event) {
-    var target_id = event.target.getAttribute('id');
-    var row_element = event.target.parentNode.parentNode;
-    var row = $('#TableContents tr').index(row_element);
-    var shared_data = event.data.extra_data;
-
-    if ((row < 0) || (row > (shared_data.length -1)))
-        return
-    shared_data['row_cut'] = shared_data['authors'][row];
-    event.preventDefault();
-}
-
-/** 
- * Remove a row from the displayed table and put its data onto a holding stack.
- * 
- * @param {Event} event The javascript event object associated with this cut.
- */
-function updateTableCutRow(event) {
-    var target_id = event.target.getAttribute('id');
-    var row_element = event.target.parentNode.parentNode;
-    var row = $('#TableContents tr').index(row_element);
-    var shared_data = event.data.extra_data;
-
-    if ((row < 0) || (row > (shared_data.length -1)))
-        return
-    shared_data['row_cut'] = shared_data['authors'][row];
-
-    updateTableCopyRow(event);
-    shared_data['authors'].splice(row, 1);
-    updateTable(shared_data);
-    if (row == $('#TableContents tr').length) {
-        tag = target_id.slice(0, target_id.lastIndexOf('_')+1);
-        alert(tag+row);
-        $('#'+tag+row).focus();
-    } else
-        $('#'+target_id).focus();
-    event.preventDefault();
-}
-
-/** 
- * Insert a row from the holding stack onto the displayed table.
- * 
- * @param {Event} event The javascript event object associated with this paste.
- */
-function updateTablePasteRow(event) {
-    var target_id = event.target.getAttribute('id');
-    var row_element = event.target.parentNode.parentNode;
-    var row = $('#TableContents tr').index(row_element) +1;
-    var shared_data = event.data.extra_data;
-    var cut = shared_data['row_cut'];
-
-    if ((row < 1) || (row > shared_data.length))
-        return
-    if (cut == null)
-        return
-    shared_data['authors'].splice(row, 0, cut);
-    updateTable(shared_data);
-    $('#'+target_id).focus();
-    event.preventDefault();
-}
-
 /**
  * Adds change handlers to checkboxes so table row state gets toggled correctly
  *
@@ -356,16 +290,20 @@ function escapeHTML(value){
  */
 function initKeystrokes(shared_data) {
     var keybindings = {
-/*        'tab'     : ['Move forward through affiliations', 
+        /*'tab'     : ['Move forward through affiliations', 
                      'tab', 
                      keystrokeTab,
-                     {extra_data: shared_data},
-                     '#TableContents input[type="text"]'],
+                     {extra_data: shared_data}],
+//                     '#TableContents input[type="text"]'],
         'stab'    : ['Move backward through affiliations', 
                      'shift+tab', 
                      keystrokeTab,
                      {extra_data: shared_data},
-                     '#TableContents input[type="text"]'], */
+                     '#TableContents input[type="text"]'],  */
+        //'enter'   : ['Accept this field and move to the next.',
+        //             'alt+ctrl+shift+e',
+        //             keystrokeEnter,
+        //             {extra_data: shared_data}],
         'submit'  : ['Submit the changes.  No input field should be selected.', 
                      'alt+ctrl+shift+s', 
                      function(event) { 
@@ -397,6 +335,7 @@ function initKeystrokes(shared_data) {
             target = val[4];
         }
         $(document).bind('keypress', data_dictionary, val[2]);
+        //$(target).bind('keypress', data_dictionary, val[2]);
     });
 
     // Extra stuff worth doing 
@@ -404,40 +343,123 @@ function initKeystrokes(shared_data) {
 
 }
 
+function keystrokeEnter(event) {
+    var target_id = event.target.getAttribute('id');
+    var row_element = event.target.parentNode.parentNode;
+    var row = $('#TableContents tr').index(row_element);
+    var shared_data = event.data.extra_data;
+
+    if ((row < 0) || (row > (shared_data.length -1)))
+        return
+
+    //var target_row = target_id.slice(target_id.lastIndexOf('_')+1);
+    //var next_row = target_row + 1;
+    var next_id = target_id.slice(0, target_id.lastIndexOf('_')+1) + (row+1);
+
+    $(target_id).change();
+    $(next_id).focus(); 
+    event.preventDefault();
+}
+
+/** 
+* Remove a row from the displayed table and put its data onto a holding stack.
+ * 
+ * @param {Event} event The javascript event object associated with this cut.
+ */
+function updateTableCutRow(event) {
+    var target_id = event.target.getAttribute('id');
+    var row_element = event.target.parentNode.parentNode;
+    var row = $('#TableContents tr').index(row_element);
+    var shared_data = event.data.extra_data;
+
+    if ((row < 0) || (row > (shared_data.length -1)))
+        return
+    shared_data['row_cut'] = shared_data['authors'][row];
+
+    updateTableCopyRow(event);
+    shared_data['authors'].splice(row, 1);
+    updateTable(shared_data);
+    if (row == $('#TableContents tr').length) {
+        tag = target_id.slice(0, target_id.lastIndexOf('_')+1);
+        alert(tag+row);
+        $('#'+tag+row).focus();
+    } else
+        $('#'+target_id).focus();
+    event.preventDefault();
+}
+
+/** 
+ * Insert a row from the holding stack onto the displayed table.
+ * 
+ * @param {Event} event The javascript event object associated with this paste.
+ */
+function updateTablePasteRow(event) {
+    var target_id = event.target.getAttribute('id');
+    var row_element = event.target.parentNode.parentNode;
+    var row = $('#TableContents tr').index(row_element) +1;
+    var shared_data = event.data.extra_data;
+    var cut = shared_data['row_cut'];
+
+    if ((row < 1) || (row > shared_data.length))
+        return
+    if (cut == null)
+        return
+    shared_data['authors'].splice(row, 0, cut);
+    updateTable(shared_data);
+    $('#'+target_id).focus();
+    event.preventDefault();
+}
+
+/** 
+ * Put a row's data onto a holding stack.
+ * 
+ * @param {Event} event The javascript event object associated with this copy.
+ */
+function updateTableCopyRow(event) {
+    var target_id = event.target.getAttribute('id');
+    var row_element = event.target.parentNode.parentNode;
+    var row = $('#TableContents tr').index(row_element);
+    var shared_data = event.data.extra_data;
+
+    if ((row < 0) || (row > (shared_data.length -1)))
+        return
+    shared_data['row_cut'] = shared_data['authors'][row];
+    event.preventDefault();
+}
+
+/********** busted **************/
 /**
  * Handle key tab (save content and jump to next content field).
  */
 function keystrokeTab(event){
-    if (event.target.nodeName == 'INPUT'){
-        var entryCells = $('#TableContents input[type="text"]');
-        var element = event.target;
-        var element_i = $(entryCells).index(element);
-        var end_i = $(entryCells).size() - 1;
-        var shared_data = event.data.extra_data;
-        var move = 1;
+    var entryCells = $('#TableContents input[type="text"]');
+    var element = event.target;
+    var element_i = $(entryCells).index(element);
+    var end_i = $(entryCells).size() - 1;
+    var shared_data = event.data.extra_data;
+    var move = 1;
 
-        if (event.shiftKey) {
-            if (element_i == 0)
-                move = end_i;
-            else
-                move = -1;
-        } else {
-            if (element_i == end_i)
-                move = -end_i;
-            else
-                move = 1;
-        }
-
-        //$(entryCells).eq(element_i)[0].blur();
-        //$(entryCells).eq(element_i)[0].triggerHandler("blur");
-        //addAffilBoxHandlers_blurHandler(shared_data, $(entryCells).eq(element_i)[0]);
-        $(entryCells).eq(element_i+move).focus();
-
-        //$(entryCells).eq(element_i+move).triggerHandler("focus");
-        //for (key in $(entryCells).eq(element_i)[0])
-            //document.write(key + '<br />\n');
-            //document.write($(entryCells).eq(element_i).val)
-        event.preventDefault();
+    if (event.shiftKey) {
+        if (element_i == 0)
+            move = end_i;
+        else
+            move = -1;
+    } else {
+        if (element_i == end_i)
+            move = -end_i;
+        else
+            move = 1;
     }
-}
 
+    //$(entryCells).eq(element_i)[0].blur();
+    //$(entryCells).eq(element_i)[0].triggerHandler("blur");
+    //addAffilBoxHandlers_blurHandler(shared_data, $(entryCells).eq(element_i)[0]);
+    $(entryCells).eq(element_i+move).focus();
+    ///$('#'+tag+'_'+move).focus();
+
+    //$(entryCells).eq(element_i+move).triggerHandler("focus");
+    //for (key in $(entryCells).eq(element_i)[0])
+        //document.write(key + '<br />\n');
+        //document.write($(entryCells).eq(element_i).val)
+    event.preventDefault();
+}
