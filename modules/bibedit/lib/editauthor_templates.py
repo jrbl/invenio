@@ -26,12 +26,13 @@ class Template:
                         " the records to work with.", id='FIXME_index')
         return ostr
 
-    def record(self, record_id, author_list, affiliations):
+    def record(self, record_id, author_list, affiliations, valid_affils = []):
         """Template for individual record display/edit"""
         ostr = self.setup_scripts()
-        ostr += '<script type="text/javascript">\nshared_data["authors"] =' 
-        ostr += simplejson.dumps(author_list) + ';\n'
-        ostr += 'shared_data["affiliations"] = ' + simplejson.dumps(affiliations) 
+        ostr += '<script type="text/javascript">\n'
+        ostr += 'shared_data["authors"] =' + simplejson.dumps(author_list)
+        ostr += ';\nshared_data["affiliations"] = ' + simplejson.dumps(affiliations) 
+        ostr += ';\nshared_data["valid_affils"] = ' + simplejson.dumps(valid_affils)
         ostr += ';\n</script>\n<form method="post" action="'
         ostr += invenio.config.CFG_SITE_URL+'/editauthors/process">\n'
         ostr += '<table bgcolor="#ff2200">\n  <thead id="TableHeaders">\n'

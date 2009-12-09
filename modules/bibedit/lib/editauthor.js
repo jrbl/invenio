@@ -2,17 +2,12 @@
  * See: http://jsdoc.sourceforge.net/
  **********************/
 
-//TODO ITEMS: 
-// * MORE/BETTER/MORE CONSISTENT JSDOC.
-// * Continue integration with Invenio (output to MARCXML and BibUpload)
-// * REFACTOR TO USE jQUERY UTILITIES, map, apply AND SELECTORS BETTER.  (TOO MANY FOR LOOPS)
-// * Integration with BibKnowledge
-
 /** 
  * NB: Initialization values for debug purposes only.
  */
 shared_data = {
-  'affiliations': [],             // list of possible institutional affiliations
+  'affiliations': [],             // list of institutions present in this data
+  'valid_affils': [],             // list of possible institutional affiliations
   'authors':      [ [], ],        // set of all [author, affiliation1, affiliation2 ...]
   'folded':       [],             // which columns are currently hidden
   'row_cut':      [],             // the row recently removed from the data set with 'cut'
