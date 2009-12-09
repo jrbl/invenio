@@ -1,3 +1,5 @@
+import simplejson                 # FIXME: Remember to be defensive
+
 import invenio.webpage
 import invenio.template
 from invenio.webinterface_handler import WebInterfaceDirectory, wash_urlargd
@@ -7,12 +9,13 @@ import invenio.bibedit_utils as utils
 import invenio.webuser as webuser
 import invenio.access_control_engine as webuser_access
 import invenio.bibtask as bibtask
+import invenio.bibknowledge as bibknowledge
 
 class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
     """Handle URLs is the /editauthors tree"""
 
     # List of valid URLs on this path
-    _exports = ['', '/', 'rec', 'process']
+    _exports = ['', '/', 'rec', 'checkAffil', 'process']
 
     def __init__(self):
         self.title = "BibEdit: Author Special Mode"
@@ -56,11 +59,25 @@ class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
             place_list.extend(group[1:])
         place_list = engine.flattenByCounts(place_list)
 
-        text = self.template.record(record_id, author_list, place_list)
+        # FIXME: hardcoded (& incorrect) KB name
+        validated_affiliations = [x[0] for x in bibknowledge.get_kbr_keys("JoeTest") if x[0] != '']
+
+        text = self.template.record(record_id, author_list, place_list, validated_affiliations)
 
         return invenio.webpage.page(title = self.title,
                                     body  = text,
                                     req   = request,)
+
+    def checkAffil(self, request, form):
+        if not form.has_key('affil'):
+            return self.index(request, {} )
+
+        form_data = wash_urlargd(form, {'affil': (str, '')} )
+
+        possible_matches = []
+        possible_matches = [x[0] for x in invenio.bibknowledge.get_kbr_values('JoeTest', form_data['affil'], 's') if x[0] != '']
+        return simplejson.dumps(possible_matches)
+        #return invenio.webpage.page(title = '', body = form_data, req = request)
 
     def process(self, request, form):
 
