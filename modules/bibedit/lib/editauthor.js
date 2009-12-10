@@ -427,7 +427,7 @@ function updateTableCopyRow(event) {
 }
 
 function validateAffiliation(event) {
-    var shared_data = target.data.extra_data;
+    //var shared_data = event.data.extra_data;
     /* Get the affiliations in the box */
     var target_id = event.target.getAttribute('id');
     var row = target_id.slice(target_id.indexOf('_')+1);
@@ -441,18 +441,14 @@ function validateAffiliation(event) {
        post results can return at any time, I have to define the processing I 
        want to do first, then call that from within the callback for the post */
     function processPost(data, idx) {
-        alert(data.length);
+        idx += 1;
         if (data.length == 1) {
-            alert("entered"); // FIXME XXX BROKEN
-            alert("in " + shared_data[row] + " changing " + shared_data[row][idx] + " to " + data[0]);
-            shared_data[row][idx] = data[0];
-            alert("now " + shared_data[row]);
-            $('#'+target_id).change();
+            shared_data['authors'][row][idx] = data[0];
+            //$('#'+target_id).change();
+            updateTable(shared_data);
         } else if (data.length > 1) {
-            alert("not entered");
             $('#'+target_id).addClass('doubtful');
         }
-        alert("outside");
         // intentionally do nothing on empty list
     }
 
@@ -462,7 +458,7 @@ function validateAffiliation(event) {
           jQuery.post('checkAffil', 
                       {'affil': target_af[i], 'idx': i}, 
                       function (data, textStatus) {
-                          var idx = this.data.slice(this.data.indexOf('idx=')+4);
+                          var idx = parseInt(this.data.slice(this.data.indexOf('idx=')+4));
                           alert('calling with ' + idx);
                           processPost(data, idx);
                       },
