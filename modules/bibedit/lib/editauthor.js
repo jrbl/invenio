@@ -250,7 +250,7 @@ function addAuthBoxHandlers_changeHandler(shared_data, row, value) {
 /**
  * Sync the affiliations box to shared_data, then sync shared_data to the checkboxes
  */
-function addAffilBoxHandlers_Handler(shared_data, row, value) {
+function addAffilBoxHandlers_changeHandler(shared_data, row, value) {
   var myname = shared_data['authors'][row][0];
   var newRow = jQuery.map(value.split(';'), function(s, v) {
       s = jQuery.trim(s);
@@ -315,6 +315,10 @@ function initKeystrokes(shared_data) {
         'pasteRow': ['Paste an author row after this row.',
                      'alt+ctrl+shift+v',
                      updateTablePasteRow,
+                     {extra_data: shared_data}],
+        'suggest' : ['Auto-suggest affiliations based on this value.',
+                     'alt+ctrl+shift+a',
+                     validateAffiliation,
                      {extra_data: shared_data}],
     };
 
@@ -422,7 +426,60 @@ function updateTableCopyRow(event) {
     event.preventDefault();
 }
 
-/********** busted **************/
+function validateAffiliation(event) {
+    var shared_data = target.data.extra_data;
+    /* Get the affiliations in the box */
+    var target_id = event.target.getAttribute('id');
+    var row = target_id.slice(target_id.indexOf('_')+1);
+    $('#'+target_id).change();
+      // sometimes the value may not update properly.  XXX Until that is fixed, this will do
+    var target_af = shared_data['authors'][row].slice(1);
+    /* For each: */
+
+    /* NB: The logic is turned on its head.  I want to say, "post this value,
+       get the result, then do some processing on the result."  But because the
+       post results can return at any time, I have to define the processing I 
+       want to do first, then call that from within the callback for the post */
+    function processPost(data, idx) {
+        alert(data.length);
+        if (data.length == 1) {
+            alert("entered"); // FIXME XXX BROKEN
+            alert("in " + shared_data[row] + " changing " + shared_data[row][idx] + " to " + data[0]);
+            shared_data[row][idx] = data[0];
+            alert("now " + shared_data[row]);
+            $('#'+target_id).change();
+        } else if (data.length > 1) {
+            alert("not entered");
+            $('#'+target_id).addClass('doubtful');
+        }
+        alert("outside");
+        // intentionally do nothing on empty list
+    }
+
+    for (var i = 0; i < target_af.length; i++) {
+        if (jQuery.inArray(target_af[i], shared_data['valid_affils'])) {
+
+          jQuery.post('checkAffil', 
+                      {'affil': target_af[i], 'idx': i}, 
+                      function (data, textStatus) {
+                          var idx = this.data.slice(this.data.indexOf('idx=')+4);
+                          alert('calling with ' + idx);
+                          processPost(data, idx);
+                      },
+                      // XXX: 'json' is bad practice, but we trust the server and it's convenient
+                      'json');              
+
+        } else {
+            /* if affiliation not in shared_data['valid_affils'] decorate questionable */
+            alert(target_aff[i]);
+            $('#'+target_id).addClass('doubtful');
+        }
+    }
+}
+
+/*****************************************************************************************************
+ ********** busted **************
+ *****************************************************************************************************/
 /**
  * Handle key tab (save content and jump to next content field).
  */

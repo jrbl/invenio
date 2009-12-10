@@ -75,7 +75,7 @@ class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
         form_data = wash_urlargd(form, {'affil': (str, '')} )
 
         possible_matches = []
-        possible_matches = [x[0] for x in invenio.bibknowledge.get_kbr_values('JoeTest', form_data['affil'], 's') if x[0] != '']
+        possible_matches = [x[0] for x in invenio.bibknowledge.get_kbr_values('JoeTest', form_data['affil'], 'e') if x[0] != '']
         return simplejson.dumps(possible_matches)
         #return invenio.webpage.page(title = '', body = form_data, req = request)
 
