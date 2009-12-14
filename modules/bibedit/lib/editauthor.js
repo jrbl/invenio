@@ -101,7 +101,7 @@ function generateTableHeader(inst_list) {
     for (var i = 0; i < inst_list.length; i++) {
         var label = inst_list[i];
         var sliced = '';
-        if (label.length > 10) {
+        if (label.length > 10) {                 // XXX: 10 is magic number here and elsewhere in this loop
             sliced = label.slice(0,7)+'...';
         } else {
             sliced = label;
@@ -109,6 +109,8 @@ function generateTableHeader(inst_list) {
                 sliced += '&nbsp;';
             }
         }
+        label = (i+1).toString() + '. ' + label;
+        sliced = '<span class="column_no" style="font-size: .4em;">'+(i+1).toString() + '</span><br />' + sliced; // XXX: inline styling
         computed_text += '<th class="col'+i+'"><a title="'+label+' - Click to hide." href="#" class="hide_link" name="'+i+'">'+sliced+'</a></th>';
     }
     computed_text += '</tr>\n';
