@@ -261,8 +261,17 @@ function addAffilBoxHandlers_changeHandler(shared_data, row, value) {
   });
   for (var i in newRow) {
       var datum = newRow[i];
-      if (jQuery.inArray(datum, shared_data['affiliations']) == -1) {
-        shared_data['affiliations'].push(datum);
+      var iDatum = parseInt(datum);
+      /* column number given */
+      if ((iDatum == datum-0) &&       // small int w/ no junk chars
+          (iDatum > 0) &&              // more than 1
+          (iDatum <= shared_data['affiliations'].length)) {     // less max + 1
+          newRow[i] = shared_data['affiliations'][datum-1];
+      } else {
+          /* unseen values get added as new columns */
+          if (jQuery.inArray(datum, shared_data['affiliations']) == -1) {
+            shared_data['affiliations'].push(datum);
+          }
       }
   }
   value = newRow.join(';');
