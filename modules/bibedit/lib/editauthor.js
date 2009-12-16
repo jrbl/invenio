@@ -353,24 +353,6 @@ function initKeystrokes(shared_data) {
 
 }
 
-function keystrokeEnter(event) {
-    var target_id = event.target.getAttribute('id');
-    var row_element = event.target.parentNode.parentNode;
-    var row = $('#TableContents tr').index(row_element);
-    var shared_data = event.data.extra_data;
-
-    if ((row < 0) || (row > (shared_data.length -1)))
-        return
-
-    //var target_row = target_id.slice(target_id.lastIndexOf('_')+1);
-    //var next_row = target_row + 1;
-    var next_id = target_id.slice(0, target_id.lastIndexOf('_')+1) + (row+1);
-
-    $(target_id).change();
-    $(next_id).focus(); 
-    event.preventDefault();
-}
-
 /** 
 * Remove a row from the displayed table and put its data onto a holding stack.
  * 
@@ -391,7 +373,6 @@ function updateTableCutRow(event) {
     updateTable(shared_data);
     if (row == $('#TableContents tr').length) {
         tag = target_id.slice(0, target_id.lastIndexOf('_')+1);
-        alert(tag+row);
         $('#'+tag+row).focus();
     } else
         $('#'+target_id).focus();
@@ -470,7 +451,6 @@ function validateAffiliation(event) {
                       {'affil': target_af[i], 'idx': i}, 
                       function (data, textStatus) {
                           var idx = parseInt(this.data.slice(this.data.indexOf('idx=')+4));
-                          alert('calling with ' + idx);
                           processPost(data, idx);
                       },
                       // XXX: 'json' is bad practice, but we trust the server and it's convenient
@@ -478,7 +458,6 @@ function validateAffiliation(event) {
 
         } else {
             /* if affiliation not in shared_data['valid_affils'] decorate questionable */
-            alert(target_aff[i]);
             $('#'+target_id).addClass('doubtful');
         }
     }
@@ -522,3 +501,22 @@ function keystrokeTab(event){
         //document.write($(entryCells).eq(element_i).val)
     event.preventDefault();
 }
+
+function keystrokeEnter(event) {
+    var target_id = event.target.getAttribute('id');
+    var row_element = event.target.parentNode.parentNode;
+    var row = $('#TableContents tr').index(row_element);
+    var shared_data = event.data.extra_data;
+
+    if ((row < 0) || (row > (shared_data.length -1)))
+        return
+
+    //var target_row = target_id.slice(target_id.lastIndexOf('_')+1);
+    //var next_row = target_row + 1;
+    var next_id = target_id.slice(0, target_id.lastIndexOf('_')+1) + (row+1);
+
+    $(target_id).change();
+    $(next_id).focus(); 
+    event.preventDefault();
+}
+
