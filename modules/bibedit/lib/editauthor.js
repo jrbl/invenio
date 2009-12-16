@@ -426,7 +426,6 @@ function validateAffiliation(event) {
     $('#'+target_id).change();
       // sometimes the value may not update properly.  XXX Until that is fixed, this will do
     var target_af = shared_data['authors'][row].slice(1);
-    /* For each: */
 
     /* NB: The logic is turned on its head.  I want to say, "post this value,
        get the result, then do some processing on the result."  But because the
