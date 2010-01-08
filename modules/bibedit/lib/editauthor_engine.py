@@ -21,7 +21,7 @@ def auPairs(recid):
         return value
 
     try:
-        yield extract( record['100'][0][0] )
+        yield extract(record['100'][0][0])
         yieldedSomething = True
     except KeyError:
         pass
@@ -38,19 +38,20 @@ def auPairs(recid):
 
     for fieldline in fields:
         tuplist = fieldline[0]
-        yield extract( tuplist )
+        yield extract(tuplist)
+
 
 def name2affils(name, skip_id):
     """Given an author name pattern, find all possible prior affiliations"""
 
     prev_good = None
 
-    search_results = sorted( search_pattern( p=name, ap=1 ), reverse=True )
+    search_results = sorted(search_pattern(p=name, ap=1), reverse=True)
 
     for recid in search_results:
         if recid == skip_id:
             continue
-        for author_list  in auPairs(recid):
+        for author_list in auPairs(recid):
             if author_list[0] == None:
                 break
             if name.lower() in author_list[0].lower():
@@ -60,10 +61,12 @@ def name2affils(name, skip_id):
                 else:
                     yield recid, author_list[0], [prev_good]
 
+
 def recid2names(recid):
     """Given a record ID, generate a list of authors' names."""
     for author_list in auPairs(recid):
         yield author_list[0]
+
 
 def flattenByCounts(lst, histogram=False):
     """Build a list sorted by frequency.
@@ -78,7 +81,8 @@ def flattenByCounts(lst, histogram=False):
             return 1
         elif counts[b] < counts[a]:
             return -1
-        else: return 0
+        else:
+            return 0
 
     counts = {}
     for item in lst:
@@ -108,4 +112,3 @@ if __name__ == "__main__":
                 for affil in affils:
                     print '%35s' % '"' + affil + '"',
                 print
-
