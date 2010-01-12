@@ -188,6 +188,12 @@ except:
     register_exception(alert_admin=True, subject='EMERGENCY')
     WebInterfaceBibKnowedgePages = WebInterfaceDumbPages
 
+try:
+    from invenio.editauthor_webinterface import WebInterfaceEditAuthorPages
+except:
+    register_exception(alert_admin=True, subject='EMERGENCY')
+    WebInterfaceEditAuthorPages = WebInterfaceDumbPages
+
 class WebInterfaceInvenio(WebInterfaceSearchInterfacePages):
     """ The global URL layout is composed of the search API plus all
     the other modules."""
@@ -212,7 +218,8 @@ class WebInterfaceInvenio(WebInterfaceSearchInterfacePages):
         'help',
         'unapi',
         'exporter',
-        'kb'
+        'kb',
+        'editauthors',
         ]
 
     def __init__(self):
@@ -237,6 +244,7 @@ class WebInterfaceInvenio(WebInterfaceSearchInterfacePages):
     unapi = WebInterfaceUnAPIPages()
     exporter = WebInterfaceFieldExporterPages()
     kb = WebInterfaceBibKnowledgePages()
+    editauthors = WebInterfaceEditAuthorPages()
 
 # This creates the 'handler' function, which will be invoked directly
 # by mod_python.

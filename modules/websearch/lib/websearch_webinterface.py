@@ -785,6 +785,28 @@ class WebInterfaceSearchInterfacePages(WebInterfaceDirectory):
                     # display page not found for URLs like /record/foo
                     return None, []
 
+        elif component == 'record' or component == 'record-restricted':
+            try:
+                if CFG_WEBSEARCH_USE_ALEPH_SYSNOS:
+                    # let us try to recognize /record/<SYSNO> style of URLs:
+                    x = get_mysql_recid_from_aleph_sysno(path[0])
+                    if x:
+                        recid = x
+                    else:
+                        recid = int(path[0])
+                else:
+                    recid = int(path[0])
+            except IndexError:
+                # display record #1 for URL /record without a number
+                recid = 1
+            except ValueError:
+                if path[0] == '':
+                    # display record #1 for URL /record/ without a number
+                    recid = 1
+                else:
+                    # display page not found for URLs like /record/foo
+                    return None, []
+
             if recid <= 0:
                 # display page not found for URLs like /record/-5 or /record/0
                 return None, []
