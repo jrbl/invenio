@@ -63,7 +63,8 @@ class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
 
         # FIXME: hardcoded (& incorrect) KB name
         validated_affiliations = [x[0] for x in
-                                  bibknowledge.get_kbr_keys("JoeTest") if
+                                  #bibknowledge.get_kbr_keys("JoeTest") if
+                                  bibknowledge.get_kbr_keys("Institutions") if
                                   x[0] != '']
 
         text = self.template.record(record_id,
@@ -85,7 +86,8 @@ class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
         possible_matches = []
         possible_matches = [x[0] for x in
                             invenio.bibknowledge.get_kbr_values(
-                                    'JoeTest',
+                                    #'JoeTest',
+                                    'Institutions',
                                     form_data['affil'],
                                     'e') if x[0] != '']
         return simplejson.dumps(possible_matches)
