@@ -264,8 +264,8 @@ function addAffilBoxHandlers_changeHandler(shared_data, row, value) {
       var iDatum = parseInt(datum);
       /* column number given */
       if ((iDatum == datum-0) &&       // small int w/ no junk chars
-          (iDatum > 0) &&              // more than 1
-          (iDatum <= shared_data['affiliations'].length)) {     // less max + 1
+          (iDatum > 0) &&              // value 1 or more
+          (iDatum <= shared_data['affiliations'].length)) { // but <= max + 1
           newRow[i] = shared_data['affiliations'][datum-1];
       } else {
           /* unseen values get added as new columns */
@@ -436,6 +436,9 @@ function validateAffiliation(event) {
         if (data.length == 1) {
             shared_data['authors'][row][idx] = data[0];
             //$('#'+target_id).change();
+            if (jQuery.inArray(data[0], shared_data['affiliations']) == -1) {
+                shared_data['affiliations'].push(data[0]);
+            }
             updateTable(shared_data);
         } else if (data.length > 1) {
             $('#'+target_id).addClass('doubtful');
