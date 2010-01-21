@@ -1345,9 +1345,10 @@ INSERT INTO sbmPARAMETERS VALUES ('DEMOPIC','canAddFormatDoctypes','DEMOPIC_FILE
 INSERT INTO sbmPARAMETERS VALUES ('DEMOPIC','showLinks','1');
 INSERT INTO sbmPARAMETERS VALUES ('DEMOPIC','keepDefault','1');
 INSERT INTO sbmPARAMETERS VALUES ('DEMOPIC','restrictions','=Public|restricted_picture=Private');
-INSERT INTO sbmPARAMETERS VALUES ('DEMOPIC','canRestrictDoctypes','DEMOPIC_FILE');
+INSERT INTO sbmPARAMETERS VALUES ('DEMOPIC','canRestrictDoctypes','*');
 INSERT INTO sbmPARAMETERS VALUES ('DEMOPIC','canDeleteDoctypes','*');
-INSERT INTO sbmPARAMETERS VALUES ('DEMOPIC','createIconDoctypes','DEMOPIC_FILE');
+INSERT INTO sbmPARAMETERS VALUES ('DEMOPIC','createIconDoctypes','*');
+INSERT INTO sbmPARAMETERS VALUES ('DEMOPIC','forceFileRevision','');
 INSERT INTO sbmPARAMETERS VALUES ('DEMOTHE','counterpath','lastid_DEMOTHE_<PA>yy</PA>');
 INSERT INTO sbmPARAMETERS VALUES ('DEMOTHE','autorngen','Y');
 INSERT INTO sbmPARAMETERS VALUES ('DEMOTHE','edsrn','DEMOTHE_RN');
@@ -2287,6 +2288,7 @@ UPDATE idxINDEX SET stemming_language='en' WHERE name IN ('global','abstract','k
 -- exporting demo:
 INSERT INTO expJOB (jobname) VALUES ('sitemap');
 INSERT INTO expJOB (jobname) VALUES ('googlescholar');
+INSERT INTO expJOB (jobname) VALUES ('marcxml');
 
 -- WebJournal demo:
 INSERT INTO jrnJOURNAL (id,name) VALUES(1,'AtlantisTimes');

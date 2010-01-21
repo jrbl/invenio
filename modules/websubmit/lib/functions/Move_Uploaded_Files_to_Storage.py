@@ -36,6 +36,8 @@ FIXME:
 
  - update with new bibdocfile CLI when it is ready
 
+ - when revising a bibdoc without uploading a new file (eg. revision
+   of comment, description), keep_previous_versions is ignored.
 """
 
 __revision__ = "$Id$"
@@ -52,6 +54,7 @@ from invenio.websubmit_icon_creator import \
      create_icon, InvenioWebSubmitIconCreatorError
 from invenio.config import CFG_BINDIR
 from invenio.dbquery import run_sql
+from invenio.shellutils import run_shell_command
 
 def Move_Uploaded_Files_to_Storage(parameters, curdir, form, user_info=None):
     """
@@ -70,12 +73,19 @@ def Move_Uploaded_Files_to_Storage(parameters, curdir, form, user_info=None):
                                 Figure|Graph
                               ('|' separated values)
                               Use '*' for all doctypes
+
+      + forceFileRevision: when revising attributes of a file
+                           (comment, description) without
+                           uploading a new file, force a revision of
+                           the current version (so that old comment,
+                           description, etc. is kept) (1) or not (0).
     """
     global sysno
     recid = int(sysno)
 
     iconsize = parameters.get('iconsize')
     create_icon_doctypes = parameters.get('createIconDoctypes')
+    forceFileRevision = parameters.get('forceFileRevision')
 
     # We need to remember of some actions that cannot be performed,
     # because files have been deleted or moved after a renaming.
@@ -109,7 +119,7 @@ def Move_Uploaded_Files_to_Storage(parameters, curdir, form, user_info=None):
                    description, comment, file_restriction, iconsize,
                    create_icon_doctypes, keep_previous_versions,
                    recid, curdir, pending_bibdocs,
-                   bibrecdocs)
+                   bibrecdocs, forceFileRevision)
 
         elif action == 'delete':
             delete(bibdoc_name, recid, curdir, pending_bibdocs,
@@ -117,7 +127,7 @@ def Move_Uploaded_Files_to_Storage(parameters, curdir, form, user_info=None):
 
     # Update the MARC
     bibdocfile_bin = os.path.join(CFG_BINDIR, 'bibdocfile --yes-i-know')
-    os.system(bibdocfile_bin + " --fix-marc --recid=" + str(recid))
+    run_shell_command(bibdocfile_bin + " --fix-marc --recid=%s", (str(recid),))
 
     # Delete the HB BibFormat cache in the DB, so that the fulltext
     # links do not point to possible dead files
@@ -241,12 +251,12 @@ def add_format(file_path, bibdoc_name, recid, doctype, curdir,
 def revise(file_path, bibdoc_name, rename, doctype, description,
            comment, file_restriction, iconsize, create_icon_doctypes,
            keep_previous_versions, recid, curdir, pending_bibdocs,
-           bibrecdocs):
+           bibrecdocs, forceFileRevision):
     """
     Revises the given bibdoc with a new file
     """
     try:
-        if os.path.exists(file_path):
+        if os.path.exists(file_path) or not file_path:
 
             # Perform pending actions
             if pending_bibdocs.has_key(bibdoc_name):
@@ -261,7 +271,7 @@ def revise(file_path, bibdoc_name, rename, doctype, description,
                     # Use the one of the pending actions
                     comment = pending_bibdocs[bibdoc_name][1]
                 original_bibdoc_name = pending_bibdocs[bibdoc_name][0]
-                if not bibrecdocs.has_docname_p(original_bibdoc_name):
+                if not bibrecdocs.has_docname_p(original_bibdoc_name) and filepath:
                     # the bibdoc did not originaly exist, so it
                     # must be added first
                     bibdoc = bibrecdocs.add_new_file(file_path,
@@ -304,7 +314,7 @@ def revise(file_path, bibdoc_name, rename, doctype, description,
                 (prev_desc, prev_comment) = \
                             Create_Upload_Files_Interface.get_description_and_comment(bibrecdocs.get_bibdoc(bibdoc_name).list_latest_files())
 
-            if keep_previous_versions:
+            if keep_previous_versions and file_path:
                 # Standard procedure, keep previous version
                 bibdoc = bibrecdocs.add_new_version(file_path,
                                                     bibdoc_name,
@@ -313,7 +323,7 @@ def revise(file_path, bibdoc_name, rename, doctype, description,
                 _do_log(curdir, 'Revised ' + bibdoc.get_docname() + \
                         ' with : ' + file_path)
 
-            else:
+            elif file_path:
                 # Soft-delete previous versions, and add new file
                 # (we need to get the doctype before deleting)
                 if bibrecdocs.has_docname_p(bibdoc_name):
@@ -338,6 +348,27 @@ def revise(file_path, bibdoc_name, rename, doctype, description,
                                        'named %s in record %i.' % \
                                        (file_path, bibdoc_name, recid),
                                        alert_admin=True)
+            else:
+                # User just wanted to change attribute of the file,
+                # not the file itself
+                bibdoc = bibrecdocs.get_bibdoc(bibdoc_name)
+                (prev_desc, prev_comment) = \
+                            Create_Upload_Files_Interface.get_description_and_comment(bibdoc.list_latest_files())
+                if prev_desc is None:
+                    prev_desc = ""
+                if prev_comment is None:
+                    prev_comment = ""
+                if forceFileRevision == '1' and \
+                       (description != prev_desc or comment != prev_comment):
+                    # FIXME: If we are going to create a new version,
+                    # then we should honour the keep_previous_versions
+                    # parameter (soft-delete, then add bibdoc, etc)
+                    # But it is a bit complex right now...
+
+                    # Trick: we revert to current version, which
+                    # creates a revision of the BibDoc
+                    bibdoc.revert(bibdoc.get_latest_version())
+                    bibdoc = bibrecdocs.get_bibdoc(bibdoc_name)
 
             # Rename
             if rename and rename != bibdoc_name:
@@ -345,14 +376,15 @@ def revise(file_path, bibdoc_name, rename, doctype, description,
                 _do_log(curdir, 'renamed ' + bibdoc_name +' to '+ rename)
 
             # Add icon
-            iconpath = ''
-            if doctype in create_icon_doctypes or \
-                   '*' in create_icon_doctypes:
-                iconpath = _create_icon(file_path, iconsize)
-                if iconpath is not None:
-                    bibdoc.add_icon(iconpath)
-                    _do_log(curdir, 'Added icon to ' + \
-                            bibdoc.get_docname() + ': ' + iconpath)
+            if file_path:
+                iconpath = ''
+                if doctype in create_icon_doctypes or \
+                       '*' in create_icon_doctypes:
+                    iconpath = _create_icon(file_path, iconsize)
+                    if iconpath is not None:
+                        bibdoc.add_icon(iconpath)
+                        _do_log(curdir, 'Added icon to ' + \
+                                bibdoc.get_docname() + ': ' + iconpath)
 
             # Description
             if description:
