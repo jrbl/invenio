@@ -18,6 +18,8 @@
 pylibdir = $(libdir)/python/invenio
 
 pylib_DATA = __init__.py \
+			 cli.py \
+			 cli_tests.py \
              errorlib.py \
              errorlib_tests.py \
              errorlib_webinterface.py \
