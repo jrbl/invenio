@@ -28,7 +28,7 @@ from invenio.bibrank_citation_searcher import get_citation_dict
 from invenio.bibformat import format_record
 from invenio.bibformat import format_records
 from invenio.intbitset import intbitset
-
+from invenio.bibformat_dblayer import get_tags_from_name
 
 FORWARD_CITATION_DICTIONARY = None
 
@@ -64,6 +64,23 @@ def irn(recid):
     else:
         return None
 
+def field(recid, name):
+    """Return the first value of the field corresponding to the given tag
+    name in the given recid, or None"""
+    datalist = fields(recid, name)
+    if len(datalist) > 0:
+        return datalist[0]
+    else:
+        return None
+
+def fields(recid, name):
+    """Return the list of values of the field corresponding to the given tag
+    name in the given recid, or None"""
+    fields = get_tags_from_name(name)
+    if len(fields) > 0:
+        return(get_fieldvalues(recid, fields[0]))
+    else:
+        return None
 
 if __name__ == "__main__":
     """FIXME: As a command, cli should either run its unit tests, or invoke ipython"""

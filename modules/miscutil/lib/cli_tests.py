@@ -19,7 +19,8 @@
 
 import unittest
 
-from invenio import cli
+#from invenio import cli
+import cli
 
 from invenio.testutils import make_test_suite, run_test_suite
 
@@ -40,6 +41,22 @@ class TestCLI(unittest.TestCase):
         """Test CLI: IRN lookup by recid"""
         self.assertEqual(cli.irn(95),
                          '000289446CER')
+
+    def test_field(self):
+        """TEST CLI: Field lookup by name"""
+#        self.assertEqual(cli.field(95,'irn'),
+#                         '000289446CER')
+#        self.assertEqual(cli.field(95,'title'),
+#                         'The wall of the cave')
+        self.assertEqual(cli.field(35,'first author name'),
+                         'Tavanapong, W')
+
+    def test_fields(self):
+        """TEST CLI: Multiple field lookup by name"""
+#        self.assertEqual(cli.fields(95,'irn')[0],
+#                         '000289446CER')
+        self.assertTrue(len(cli.fields(35,'abstract')[0])>100)
+
 
 
 CLI_TESTS = make_test_suite(TestCLI)
