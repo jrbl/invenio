@@ -57,6 +57,10 @@ class TestCLI(unittest.TestCase):
 #                         '000289446CER')
         self.assertTrue(len(cli.fields(35,'abstract')[0])>100)
 
+    def test_cites(self):
+        """TEST CLI: Cite count by recid"""
+        self.assertEqual(cli.get_cite_count(81),4)
+
 
 
 CLI_TESTS = make_test_suite(TestCLI)
