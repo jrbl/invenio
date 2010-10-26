@@ -131,7 +131,7 @@ class SearchQueryParenthesisedParser(object):
 
         def filter_front_ands(toklist):
             """Filter out extra logical connectives and whitespace from the front."""
-            while toklist[0] == '+' or toklist[0] == '|' or toklist[0] == '':
+            while len(toklist) > 0 and (toklist[0] == '+' or toklist[0] == '|' or toklist[0] == ''):
                 toklist = toklist[1:]
             return toklist
 
@@ -337,9 +337,9 @@ class SearchQueryParenthesisedParser(object):
                     self.__tl_idx += 1
                     i = self.__tl_idx - offset
                 elif token == ')':
-                    if parsed_values[-1] in op_symbols:
+                    if len(parsed_values) > 0 and parsed_values[-1] in op_symbols:
                         parsed_values = parsed_values[:-1]
-                    if parsed_values[0] == '+' and parsed_values[1] in op_symbols:
+                    if len(parsed_values) > 1 and parsed_values[0] == '+' and parsed_values[1] in op_symbols:
                         parsed_values = parsed_values[1:]
                     return parsed_values
                 elif token in op_symbols:
@@ -355,11 +355,14 @@ class SearchQueryParenthesisedParser(object):
                 self.__tl_idx += 1
 
             # If we have an extra start symbol, remove the default one
-            if parsed_values[1] in op_symbols:
+            if len(parsed_values) > 1 and parsed_values[1] in op_symbols:
                 parsed_values = parsed_values[1:]
             return parsed_values
 
-        return inner_parse(token_list, False)
+        if len(token_list) == 0:
+            return ''
+        else:
+            return inner_parse(token_list, False)
 
 
 class SpiresToInvenioSyntaxConverter:
