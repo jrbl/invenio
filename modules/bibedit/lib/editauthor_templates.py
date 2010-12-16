@@ -24,7 +24,7 @@ class Template:
         """structure of the index page, with form elements etc."""
         ostr = self.setup_scripts()
         ostr += self.tPara("This page is a placeholder for selecting " +
-                           "the records to work with.", id='FIXME_index')
+                           "the records to work with.", tagas='FIXME_index')
         return ostr
 
     def record(self, record_id, author_list, affiliations, valid_affils = []):

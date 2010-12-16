@@ -71,7 +71,7 @@ def recid2names(recid):
 def flattenByCounts(lst, histogram=False):
     """Build a list sorted by frequency.
 
-    @param l: a list of items with possible repetitions
+    @param lst: a list of items with possible repetitions
     @param histogram: if True, return list is (item, count) pairs
     @return: a list without repetitions, items sorted by frequency
     """
