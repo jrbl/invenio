@@ -20,7 +20,6 @@
 """WebUpload web interface"""
 
 __revision__ = "$Id$"
-
 __lastupdated__ = """$Date$"""
 
 from invenio.webinterface_handler_wsgi_utils import Field
@@ -38,6 +37,7 @@ from invenio.batchuploader_engine import metadata_upload, cli_upload, \
 
 import re
 import calendar
+import cgi
 
 try:
     import invenio.template
@@ -93,13 +93,13 @@ def user_authorization(req, ln):
     _ = gettext_set_language(ln)
     user_info = collect_user_info(req)
     if user_info['email'] == 'guest':
-        auth_code, auth_message = acc_authorize_action(req, 'runbatchuploader')
+        auth_code, dummy_auth_message = acc_authorize_action(req, 'runbatchuploader')
         referer = '/batchuploader/'
         error_msg = _("Guests are not authorized to run batchuploader")
         return page_not_authorized(req=req, referer=referer,
                                    text=error_msg, navmenuid="batchuploader")
     else:
-        auth_code, auth_message = acc_authorize_action(req, 'runbatchuploader')
+        auth_code, dummy_auth_message = acc_authorize_action(req, 'runbatchuploader')
         if auth_code != 0:
             referer = '/batchuploader/'
             error_msg = _("The user '%s' is not authorized to run batchuploader" % \
@@ -111,9 +111,9 @@ def user_authorization(req, ln):
 class WebInterfaceBatchUploaderPages(WebInterfaceDirectory):
     """Defines the set of /batchuploader pages."""
 
-    _exports = ['', 'metadata', 'robotupload', 'metasubmit', 'history', 'documents', 'docsubmit', 'daemon', 'allocaterecord']
+    _exports = ['', 'metadata', 'robotupload', 'sendforaudit', 'metasubmit', 'history', 'documents', 'docsubmit', 'daemon', 'allocaterecord']
 
-    def index(self, req, form):
+    def index(self, req, dummy_form):
         """ The function called by default
         """
         redirect_to_url(req, "%s/batchuploader/metadata" % (CFG_SITE_URL))
@@ -228,13 +228,21 @@ class WebInterfaceBatchUploaderPages(WebInterfaceDirectory):
 
     def robotupload(self, req, form):
         """Interface for robots used like this:
-            $ curl -F 'file=@localfile.xml' -F 'mode=-i' http://cdsweb.cern.ch/batchuploader/robotupload -A invenio_webupload
+            $ curl -F 'file=@localfile.xml' -F 'mode=-i' -A invenio_webupload http://cdsweb.cern.ch/batchuploader/robotupload
         """
         argd = wash_urlargd(form, {'file': (Field, None),
                                    'mode': (str,None)})
         cli_upload(req, argd['file'], argd['mode'])
 
-    def allocaterecord(self, req, form):
+    def sendforaudit(self, req, form):
+        """Interface for robots used like this:
+            $ curl -F 'file=@localfile.xml' -F 'from_address=john.doe@example.com' -A invenio_webupload http://cdsweb.cern.ch/batchuploader/sendforaudit
+        """
+        argd = wash_urlargd(form, {'file': (Field, None),
+				   'from_address': (str, None)})
+        cli_upload(req, argd['file'], '-o', argd['from_address'])
+
+    def allocaterecord(self, req, dummy_form):
         """
         Interface for robots to allocate a record and obtain a record identifier
         """

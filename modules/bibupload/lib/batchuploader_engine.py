@@ -35,13 +35,17 @@ from invenio.config import CFG_BINDIR, CFG_TMPDIR, CFG_LOGDIR, \
                             CFG_OAI_ID_FIELD, CFG_BATCHUPLOADER_DAEMON_DIR, \
                             CFG_BATCHUPLOADER_WEB_ROBOT_RIGHTS, \
                             CFG_BATCHUPLOADER_WEB_ROBOT_AGENT, \
-                            CFG_PREFIX, CFG_SITE_LANG
+                            CFG_PREFIX, CFG_SITE_LANG, \
+                            CFG_SENDFORAUDIT_EMAIL, CFG_SITE_URL
 from invenio.webinterface_handler_wsgi_utils import Field
 from invenio.textutils import encode_for_xml
 from invenio.bibtask import task_low_level_submission
 from invenio.messages import gettext_set_language
+from invenio.mailutils import well_formed, send_email
+from invenio.bibrecord import create_records
 
-PERMITTED_MODES = ['-i', '-r', '-c', '-a', '-ir',
+
+PERMITTED_MODES = ['-i', '-r', '-c', '-a', '-ir', '-o',
                         '--insert', '--replace', '--correct', '--append']
 
 def cli_allocate_record(req):
@@ -61,7 +65,7 @@ def cli_allocate_record(req):
     recid = run_sql("insert into bibrec (creation_date,modification_date) values(NOW(),NOW())")
     return recid
 
-def cli_upload(req, file_content=None, mode=None):
+def cli_upload(req, file_content=None, mode=None, from_address=None):
     """ Robot interface for uploading MARC files
     """
     req.content_type = "text/plain"
@@ -91,6 +95,11 @@ def cli_upload(req, file_content=None, mode=None):
         msg = "[ERROR] Invalid upload mode."
         _log(msg)
         return _write(req, msg)
+    if arg_mode == '-o':
+        if not well_formed(from_address):
+            msg = "[ERROR] Please specify the requestors email address"
+            _log(msg)
+            return _write(req, msg)
     if isinstance(arg_file, Field):
         arg_file = arg_file.value
 
@@ -117,6 +126,9 @@ def cli_upload(req, file_content=None, mode=None):
     # run upload command:
     cmd = CFG_BINDIR + '/bibupload -u batchupload ' + arg_mode + ' ' + filename
     os.system(cmd)
+    if arg_mode == '-o':
+        recids = _get_recids_from_file(arg_file)
+        _send_email_with_recids(recids, from_address)
     msg = "[INFO] %s" % cmd
     _log(msg)
     return _write(req, msg)
@@ -185,8 +197,7 @@ def document_upload(req=None, folder="", matching="", mode="", exec_date="", exe
         from hashlib import md5
     from invenio.bibdocfile import BibRecDocs, file_strip_ext
     import shutil
-    from invenio.search_engine import perform_request_search, \
-                                      search_pattern, \
+    from invenio.search_engine import search_pattern, \
                                       guess_collection_of_a_record
     _ = gettext_set_language(ln)
     errors = []
@@ -240,7 +251,7 @@ def document_upload(req=None, folder="", matching="", mode="", exec_date="", exe
                     continue
             # Check if user has rights to upload file
             file_collection = guess_collection_of_a_record(int(rec_id))
-            auth_code, auth_message = acc_authorize_action(req, 'runbatchuploader', collection=file_collection)
+            auth_code, dummy_auth_message = acc_authorize_action(req, 'runbatchuploader', collection=file_collection)
             if auth_code != 0:
                 error_msg = err_desc[5] % file_collection
                 errors.append((docfile, error_msg))
@@ -389,8 +400,6 @@ def _check_client_can_submit_file(client_ip="", metafile="", req=None, webupload
     Useful to make sure that the client does not override other records by
     mistake.
     """
-    from invenio.bibrecord import create_records
-
     _ = gettext_set_language(ln)
     recs = create_records(metafile, 0, 0)
     user_info = collect_user_info(req)
@@ -406,7 +415,7 @@ def _check_client_can_submit_file(client_ip="", metafile="", req=None, webupload
             if not filename_tag980_value in CFG_BATCHUPLOADER_WEB_ROBOT_RIGHTS[client_ip]:
                 return False
         else:
-            auth_code, auth_message = acc_authorize_action(req, 'runbatchuploader', collection=filename_tag980_value)
+            auth_code, dummy_auth_message = acc_authorize_action(req, 'runbatchuploader', collection=filename_tag980_value)
             if auth_code != 0:
                 error_msg = _("The user '%(x_user)s' is not authorized to modify collection '%(x_coll)s'") % \
                             {'x_user': user_info['nickname'], 'x_coll': filename_tag980_value}
@@ -419,7 +428,7 @@ def _check_client_can_submit_file(client_ip="", metafile="", req=None, webupload
             if not filename_rec_id_collection in CFG_BATCHUPLOADER_WEB_ROBOT_RIGHTS[client_ip]:
                 return False
         else:
-            auth_code, auth_message = acc_authorize_action(req, 'runbatchuploader', collection=filename_rec_id_collection)
+            auth_code, dummy_auth_message = acc_authorize_action(req, 'runbatchuploader', collection=filename_rec_id_collection)
             if auth_code != 0:
                 error_msg = _("The user '%(x_user)s' is not authorized to modify collection '%(x_coll)s'") % \
                             {'x_user': user_info['nickname'], 'x_coll': filename_rec_id_collection}
@@ -497,6 +506,25 @@ def _detect_collections_from_marcxml_file(recs):
     return dbcollids.keys()
 
 
+def _get_recids_from_file(content):
+    """ Return a list of recids from a MARCXML """
+    import re
+    tagregex = re.compile('<controlfield tag="001">(?P<tag>.*?)<')
+    return tagregex.findall(content)
+
+def _send_email_with_recids(recids, from_address):
+    """ Send notification of record updates to CFG_SENDFORAUDIT_EMAIL """
+    bibedit_url = CFG_SITE_URL + '/record/'
+    to_address = CFG_SENDFORAUDIT_EMAIL
+    subject = "Updates to #" + ' #'.join([str(recid) for recid in recids])
+    msg_content = "The following records have been modified by"
+    msg_content += " someone who identifies themselves as %s:\n" % from_address
+    for recid in recids:
+        msg_content += "%9d   %s%s/edit\n" % (int(recid), bibedit_url, str(recid))
+    msg_content += "\nPlease check the revisions and edit them for publication "
+    msg_content += "(consider that the suggested versions may not be visible "
+    msg_content += "for 20 minutes)\n"
+    send_email(from_address, to_address, subject, msg_content)
 
 def _log(msg, logfile="webupload.log"):
     """

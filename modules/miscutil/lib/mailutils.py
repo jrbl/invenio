@@ -344,6 +344,38 @@ def email_strip_html(html_content):
     return out.getvalue()
 
 
+def well_formed(address):
+    """Test for email address validity based on rfc822
+
+    XXX: should implement rfc5321
+    """
+   # From Python version by Tim Fletcher and by Dan Kubb.
+   # http://tfletcher.com/lib/rfc822.py
+   #
+   # Licensed under a Creative Commons Attribution-ShareAlike 2.5 License
+   # http://creativecommons.org/licenses/by-sa/2.5/
+
+    if address == None:
+        return False
+    qtext = '[^\\x0d\\x22\\x5c\\x80-\\xff]'
+    dtext = '[^\\x0d\\x5b-\\x5d\\x80-\\xff]'
+    atom = '[^\\x00-\\x20\\x22\\x28\\x29\\x2c\\x2e\\x3a-\\x3c\\x3e\\x40\\x5b-\\x5d\\x7f-\\xff]+'
+    quoted_pair = '\\x5c[\\x00-\\x7f]'
+    domain_literal = "\\x5b(?:%s|%s)*\\x5d" % (dtext, quoted_pair)
+    quoted_string = "\\x22(?:%s|%s)*\\x22" % (qtext, quoted_pair)
+    domain_ref = atom
+    sub_domain = "(?:%s|%s)" % (domain_ref, domain_literal)
+    word = "(?:%s|%s)" % (atom, quoted_string)
+    domain = "%s(?:\\x2e%s)*" % (sub_domain, sub_domain)
+    local_part = "%s(?:\\x2e%s)*" % (word, word)
+    addr_spec = "%s\\x40%s" % (local_part, domain)
+
+    email_pattern = re.compile('\A%s\Z' % addr_spec)
+
+    if email_pattern.match(address):
+        return True
+    return False
+
 def log(*error):
     """Register error
     @param error: tuple of the form(ERR_, arg1, arg2...)

@@ -29,6 +29,7 @@ pylib_DATA = __init__.py \
              logicutils.py \
              logicutils_tests.py \
              mailutils.py \
+             mailutils_tests.py \
              miscutil_config.py \
              messages.py \
              messages_tests.py \
