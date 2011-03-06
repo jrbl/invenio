@@ -19,45 +19,83 @@ shared_data = {
  */
 $(document).ready(
   function() {
-    // environment initialization/table building
-    initTable(shared_data);
-    initKeystrokes(shared_data);
+    // Tell the user the tables are loading, then go build them
+    $('#TableHeaders').html('<p id="loading_msg">Loading; please wait...</p>');
+    $('#TableContents').html('<p id="loading_msg">Loading; please wait...</p>');
+    updateTable(shared_data);
 
     // startup behaviors
     $('#affils_0').focus()
-
-    // for DEBUG only; makes working js parse obvious
-    $('table').attr("bgcolor", "#FF66FF");
-
+    $('table').attr("bgcolor", "#FF66FF");  // DEBUG only; makes working js parse obvious
   }
 );
 
 /**
- * Throw up a loading message and call updateTable*
+ * Bind keyboard events to particular keystrokes; called after table initialization
  * 
+ * FIXME: This should be modified to use BibEdit's hotkey system, which should itself
+ *        be using jQuery's HotKey UI.
+ * FIXME: Does this need to be called every updateTable?
+ *
  * @param {Array} shared_data Passed to children
  */
-function initTable(shared_data) {
-    $('#TableHeaders').html('<p id="loading_msg">Loading; please wait...</p>');
-    $('#TableContents').html('<p id="loading_msg">Loading; please wait...</p>');
-    updateTable(shared_data);
-}
+function addKeystrokes(shared_data) {
+    var keybindings = {
+        /*'tab'     : ['Move forward through affiliations', 
+                     'tab', 
+                     keystrokeTab,
+                     {extra_data: shared_data}],
+//                     '#TableContents input[type="text"]'],
+        'stab'    : ['Move backward through affiliations', 
+                     'shift+tab', 
+                     keystrokeTab,
+                     {extra_data: shared_data},
+                     '#TableContents input[type="text"]'],  */
+        //'enter'   : ['Accept this field and move to the next.',
+        //             'alt+ctrl+shift+e',
+        //             keystrokeEnter,
+        //             {extra_data: shared_data}],
+        'submit'  : ['Submit the changes.  No input field should be selected.', 
+                     'alt+ctrl+shift+s', 
+                     function(event) { 
+                         $('#submit_button').click();  
+                         event.preventDefault(); }],
+        'cutRow'  : ['Cut this author row.',
+                     'alt+ctrl+shift+x',
+                     updateTableCutRow,
+                     {extra_data: shared_data}],
+        'copyRow' : ['Copy this author row.',
+                     'alt+ctrl+shift+c',
+                     updateTableCopyRow,
+                     {extra_data: shared_data}],
+        'pasteRow': ['Paste an author row after this row.',
+                     'alt+ctrl+shift+v',
+                     updateTablePasteRow,
+                     {extra_data: shared_data}],
+        'suggest' : ['Auto-suggest affiliations based on this value.',
+                     'alt+ctrl+shift+a',
+                     validateAffiliation,
+                     {extra_data: shared_data}],
+    };
 
-/** 
- * "fold" a column in the table.
- * 
- * @param {int} col The column number to fold
- * @param {String} title The mouseover floating text for the element
- */
-function foldColumn(col, title) {
-    $('.col'+col).before('<td title="'+title+'" class="empty'+col+'" style="border-style: hidden solid hidden solid;"></td>');
-    $('.empty'+col).click( 
-        function() { 
-            $('.empty'+col).remove();
-            $('.col'+col).show();
-            shared_data['folded'].splice($.inArray(col, shared_data['folded']));
-        });
-    $('.col'+col).hide();
+    jQuery.each(keybindings, function(dummy, val) {
+        data_dictionary = {combi: val[1]};
+        target = document;
+        if (val.length >= 4) {
+            for (key in val[3]) {
+                data_dictionary[key] = val[3][key];
+            }
+        } 
+        if (val.length >= 5) {
+            target = val[4];
+        }
+        $(document).bind('keypress', data_dictionary, val[2]);
+        //$(target).bind('keypress', data_dictionary, val[2]);
+    });
+
+    // Extra stuff worth doing 
+    $('#submit_button').attr('title', keybindings['submit'][1] + ' to Submit');
+
 }
 
 /**
@@ -68,23 +106,73 @@ function foldColumn(col, title) {
  */
 function updateTable(shared_data) {
 
+    // generate table header & body
     $('#TableHeaders').html( generateTableHeader(shared_data['affiliations']) );
+    $('#TableContents').html( generateTableBody(shared_data) );
+
+    // add column folding click handlers
     $('a.hide_link').click( 
         function() { 
             shared_data['folded'].push(this.name); 
             foldColumn(this.name, this.title.replace('hide', 'expand'));
         });
 
-    $('#TableContents').html( generateTableBody(shared_data) );
+    // add checkbox handlers
+    $('input[type="checkbox"]').click( 
+        function() { 
+            addCheckBoxHandlers_changeHandler(shared_data, this.value, this.checked) 
+        });
 
-    addCheckBoxHandlers(shared_data);
+    // add text box handlers (table updates, keystrokes and autocompletes)
     addTextBoxHandlers(shared_data);
+    addKeystrokes(shared_data);
+    addAutocompletes(shared_data);
 
+    // fold the columns previously checked
     for (var i in shared_data['folded']) {
         if (shared_data['folded'][i]  != null) {
             foldColumn(shared_data['folded'][i], "Click to expand.");
         }
     }
+}
+
+/**
+ * Decorate entry fields with calls to jQuery's AutoComplete UI.
+ * 
+ * @param {Array} shared_data
+ */
+function addAutocompletes(shared_data) {
+    function last_term(s) {
+        return jQuery.trim(filter_SemicolonStringToArray(s).pop());
+    }
+    function first_terms(s) {
+        a = filter_SemicolonStringToArray(s)
+        a.pop()
+        return a
+    }
+    $(".affil_box")/*.bind("keydown", function(event) {
+                       if ( event.keyCode === $.ui.keyCode.TAB && 
+                            $( this ).data( "autocomplete" ).menu.active ) {
+                                event.preventDefault();
+                       }
+
+                   })*/
+                   .autocomplete({
+                       source: ["SLAC LAB", "FNAL LAB", "DESY LAB", "CERN LAB"],
+                       //source: [{label : "SLAC National Accelerator Laboratory", value : "SLAC", name : "SLAC"},
+                       //         {label : "SLAC TOO", value : "94062", name : "SLAC"}],
+                       minLength: 2, 
+                       select: function(event, ui) {
+                           var terms = first_terms(this.value);
+                           // add the selected item
+                           terms.push( ui.item.label );
+                           // add placeholder to get the semicolon-and-space at the end
+                           terms.push( '' );
+                           this.value = terms.join( "; " );
+                           //log( ui.item ?  "Selected: " + ui.item.label : "Nothing selected, input was " + this.value);
+                           return false; 
+                       }, 
+                   });
 }
 
 /**
@@ -182,13 +270,21 @@ function generateTableRow(row, auth_affils, institutions) {
     return str;
 }
 
-/**
- * Adds change handlers to checkboxes so table row state gets toggled correctly
- *
- * @param {Object} shared_data The global state object which the handlers mutate
+/** 
+ * "fold" a column in the table.
+ * 
+ * @param {int} col The column number to fold
+ * @param {String} title The mouseover floating text for the element
  */
-function addCheckBoxHandlers(shared_data) {
-  $('input[type="checkbox"]').click( function() { addCheckBoxHandlers_changeHandler(shared_data, this.value, this.checked) } );
+function foldColumn(col, title) {
+    $('.col'+col).before('<td title="'+title+'" class="empty'+col+'" style="border-style: hidden solid hidden solid;"></td>');
+    $('.empty'+col).click( 
+        function() { 
+            $('.empty'+col).remove();
+            $('.col'+col).show();
+            shared_data['folded'].splice($.inArray(col, shared_data['folded']));
+        });
+    $('.col'+col).hide();
 }
 
 /**
@@ -254,11 +350,7 @@ function addAuthBoxHandlers_changeHandler(shared_data, row, value) {
  */
 function addAffilBoxHandlers_changeHandler(shared_data, row, value) {
   var myname = shared_data['authors'][row][0];
-  var newRow = jQuery.map(value.split(';'), function(s, v) {
-      s = jQuery.trim(s);
-      if (s == '') return null;   /* drop empty strings */
-      else return escapeHTML(s);  /* otherwise, sanitize & return */
-  });
+  var newRow = filter_SemicolonStringToArray(value);
   for (var i in newRow) {
       var datum = newRow[i];
       var iDatum = parseInt(datum);
@@ -280,6 +372,21 @@ function addAffilBoxHandlers_changeHandler(shared_data, row, value) {
   updateTable(shared_data);
 }
 
+/** 
+ * Convert a semicolon-separated-value string into a list.
+ * Escape content and remove empty strings.
+ *
+ * @param {String} value A string of the form 'cat; dog; tiger'
+ * @returns {Array} An array like ['cat', 'dog', 'tiger']
+ */
+function filter_SemicolonStringToArray(value) {
+  return jQuery.map(value.split(';'), function(v, junk) {
+      s = jQuery.trim(v);
+      if (v == '') return null;   /* drop empty strings */
+      else return escapeHTML(v);  /* otherwise, sanitize & return */
+  });
+}
+
 /**
  * Replace special characters '&', '<' and '>' with HTML-safe sequences.
  * This functions is called on content before displaying it.
@@ -289,68 +396,6 @@ function escapeHTML(value){
   value = value.replace(/</g, '&lt;');
   value = value.replace(/>/g, '&gt;');
   return value;
-}
-
-/**
- * Bind keyboard events to particular keystrokes; called after table initialization3
- */
-function initKeystrokes(shared_data) {
-    var keybindings = {
-        /*'tab'     : ['Move forward through affiliations', 
-                     'tab', 
-                     keystrokeTab,
-                     {extra_data: shared_data}],
-//                     '#TableContents input[type="text"]'],
-        'stab'    : ['Move backward through affiliations', 
-                     'shift+tab', 
-                     keystrokeTab,
-                     {extra_data: shared_data},
-                     '#TableContents input[type="text"]'],  */
-        //'enter'   : ['Accept this field and move to the next.',
-        //             'alt+ctrl+shift+e',
-        //             keystrokeEnter,
-        //             {extra_data: shared_data}],
-        'submit'  : ['Submit the changes.  No input field should be selected.', 
-                     'alt+ctrl+shift+s', 
-                     function(event) { 
-                         $('#submit_button').click();  
-                         event.preventDefault(); }],
-        'cutRow'  : ['Cut this author row.',
-                     'alt+ctrl+shift+x',
-                     updateTableCutRow,
-                     {extra_data: shared_data}],
-        'copyRow' : ['Copy this author row.',
-                     'alt+ctrl+shift+c',
-                     updateTableCopyRow,
-                     {extra_data: shared_data}],
-        'pasteRow': ['Paste an author row after this row.',
-                     'alt+ctrl+shift+v',
-                     updateTablePasteRow,
-                     {extra_data: shared_data}],
-        'suggest' : ['Auto-suggest affiliations based on this value.',
-                     'alt+ctrl+shift+a',
-                     validateAffiliation,
-                     {extra_data: shared_data}],
-    };
-
-    jQuery.each(keybindings, function(junk, val) {
-        data_dictionary = {combi: val[1]};
-        target = document;
-        if (val.length >= 4) {
-            for (key in val[3]) {
-                data_dictionary[key] = val[3][key];
-            }
-        } 
-        if (val.length >= 5) {
-            target = val[4];
-        }
-        $(document).bind('keypress', data_dictionary, val[2]);
-        //$(target).bind('keypress', data_dictionary, val[2]);
-    });
-
-    // Extra stuff worth doing 
-    $('#submit_button').attr('title', keybindings['submit'][1] + ' to Submit');
-
 }
 
 /** 
