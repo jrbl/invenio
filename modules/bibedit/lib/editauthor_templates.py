@@ -8,8 +8,16 @@ class Template:
 
     def __init__(self):
         """Establish some variables we can use throughout"""
-        self.javascript = ['jquery.min.js', 'jquery.hotkeys.min.js',
-                           'editauthor.js']
+        self.javascript = [ # prerequisites for hotkeys, autocomplete
+                           'jquery.min.js', 
+                           'jquery.ui.core.min.js', 
+                           'jquery.ui.widget.min.js', 
+                           'jquery.ui.position.min.js', 
+                           # the good parts
+                           'jquery.hotkeys.min.js',
+                           'jquery.ui.autocomplete.min.js', 
+                           'editauthor.js'
+                          ]
 
     def setup_scripts(self):
         """Output a bunch of <script> bits."""
