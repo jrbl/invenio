@@ -50,11 +50,11 @@ function addKeystrokes(shared_data) {
                      'shift+tab', 
                      keystrokeTab,
                      {extra_data: shared_data},
-                     '#TableContents input[type="text"]'],  */
+                     '#TableContents input[type="text"]'],  
         //'enter'   : ['Accept this field and move to the next.',
         //             'alt+ctrl+shift+e',
         //             keystrokeEnter,
-        //             {extra_data: shared_data}],
+        //             {extra_data: shared_data}], */
         'submit'  : ['Submit the changes.  No input field should be selected.', 
                      'alt+ctrl+shift+s', 
                      function(event) { 
@@ -125,7 +125,7 @@ function updateTable(shared_data) {
 
     // add text box handlers (table updates, keystrokes and autocompletes)
     addTextBoxHandlers(shared_data);
-    addKeystrokes(shared_data);
+    /* addKeystrokes(shared_data); */
     addAutocompletes(shared_data);
 
     // fold the columns previously checked
@@ -145,33 +145,67 @@ function addAutocompletes(shared_data) {
     function last_term(s) {
         return jQuery.trim(filter_SemicolonStringToArray(s).pop());
     }
-    function first_terms(s) {
-        a = filter_SemicolonStringToArray(s)
-        a.pop()
-        return a
-    }
-    $(".affil_box")/*.bind("keydown", function(event) {
-                       if ( event.keyCode === $.ui.keyCode.TAB && 
-                            $( this ).data( "autocomplete" ).menu.active ) {
-                                event.preventDefault();
-                       }
-
-                   })*/
+    data = [
+        {
+            address: "Menlo Park, CA 94062, USA",
+            label: "SLAC National Accelerator Laboratory",
+            value: "SLAC"
+        },
+        {
+            address: "Route de Meyrin, Meyrin, Switzerland",
+            label: "CERN Meyrin",
+            value: "CERN"
+        },
+        {
+            address: "Hamburg, Germany",
+            label: "DESY Hamburg",
+            value: "DESY"
+        },
+        {
+            address: "Batavia, IL, USA",
+            label: "Fermi National Accelerator Laboratory",
+            value: "FNAL"
+        },
+    ];
+    $(".affil_box").bind( "keydown", function( event) {
+                        // don't navigate away from the field on tab when selecting an item
+                        if ( event.keyCode === $.ui.keyCode.TAB && $(this).data("autocomplete").menu.active) {
+                            event.preventDefault();
+                        }
+                   })
                    .autocomplete({
-                       source: ["SLAC LAB", "FNAL LAB", "DESY LAB", "CERN LAB"],
-                       //source: [{label : "SLAC National Accelerator Laboratory", value : "SLAC", name : "SLAC"},
-                       //         {label : "SLAC TOO", value : "94062", name : "SLAC"}],
-                       minLength: 2, 
+                       source: function( request, response ) {
+                            // FIXME: send request to $.ajax() and use this response()
+                            response( $.grep( data, function( item ) {
+                                var re = new RegExp( 
+                                    $.ui.autocomplete.escapeRegex(last_term(request.term)), "i" );
+                                return re.test(item.label) || re.test(item.value) || re.test(item.address);
+                            }) );
+                            /* // delegate back to autocomplete, but extract the last term
+                            response( $.ui.autocomplete.filter(
+                                    data, last_term( request.term ) ) ); */
+                       },
+                       minLength: 3, 
+                       /* focus: function(event, ui) {
+                            //$(".affil_box").val(ui.item.label);
+                            event.target.val(ui.item.label);
+                            //this.val(ui.item.label);
+                            return false; */
+                       focus: function() {
+                             // prevent value insertion of focus
+                            return false;
+                       },
                        select: function(event, ui) {
-                           var terms = first_terms(this.value);
+                           var terms = filter_SemicolonStringToArray(this.value);
+                           terms.pop();
                            // add the selected item
-                           terms.push( ui.item.label );
+                           terms.push( ui.item.value );
                            // add placeholder to get the semicolon-and-space at the end
                            terms.push( '' );
                            this.value = terms.join( "; " );
                            //log( ui.item ?  "Selected: " + ui.item.label : "Nothing selected, input was " + this.value);
                            return false; 
-                       }, 
+                       },
                    });
 }
 
