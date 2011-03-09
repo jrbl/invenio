@@ -174,23 +174,39 @@ function addAutocompletes(shared_data) {
                         }
                    })
                    .autocomplete({
-                       source: function( request, response ) {
-                            // FIXME: send request to $.ajax() and use this response()
-                            response( $.grep( data, function( item ) {
-                                var re = new RegExp( 
-                                    $.ui.autocomplete.escapeRegex(last_term(request.term)), "i" );
-                                return re.test(item.label) || re.test(item.value) || re.test(item.address);
-                            }) );
-                            /* // delegate back to autocomplete, but extract the last term
-                            response( $.ui.autocomplete.filter(
-                                    data, last_term( request.term ) ) ); */
-                       },
+//                       source: function( request, response ) {
+//                            /*$.getJSON("http://liblin10.slac.stanford.edu/kb/export", 
+//                                      { kbname: 'MyKB1', format: 'jquery', term: last_term(request.term) },
+//                                      response);*/
+//                            $.ajax({
+//                                    url: "http://liblin10.slac.stanford.edu/kb/export?kbname=MyKB1&format=jquery",
+//                                    datatype: "jsonp",
+//                                    data: { term: last_term(request.term) },
+//                                    success: function (data) {
+//                                        document.write(data);
+//                                    }
+//                                    //success: function( data ) {
+//                                    //    response( $.grep( data, function( item ) {
+//                                    //        var re = new RegExp( 
+//                                    //            $.ui.autocomplete.escapeRegex(last_term(request.term)), "i" );
+//                                    //        return re.test(item.label) || re.test(item.value) || re.test(item.address);
+//                                    //    })); 
+//                                    //}
+//                            });
+//                            /* // work with the data set above
+//                            response( $.grep( data, function( item ) {
+//                                var re = new RegExp( 
+//                                    $.ui.autocomplete.escapeRegex(last_term(request.term)), "i" );
+//                                return re.test(item.label) || re.test(item.value) || re.test(item.address);
+//                            }) ); */
+//                            /* // delegate back to autocomplete, but extract the last term
+//                            response( $.ui.autocomplete.filter(
+//                                    data, last_term( request.term ) ) ); */
+//                       },
+//                       source: 
+                       source: "/kb/export?kbname=MyKB1&format=jquery",
+                       delay: 150,
                        minLength: 3, 
-                       /* focus: function(event, ui) {
-                            //$(".affil_box").val(ui.item.label);
-                            event.target.val(ui.item.label);
-                            //this.val(ui.item.label);
-                            return false; */
                        focus: function() {
                              // prevent value insertion of focus
                             return false;
