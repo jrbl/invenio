@@ -174,10 +174,14 @@ function addAutocompletes(shared_data) {
                         }
                    })
                    .autocomplete({
+//                       source: "/kb/export?kbname=MyKB1&format=jquery",
+                       source: function( request, response ) {
+                            $.getJSON("/kb/export", 
+                                      { kbname: 'MyKB1', format: 'jquery', term: last_term(request.term) },
+                                      response);
+                       },
+/* not working at all */
 //                       source: function( request, response ) {
-//                            /*$.getJSON("http://liblin10.slac.stanford.edu/kb/export", 
-//                                      { kbname: 'MyKB1', format: 'jquery', term: last_term(request.term) },
-//                                      response);*/
 //                            $.ajax({
 //                                    url: "http://liblin10.slac.stanford.edu/kb/export?kbname=MyKB1&format=jquery",
 //                                    datatype: "jsonp",
@@ -203,13 +207,16 @@ function addAutocompletes(shared_data) {
 //                            response( $.ui.autocomplete.filter(
 //                                    data, last_term( request.term ) ) ); */
 //                       },
-//                       source: 
-                       source: "/kb/export?kbname=MyKB1&format=jquery",
-                       delay: 150,
-                       minLength: 3, 
                        focus: function() {
                              // prevent value insertion of focus
                             return false;
+                       },
+                       search: function() {
+                           // custom minLength that knows to only use last item after semicolon
+                           var term = last_term(this.value);
+                           if (term.length < 3) {
+                               return false;
+                           }
                        },
                        select: function(event, ui) {
                            var terms = filter_SemicolonStringToArray(this.value);
@@ -219,7 +226,6 @@ function addAutocompletes(shared_data) {
                            // add placeholder to get the semicolon-and-space at the end
                            terms.push( '' );
                            this.value = terms.join( "; " );
-                           //log( ui.item ?  "Selected: " + ui.item.label : "Nothing selected, input was " + this.value);
                            return false; 
                        },
                    });
