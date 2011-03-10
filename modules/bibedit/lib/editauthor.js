@@ -6,9 +6,9 @@
  * NB: Initialization values for debug purposes only.
  */
 shared_data = {
-  'affiliations': [],             // list of institutions present in this data
-  'valid_affils': [],             // list of possible institutional affiliations
   'authors':      [ [], ],        // set of all [author, affiliation1, affiliation2 ...]
+  'affiliations': [],             // list of institutions present in this data
+  'valid_affils': [],             // list of possible institutional affiliations // FIXME: Remove?
   'folded':       [],             // which columns are currently hidden
   'row_cut':      [],             // the row recently removed from the data set with 'cut'
 };
@@ -26,77 +26,14 @@ $(document).ready(
 
     // startup behaviors
     $('#affils_0').focus()
-    $('table').attr("bgcolor", "#FF66FF");  // DEBUG only; makes working js parse obvious
+    $('#submit_button').css('display', 'inline') // jQuery parses so make the button live
+
+    $.ajax({ url: "/img/editauthor.css", success: function(data) {
+        $("<style></style>").appendTo("head").html(data);
+    }});
+    //$('table').attr("bgcolor", "#22cc66");  // DEBUG only; makes working js parse obvious
   }
 );
-
-/**
- * Bind keyboard events to particular keystrokes; called after table initialization
- * 
- * FIXME: This should be modified to use BibEdit's hotkey system, which should itself
- *        be using jQuery's HotKey UI.
- * FIXME: Does this need to be called every updateTable?
- *
- * @param {Array} shared_data Passed to children
- */
-function addKeystrokes(shared_data) {
-    var keybindings = {
-        /*'tab'     : ['Move forward through affiliations', 
-                     'tab', 
-                     keystrokeTab,
-                     {extra_data: shared_data}],
-//                     '#TableContents input[type="text"]'],
-        'stab'    : ['Move backward through affiliations', 
-                     'shift+tab', 
-                     keystrokeTab,
-                     {extra_data: shared_data},
-                     '#TableContents input[type="text"]'],  
-        //'enter'   : ['Accept this field and move to the next.',
-        //             'alt+ctrl+shift+e',
-        //             keystrokeEnter,
-        //             {extra_data: shared_data}], */
-        'submit'  : ['Submit the changes.  No input field should be selected.', 
-                     'alt+ctrl+shift+s', 
-                     function(event) { 
-                         $('#submit_button').click();  
-                         event.preventDefault(); }],
-        'cutRow'  : ['Cut this author row.',
-                     'alt+ctrl+shift+x',
-                     updateTableCutRow,
-                     {extra_data: shared_data}],
-        'copyRow' : ['Copy this author row.',
-                     'alt+ctrl+shift+c',
-                     updateTableCopyRow,
-                     {extra_data: shared_data}],
-        'pasteRow': ['Paste an author row after this row.',
-                     'alt+ctrl+shift+v',
-                     updateTablePasteRow,
-                     {extra_data: shared_data}],
-        'suggest' : ['Auto-suggest affiliations based on this value.',
-                     'alt+ctrl+shift+a',
-                     validateAffiliation,
-                     {extra_data: shared_data}],
-    };
-
-    jQuery.each(keybindings, function(dummy, val) {
-        data_dictionary = {combi: val[1]};
-        target = document;
-        if (val.length >= 4) {
-            for (key in val[3]) {
-                data_dictionary[key] = val[3][key];
-            }
-        } 
-        if (val.length >= 5) {
-            target = val[4];
-        }
-        $(document).bind('keypress', data_dictionary, val[2]);
-        //$(target).bind('keypress', data_dictionary, val[2]);
-    });
-
-    // Extra stuff worth doing 
-    $('#submit_button').attr('title', keybindings['submit'][1] + ' to Submit');
-
-}
 
 /**
  * Create the HTML representation of a table representing shared_data, assign
@@ -137,6 +74,55 @@ function updateTable(shared_data) {
 }
 
 /**
+ * Bind keyboard events to particular keystrokes; called after table initialization
+ * 
+ * FIXME: This should be modified to use BibEdit's hotkey system, which should itself
+ *        be using jQuery's HotKey UI.
+ * FIXME: Does this need to be called every updateTable?
+ *
+ * @param {Array} shared_data Passed to children
+ */
+function addKeystrokes(shared_data) {
+    var keybindings = {
+        'submit'  : ['Submit the changes.  No input field should be selected.', 
+                     'alt+ctrl+shift+s', 
+                     function(event) { 
+                         $('#submit_button').click();  
+                         event.preventDefault(); }],
+        'cutRow'  : ['Cut this author row.',
+                     'alt+ctrl+shift+x',
+                     updateTableCutRow,
+                     {extra_data: shared_data}],
+        'copyRow' : ['Copy this author row.',
+                     'alt+ctrl+shift+c',
+                     updateTableCopyRow,
+                     {extra_data: shared_data}],
+        'pasteRow': ['Paste an author row after this row.',
+                     'alt+ctrl+shift+v',
+                     updateTablePasteRow,
+                     {extra_data: shared_data}],
+    };
+
+    jQuery.each(keybindings, function(dummy, val) {
+        data_dictionary = {combi: val[1]};
+        target = document;
+        if (val.length >= 4) {
+            for (key in val[3]) {
+                data_dictionary[key] = val[3][key];
+            }
+        } 
+        if (val.length >= 5) {
+            target = val[4];
+        }
+        $(document).bind('keypress', data_dictionary, val[2]);
+        //$(target).bind('keypress', data_dictionary, val[2]);
+    });
+
+    // Extra stuff worth doing 
+    $('#submit_button').attr('title', keybindings['submit'][1] + ' to Submit');
+}
+
+/**
  * Decorate entry fields with calls to jQuery's AutoComplete UI.
  * 
  * @param {Array} shared_data
@@ -145,28 +131,6 @@ function addAutocompletes(shared_data) {
     function last_term(s) {
         return jQuery.trim(filter_SemicolonStringToArray(s).pop());
     }
-    data = [
-        {
-            address: "Menlo Park, CA 94062, USA",
-            label: "SLAC National Accelerator Laboratory",
-            value: "SLAC"
-        },
-        {
-            address: "Route de Meyrin, Meyrin, Switzerland",
-            label: "CERN Meyrin",
-            value: "CERN"
-        },
-        {
-            address: "Hamburg, Germany",
-            label: "DESY Hamburg",
-            value: "DESY"
-        },
-        {
-            address: "Batavia, IL, USA",
-            label: "Fermi National Accelerator Laboratory",
-            value: "FNAL"
-        },
-    ];
     $(".affil_box").bind( "keydown", function( event) {
                         // don't navigate away from the field on tab when selecting an item
                         if ( event.keyCode === $.ui.keyCode.TAB && $(this).data("autocomplete").menu.active) {
@@ -174,39 +138,11 @@ function addAutocompletes(shared_data) {
                         }
                    })
                    .autocomplete({
-//                       source: "/kb/export?kbname=MyKB1&format=jquery",
                        source: function( request, response ) {
-                            $.getJSON("/kb/export", 
+                            $.getJSON("/kb/export",
                                       { kbname: 'MyKB1', format: 'jquery', term: last_term(request.term) },
                                       response);
                        },
-/* not working at all */
-//                       source: function( request, response ) {
-//                            $.ajax({
-//                                    url: "http://liblin10.slac.stanford.edu/kb/export?kbname=MyKB1&format=jquery",
-//                                    datatype: "jsonp",
-//                                    data: { term: last_term(request.term) },
-//                                    success: function (data) {
-//                                        document.write(data);
-//                                    }
-//                                    //success: function( data ) {
-//                                    //    response( $.grep( data, function( item ) {
-//                                    //        var re = new RegExp( 
-//                                    //            $.ui.autocomplete.escapeRegex(last_term(request.term)), "i" );
-//                                    //        return re.test(item.label) || re.test(item.value) || re.test(item.address);
-//                                    //    })); 
-//                                    //}
-//                            });
-//                            /* // work with the data set above
-//                            response( $.grep( data, function( item ) {
-//                                var re = new RegExp( 
-//                                    $.ui.autocomplete.escapeRegex(last_term(request.term)), "i" );
-//                                return re.test(item.label) || re.test(item.value) || re.test(item.address);
-//                            }) ); */
-//                            /* // delegate back to autocomplete, but extract the last term
-//                            response( $.ui.autocomplete.filter(
-//                                    data, last_term( request.term ) ) ); */
-//                       },
                        focus: function() {
                              // prevent value insertion of focus
                             return false;
@@ -218,14 +154,20 @@ function addAutocompletes(shared_data) {
                                return false;
                            }
                        },
+                       /* FIXME HACK XXX JRBL:
+                          * Need to build KB of addresses and values which we can query.  or a static table that we
+                            can have the template insert into our page.  In both cases, sort entries by citecounts.
+                          * Why does this thing always insert an extra space after the first of several list items?
+                          * The column creation thing needs to know to ignore trailing semicolons and whitespace
+                          * CSS For make column headings not look so bad
+                          -- * Needs CSS for the autocomplete selection dropdown --
+                          FIXME HACK XXX JRBL */
                        select: function(event, ui) {
                            var terms = filter_SemicolonStringToArray(this.value);
                            terms.pop();
                            // add the selected item
                            terms.push( ui.item.value );
-                           // add placeholder to get the semicolon-and-space at the end
-                           terms.push( '' );
-                           this.value = terms.join( "; " );
+                           this.value = filter_ArrayToSemicolonString(terms);
                            return false; 
                        },
                    });
@@ -276,10 +218,10 @@ function generateTableBody(shared_data) {
 }
 
 /**
- * Emit a single row a dynamically generated table.
+ * Emit a single row of a dynamically generated table.
  * 
  * @param {Integer} row The row index (0-based)
- * @param {Array} auth_affils [author_name, affiliation1, ...]
+ * @param {Array} auth_affils [author_name, affiliation1, affiliation2, ...]
  * @param {Array} institutions The list of possible affiliations
  * @return {String} The HTML to be emitted to the browser
  */
@@ -300,7 +242,7 @@ function generateTableRow(row, auth_affils, institutions) {
             
     // affiliations
     str += '<td><input type="text" class="affil_box" id="affils_'+row+'" name="insts'+row+'" value="';
-    str += auth_affils.slice(1).join(';') + '"';
+    str += filter_ArrayToSemicolonString(auth_affils.slice(1)) + '"';
     if (row == 0) {
         str += ' title="100u: first author\'s affiliations"';
     } else {
@@ -374,7 +316,7 @@ function addCheckBoxHandlers_changeHandler(shared_data, myvalue, mystatus) {
  *Sync the contents of shared_data into this row's affils box
  */
 function addCheckBoxHandlers_inputSync(shared_data, myrow, myname) {
-  $('#affils_'+myrow).attr("value", shared_data['authors'][myrow].slice(1).join(';'));
+  $('#affils_'+myrow).attr("value", filter_ArrayToSemicolonString(shared_data['authors'][myrow].slice(1)));
 }
 
 /**
@@ -397,12 +339,13 @@ function addTextBoxHandlers(shared_data) {
  * Scrub user input in the author box, then sync it to shared_data and redraw.
  */
 function addAuthBoxHandlers_changeHandler(shared_data, row, value) {
-  shared_data['authors'][row][0] = escapeHTML(value);
+  shared_data['authors'][row][0] = filter_escapeHTML(value);
   updateTable(shared_data);
 }
 
 /**
  * Sync the affiliations box to shared_data, then sync shared_data to the checkboxes
+ * XXX: This is difficult to understand.
  */
 function addAffilBoxHandlers_changeHandler(shared_data, row, value) {
   var myname = shared_data['authors'][row][0];
@@ -422,7 +365,6 @@ function addAffilBoxHandlers_changeHandler(shared_data, row, value) {
           }
       }
   }
-  value = newRow.join(';');
   newRow.unshift(myname);
   shared_data['authors'][row] = newRow;
   updateTable(shared_data);
@@ -438,16 +380,26 @@ function addAffilBoxHandlers_changeHandler(shared_data, row, value) {
 function filter_SemicolonStringToArray(value) {
   return jQuery.map(value.split(';'), function(v, junk) {
       s = jQuery.trim(v);
-      if (v == '') return null;   /* drop empty strings */
-      else return escapeHTML(v);  /* otherwise, sanitize & return */
+      if (s != '') return filter_escapeHTML(s);   /* sanitize and return */
   });
+}
+
+/**
+ * Convert a list into a semicolon-separated-value string.
+ * 
+ * @param {Array} list A 1d arry of strings, e.g., ['cat', 'dog', 'tiger']
+ * @returns {String} A string of the form 'cat; dog; tiger'
+ */
+function filter_ArrayToSemicolonString(list) {
+    list.push( '' );        // placeholder so we always have semicolon-and-space at end
+    return list.join('; ');
 }
 
 /**
  * Replace special characters '&', '<' and '>' with HTML-safe sequences.
  * This functions is called on content before displaying it.
  */
-function escapeHTML(value){
+function filter_escapeHTML(value){
   value = value.replace(/&/g, '&amp;'); // Must be done first!
   value = value.replace(/</g, '&lt;');
   value = value.replace(/>/g, '&gt;');
@@ -518,108 +470,3 @@ function updateTableCopyRow(event) {
     shared_data['row_cut'] = shared_data['authors'][row];
     event.preventDefault();
 }
-
-function validateAffiliation(event) {
-    //var shared_data = event.data.extra_data;
-    /* Get the affiliations in the box */
-    var target_id = event.target.getAttribute('id');
-    var row = target_id.slice(target_id.indexOf('_')+1);
-    $('#'+target_id).change();
-      // sometimes the value may not update properly.  XXX Until that is fixed, this will do
-    var target_af = shared_data['authors'][row].slice(1);
-
-    /* NB: The logic is turned on its head.  I want to say, "post this value,
-       get the result, then do some processing on the result."  But because the
-       post results can return at any time, I have to define the processing I 
-       want to do first, then call that from within the callback for the post */
-    function processPost(data, idx) {
-        idx += 1;
-        if (data.length == 1) {
-            shared_data['authors'][row][idx] = data[0];
-            //$('#'+target_id).change();
-            if (jQuery.inArray(data[0], shared_data['affiliations']) == -1) {
-                shared_data['affiliations'].push(data[0]);
-            }
-            updateTable(shared_data);
-        } else if (data.length > 1) {
-            $('#'+target_id).addClass('doubtful');
-        }
-        // intentionally do nothing on empty list
-    }
-
-    for (var i = 0; i < target_af.length; i++) {
-        if (jQuery.inArray(target_af[i], shared_data['valid_affils'])) {
-
-          jQuery.post('checkAffil', 
-                      {'affil': target_af[i], 'idx': i}, 
-                      function (data, textStatus) {
-                          var idx = parseInt(this.data.slice(this.data.indexOf('idx=')+4));
-                          processPost(data, idx);
-                      },
-                      // XXX: 'json' is bad practice, but we trust the server and it's convenient
-                      'json');              
-
-        } else {
-            /* if affiliation not in shared_data['valid_affils'] decorate questionable */
-            $('#'+target_id).addClass('doubtful');
-        }
-    }
-}
-
-/*****************************************************************************************************
- ********** busted **************
- *****************************************************************************************************/
-/**
- * Handle key tab (save content and jump to next content field).
- */
-function keystrokeTab(event){
-    var entryCells = $('#TableContents input[type="text"]');
-    var element = event.target;
-    var element_i = $(entryCells).index(element);
-    var end_i = $(entryCells).size() - 1;
-    var shared_data = event.data.extra_data;
-    var move = 1;
-
-    if (event.shiftKey) {
-        if (element_i == 0)
-            move = end_i;
-        else
-            move = -1;
-    } else {
-        if (element_i == end_i)
-            move = -end_i;
-        else
-            move = 1;
-    }
-
-    //$(entryCells).eq(element_i)[0].blur();
-    //$(entryCells).eq(element_i)[0].triggerHandler("blur");
-    //addAffilBoxHandlers_blurHandler(shared_data, $(entryCells).eq(element_i)[0]);
-    $(entryCells).eq(element_i+move).focus();
-    ///$('#'+tag+'_'+move).focus();
-
-    //$(entryCells).eq(element_i+move).triggerHandler("focus");
-    //for (key in $(entryCells).eq(element_i)[0])
-        //document.write(key + '<br />\n');
-        //document.write($(entryCells).eq(element_i).val)
-    event.preventDefault();
-}
-
-function keystrokeEnter(event) {
-    var target_id = event.target.getAttribute('id');
-    var row_element = event.target.parentNode.parentNode;
-    var row = $('#TableContents tr').index(row_element);
-    var shared_data = event.data.extra_data;
-
-    if ((row < 0) || (row > (shared_data.length -1)))
-        return
-
-    //var target_row = target_id.slice(target_id.lastIndexOf('_')+1);
-    //var next_row = target_row + 1;
-    var next_id = target_id.slice(0, target_id.lastIndexOf('_')+1) + (row+1);
-
-    $(target_id).change();
-    $(next_id).focus(); 
-    event.preventDefault();
-}
-
