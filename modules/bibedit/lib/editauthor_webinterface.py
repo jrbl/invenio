@@ -46,7 +46,6 @@ class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
         if permission != True:
             return permission
 
-        #if not form.has_key('recID') or form['recID'] == -1:
         if not 'recID' in form or form['recID'] == -1:
             return self.index(request, {})
 
@@ -62,10 +61,10 @@ class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
         place_list = engine.flattenByCounts(place_list)
 
         # FIXME: hardcoded (& incorrect) KB name
-        validated_affiliations = [x[0] for x in
-                                  #bibknowledge.get_kbr_keys("JoeTest") if
-                                  bibknowledge.get_kbr_keys("Institutions") if
-                                  x[0] != '']
+        #validated_affiliations = [x[0] for x in
+        #                          bibknowledge.get_kbr_keys("JoeTestInstitutionsKB") if
+        #                          x[0] != '']
+        validated_affiliations = [ ]
 
         text = self.template.record(record_id,
                                     author_list,
@@ -75,23 +74,6 @@ class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
         return invenio.webpage.page(title = self.title,
                                     body = text,
                                     req = request)
-
-    def checkAffil(self, request, form):
-        #if not form.has_key('affil'):
-        if not 'affil' in form:
-            return self.index(request, {})
-
-        form_data = wash_urlargd(form, {'affil': (str, '')})
-
-        possible_matches = []
-        possible_matches = [x[0] for x in
-                            invenio.bibknowledge.get_kbr_values(
-                                    #'JoeTest',
-                                    'Institutions',
-                                    form_data['affil'],
-                                    'e') if x[0] != '']
-        return simplejson.dumps(possible_matches)
-        #return invenio.webpage.page(title='', body=form_data, req=request
 
     def process(self, request, form):
 

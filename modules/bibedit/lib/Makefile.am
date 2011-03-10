@@ -52,7 +52,12 @@ js_DATA = editauthor.js \
 	  marcxml.js \
 	  bibedit_clipboard.js
 
+cssdir=$(localstatedir)/www/img
+
+css_DATA = editauthor.css ui-anim_basic_16x16.gif
+
 EXTRA_DIST = $(pylib_DATA) \
-             $(js_DATA)
+             $(js_DATA) \
+			 $(css_DATA)
 
 CLEANFILES = *~ *.tmp *.pyc *.orig
