@@ -157,10 +157,12 @@ function addAutocompletes(shared_data) {
                        /* FIXME HACK XXX JRBL:
                           * Need to build KB of addresses and values which we can query.  or a static table that we
                             can have the template insert into our page.  In both cases, sort entries by citecounts.
-                          * Why does this thing always insert an extra space after the first of several list items?
-                          * The column creation thing needs to know to ignore trailing semicolons and whitespace
-                          * CSS For make column headings not look so bad
+                          * CSS improvements for autocomplete dropdowns 
+                          -- * CSS For make column headings not look so bad --
+                          -- * Why does this thing always insert an extra space after the first of several list items? --
+                          -- * The column creation thing needs to know to ignore trailing semicolons and whitespace --
                           -- * Needs CSS for the autocomplete selection dropdown --
+                          -- * We should output a more helpful error message when jQuery isn't installed (or isn't working) --
                           FIXME HACK XXX JRBL */
                        select: function(event, ui) {
                            var terms = filter_SemicolonStringToArray(this.value);
@@ -196,8 +198,8 @@ function generateTableHeader(inst_list) {
             }
         }
         label = (i+1).toString() + '. ' + label;
-        sliced = '<span class="column_no" style="font-size: .4em;">'+(i+1).toString() + '</span><br />' + sliced; // XXX: inline styling
-        computed_text += '<th class="col'+i+'"><a title="'+label+' - Click to hide." href="#" class="hide_link" name="'+i+'">'+sliced+'</a></th>';
+        sliced = '<span class="column_no">'+(i+1).toString() + '</span><br />' + sliced;
+        computed_text += '<th class="col'+i+' column_label"><a title="'+label+' - Click to hide." href="#" class="hide_link" name="'+i+'">'+sliced+'</a></th>';
     }
     computed_text += '</tr>\n';
     return computed_text;

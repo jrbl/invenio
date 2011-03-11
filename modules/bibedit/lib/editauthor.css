@@ -3,6 +3,16 @@ table#asm_uitable {
     background-color: #22aa66;
 }
 
+.column_no {
+    font-size: .4em;
+}
+
+.column_label a {
+    color: black;
+    font-weight: bold;
+    text-decoration: none;
+}
+
 #ui-active-menuitem {
     color: #ffffff;
     background-color: #22dd66;
