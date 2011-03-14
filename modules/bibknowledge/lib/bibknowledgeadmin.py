@@ -659,8 +659,14 @@ def kb_export(req, kbname="", format="kbr", searchkey="", searchvalue="", search
         res = bibknowledge.get_kbd_values(kbname, searchvalue)
         if not res:
             req.write("\n") #in order to say something
-        for r in res:
-            req.write(r+"\n") #output values
+        if format == 'jquery':
+            for r in res:
+                req.content_type = 'application/json'
+                return json.dumps(res)
+        else:
+            for r in res:
+                req.write(r+"\n") #output values
+            
     if kbtype == 't': #taxonomy: output the file
         kbfilename = CFG_WEBDIR+"/kbfiles/"+str(kbid)+".rdf"
         try:

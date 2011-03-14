@@ -271,7 +271,7 @@ class Template:
                                         'expression': cgi.escape(expression, 1),
                                         'field': cgi.escape(field, 1),
                                         'collection': cgi.escape(collection, 1), 'ln': ln ,
-                                        'save': _("Save")}
+                                        'save': _("Save"),
                                         'field': field,
                                         'selectbox': selectbox, 'ln': ln }
         if field or expression:

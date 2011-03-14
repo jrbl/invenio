@@ -22,10 +22,10 @@ msgstr ""
 "PO-Revision-Date: 2006-10-12 17:50+0200\n"
 "Last-Translator: Pablo Vazquez Caderno <pablo.vazquez.caderno@cern.ch>\n"
 "Language-Team: GL <info@invenio-software.org>\n"
-"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Language: \n"
 "Generated-By: pygettext.py 1.5\n"
 
 #: modules/websearch/doc/search-guide.webdoc:361
@@ -2094,9 +2094,9 @@ msgstr ""
 #: modules/bibupload/lib/batchuploader_templates.py:191
 #, python-format
 msgid ""
-"Your file has been successfully queued. You can check your "
-"%(x_url1_open)supload history%(x_url1_close)s or %(x_url2_open)ssubmit "
-"another file%(x_url2_close)s"
+"Your file has been successfully queued. You can check your %(x_url1_open)"
+"supload history%(x_url1_close)s or %(x_url2_open)ssubmit another file%"
+"(x_url2_close)s"
 msgstr ""
 
 #: modules/bibupload/lib/batchuploader_templates.py:205
@@ -2889,8 +2889,8 @@ msgstr ""
 #: modules/webalert/lib/webalert_templates.py:300
 #, python-format
 msgid ""
-"Set a new alert from %(x_url1_open)syour searches%(x_url1_close)s, the "
-"%(x_url2_open)spopular searches%(x_url2_close)s, or the input form."
+"Set a new alert from %(x_url1_open)syour searches%(x_url1_close)s, the %"
+"(x_url2_open)spopular searches%(x_url2_close)s, or the input form."
 msgstr ""
 
 #: modules/webalert/lib/webalert_templates.py:318
@@ -3207,8 +3207,8 @@ msgstr ""
 #: modules/webbasket/lib/webbasket.py:2191
 #, python-format
 msgid ""
-"You have %(x_nb_perso)s personal baskets and are subscribed to "
-"%(x_nb_group)s group baskets and %(x_nb_public)s other users public baskets."
+"You have %(x_nb_perso)s personal baskets and are subscribed to %(x_nb_group)"
+"s group baskets and %(x_nb_public)s other users public baskets."
 msgstr ""
 
 #: modules/webbasket/lib/webbasket_templates.py:86
@@ -3314,8 +3314,8 @@ msgstr ""
 #: modules/webbasket/lib/webbasket_templates.py:976
 #, python-format
 msgid ""
-"Displaying public baskets %(x_from)i - %(x_to)i out of "
-"%(x_total_public_basket)i public baskets in total."
+"Displaying public baskets %(x_from)i - %(x_to)i out of %"
+"(x_total_public_basket)i public baskets in total."
 msgstr ""
 
 #: modules/webbasket/lib/webbasket_templates.py:1043
@@ -3423,8 +3423,8 @@ msgstr ""
 #: modules/webbasket/lib/webbasket_templates.py:1399
 #, python-format
 msgid ""
-"Please choose a basket: %(x_basket_selection_box)s %(x_fmt_open)s(or "
-"%(x_url_open)screate a new one%(x_url_close)s first)%(x_fmt_close)s"
+"Please choose a basket: %(x_basket_selection_box)s %(x_fmt_open)s(or %"
+"(x_url_open)screate a new one%(x_url_close)s first)%(x_fmt_close)s"
 msgstr ""
 
 #: modules/webbasket/lib/webbasket_templates.py:1405
@@ -4139,8 +4139,8 @@ msgstr ""
 #: modules/webcomment/lib/webcomment_templates.py:1187
 #, python-format
 msgid ""
-"Note: you have not %(x_url_open)sdefined your nickname%(x_url_close)s. "
-"%(x_nickname)s will be displayed as the author of this comment."
+"Note: you have not %(x_url_open)sdefined your nickname%(x_url_close)s. %"
+"(x_nickname)s will be displayed as the author of this comment."
 msgstr ""
 
 #: modules/webcomment/lib/webcomment_templates.py:1091
@@ -5286,8 +5286,8 @@ msgstr ""
 #: modules/websearch/lib/websearch_templates.py:2970
 #, python-format
 msgid ""
-"%(x_fmt_open)sResults overview:%(x_fmt_close)s Found at least "
-"%(x_nb_records)s records in %(x_nb_seconds)s seconds."
+"%(x_fmt_open)sResults overview:%(x_fmt_close)s Found at least %(x_nb_records)"
+"s records in %(x_nb_seconds)s seconds."
 msgstr ""
 
 #: modules/websearch/lib/websearch_templates.py:3047
@@ -5489,15 +5489,15 @@ msgstr ""
 #: modules/websession/lib/webaccount.py:115
 #, python-format
 msgid ""
-"You are logged in as guest. You may want to %(x_url_open)slogin"
-"%(x_url_close)s as a regular user."
+"You are logged in as guest. You may want to %(x_url_open)slogin%(x_url_close)"
+"s as a regular user."
 msgstr ""
 
 #: modules/websession/lib/webaccount.py:119
 #, python-format
 msgid ""
-"The %(x_fmt_open)sguest%(x_fmt_close)s users need to %(x_url_open)sregister"
-"%(x_url_close)s first"
+"The %(x_fmt_open)sguest%(x_fmt_close)s users need to %(x_url_open)sregister%"
+"(x_url_close)s first"
 msgstr ""
 
 #: modules/websession/lib/webaccount.py:124
@@ -5523,8 +5523,8 @@ msgstr ""
 #: modules/websession/lib/websession_templates.py:94
 #, python-format
 msgid ""
-"You can consult the list of your external groups directly in the "
-"%(x_url_open)sgroups page%(x_url_close)s."
+"You can consult the list of your external groups directly in the %"
+"(x_url_open)sgroups page%(x_url_close)s."
 msgstr ""
 
 #: modules/websession/lib/websession_templates.py:98
@@ -5607,8 +5607,8 @@ msgstr ""
 #: modules/websession/lib/websession_templates.py:228
 #, python-format
 msgid ""
-"You can change or reset your CERN account password by means of the "
-"%(x_url_open)sCERN account system%(x_url_close)s."
+"You can change or reset your CERN account password by means of the %"
+"(x_url_open)sCERN account system%(x_url_close)s."
 msgstr ""
 
 #: modules/websession/lib/websession_templates.py:252
@@ -5765,9 +5765,9 @@ msgstr ""
 #: modules/websession/lib/websession_templates.py:532
 #, python-format
 msgid ""
-"You are logged in as %(x_user)s. You may want to a) %(x_url1_open)slogout"
-"%(x_url1_close)s; b) edit your %(x_url2_open)saccount settings"
-"%(x_url2_close)s."
+"You are logged in as %(x_user)s. You may want to a) %(x_url1_open)slogout%"
+"(x_url1_close)s; b) edit your %(x_url2_open)saccount settings%(x_url2_close)"
+"s."
 msgstr ""
 
 #: modules/websession/lib/websession_templates.py:613
@@ -5907,8 +5907,8 @@ msgstr ""
 #: modules/websession/lib/websession_templates.py:839
 #, python-format
 msgid ""
-"If you don't own an account yet, please %(x_url_open)sregister"
-"%(x_url_close)s an internal account."
+"If you don't own an account yet, please %(x_url_open)sregister%(x_url_close)"
+"s an internal account."
 msgstr ""
 
 #: modules/websession/lib/websession_templates.py:847
@@ -6028,8 +6028,8 @@ msgstr ""
 #: modules/websession/lib/websession_templates.py:1122
 #, python-format
 msgid ""
-"For more admin-level activities, see the complete %(x_url_open)sAdmin Area"
-"%(x_url_close)s."
+"For more admin-level activities, see the complete %(x_url_open)sAdmin Area%"
+"(x_url_close)s."
 msgstr ""
 
 #: modules/websession/lib/websession_templates.py:1175
@@ -6252,8 +6252,8 @@ msgstr ""
 #: modules/websession/lib/websession_templates.py:2079
 #, python-format
 msgid ""
-"If you want to invite new members to join your group, please use the "
-"%(x_url_open)sweb message%(x_url_close)s system."
+"If you want to invite new members to join your group, please use the %"
+"(x_url_open)sweb message%(x_url_close)s system."
 msgstr ""
 
 #: modules/websession/lib/websession_templates.py:2083
@@ -6340,9 +6340,8 @@ msgstr ""
 #: modules/websession/lib/websession_templates.py:2422
 #, python-format
 msgid ""
-"You can consult the list of %(x_url_open)s%(x_nb_total)i groups"
-"%(x_url_close)s you are subscribed to (%(x_nb_member)i) or administering "
-"(%(x_nb_admin)i)."
+"You can consult the list of %(x_url_open)s%(x_nb_total)i groups%(x_url_close)"
+"s you are subscribed to (%(x_nb_member)i) or administering (%(x_nb_admin)i)."
 msgstr ""
 
 #: modules/websession/lib/websession_templates.py:2441
@@ -6574,8 +6573,8 @@ msgstr ""
 #: modules/websession/lib/websession_webinterface.py:397
 #, python-format
 msgid ""
-"Note that if you have changed your email address, you will have to "
-"%(x_url_open)sreset your password%(x_url_close)s anew."
+"Note that if you have changed your email address, you will have to %"
+"(x_url_open)sreset your password%(x_url_close)s anew."
 msgstr ""
 
 #: modules/websession/lib/websession_webinterface.py:405
@@ -6958,8 +6957,8 @@ msgstr ""
 #: modules/webstyle/lib/webdoc_webinterface.py:190
 #, python-format
 msgid ""
-"You may want to look at the %(x_url_open)s%(x_category)s pages"
-"%(x_url_close)s."
+"You may want to look at the %(x_url_open)s%(x_category)s pages%(x_url_close)"
+"s."
 msgstr ""
 
 #: modules/websubmit/lib/websubmit_managedocfiles.py:368
@@ -7069,15 +7068,15 @@ msgstr ""
 #: modules/websubmit/lib/websubmit_managedocfiles.py:871
 #, python-format
 msgid ""
-"Having a problem revising a file? Send the revised version to "
-"%(mailto_link)s."
+"Having a problem revising a file? Send the revised version to %(mailto_link)"
+"s."
 msgstr ""
 
 #: modules/websubmit/lib/websubmit_managedocfiles.py:874
 #, python-format
 msgid ""
-"Having a problem adding or revising a file? Send the new/revised version to "
-"%(mailto_link)s."
+"Having a problem adding or revising a file? Send the new/revised version to %"
+"(mailto_link)s."
 msgstr ""
 
 #: modules/websubmit/lib/websubmit_managedocfiles.py:989
@@ -7331,8 +7330,8 @@ msgstr ""
 #: modules/websubmit/lib/websubmit_templates.py:1061
 #, python-format
 msgid ""
-"Here is the %(x_action)s function list for %(x_doctype)s documents at level "
-"%(x_step)s"
+"Here is the %(x_action)s function list for %(x_doctype)s documents at level %"
+"(x_step)s"
 msgstr ""
 
 #: modules/websubmit/lib/websubmit_templates.py:1066
