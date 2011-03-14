@@ -298,19 +298,6 @@ def get_kbd_values(kbname, searchwith=""):
     if searchwith and expression:
         if (expression.count('%') > 0):
             expression = expression.replace("%", searchwith)
-            #take the field, unnecessary except for debugging..
-            # XXX: Can this be done with a regular expression more efficiently?
-            myval = ""
-            found = expression.find(":")
-            if (found > -1):
-                myefield = expression[:found]
-                myval = expression[found+1:]
-                # check if myval is quoted..
-                if not (myval.startswith("'") or myval.startswith('"')):
-                    myval = "'"+myval
-                if not (myval.endswith("'") or myval.endswith('"')):
-                    myval = myval+"'"
-                expression = myefield+":"+myval
             reclist = search_engine.perform_request_search(p=expression,
                                                            cc=collection)
         else:

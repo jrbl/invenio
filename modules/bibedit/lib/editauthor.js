@@ -31,7 +31,6 @@ $(document).ready(
     $.ajax({ url: "/img/editauthor.css", success: function(data) {
         $("<style></style>").appendTo("head").html(data);
     }});
-    //$('table').attr("bgcolor", "#22cc66");  // DEBUG only; makes working js parse obvious
   }
 );
 
@@ -44,20 +43,21 @@ $(document).ready(
 function updateTable(shared_data) {
 
     // generate table header & body
-    $('#TableHeaders').html( generateTableHeader(shared_data['affiliations']) );
+    $('#TableHeaders').html(  generateTableHeader(shared_data['affiliations']) );
     $('#TableContents').html( generateTableBody(shared_data) );
 
     // add column folding click handlers
-    $('a.hide_link').click( 
+    $('a.hide_link').click(       // FIXME: id selector faster?  does it matter?
         function() { 
             shared_data['folded'].push(this.name); 
             foldColumn(this.name, this.title.replace('hide', 'expand'));
         });
 
     // add checkbox handlers
-    $('input[type="checkbox"]').click( 
+    $('input[type="checkbox"]').click( // FIXME: id selector faster?  does it matter?
         function() { 
-            addCheckBoxHandlers_changeHandler(shared_data, this.value, this.checked) 
+            checkBoxHandler_changeState(shared_data, this.value, this.checked);
+            //addShiftClickHandler(this.id, this.checked);
         });
 
     // add text box handlers (table updates, keystrokes and autocompletes)
@@ -71,6 +71,7 @@ function updateTable(shared_data) {
             foldColumn(shared_data['folded'][i], "Click to expand.");
         }
     }
+    return false;
 }
 
 /**
@@ -103,6 +104,7 @@ function addKeystrokes(shared_data) {
                      {extra_data: shared_data}],
     };
 
+    // FIXME: eliminate this use of each() ?
     jQuery.each(keybindings, function(dummy, val) {
         data_dictionary = {combi: val[1]};
         target = document;
@@ -158,11 +160,8 @@ function addAutocompletes(shared_data) {
                           * Need to build KB of addresses and values which we can query.  or a static table that we
                             can have the template insert into our page.  In both cases, sort entries by citecounts.
                           * CSS improvements for autocomplete dropdowns 
-                          -- * CSS For make column headings not look so bad --
-                          -- * Why does this thing always insert an extra space after the first of several list items? --
-                          -- * The column creation thing needs to know to ignore trailing semicolons and whitespace --
-                          -- * Needs CSS for the autocomplete selection dropdown --
-                          -- * We should output a more helpful error message when jQuery isn't installed (or isn't working) --
+                          * Reduce number of DOM elements
+                          * Items that came up during demo with denise; on phone as pictures
                           FIXME HACK XXX JRBL */
                        select: function(event, ui) {
                            var terms = filter_SemicolonStringToArray(this.value);
@@ -224,7 +223,7 @@ function generateTableBody(shared_data) {
  * 
  * @param {Integer} row The row index (0-based)
  * @param {Array} auth_affils [author_name, affiliation1, affiliation2, ...]
- * @param {Array} institutions The list of possible affiliations
+ * @param {Array} institutions The list of represented affiliations
  * @return {String} The HTML to be emitted to the browser
  */
 function generateTableRow(row, auth_affils, institutions) {
@@ -254,10 +253,10 @@ function generateTableRow(row, auth_affils, institutions) {
 
     // checkboxes
     for (var i = 0; i < institutions.length; i++) {
-        var inst_name = institutions[i];
+        var inst_name = jQuery.trim(institutions[i]);
         var name_row = inst_name+'_'+row;
         str += '<td><input type="checkbox" title="'+institutions[i];
-        str +=           '" class="col'+i+'" id="checkbox_'+row+'_'+i+'" value="'+name_row+'"';
+        str +=          '" class="col'+i+'" id="checkbox_'+row+'_'+i+'" value="'+name_row+'"';
         for (var place = 1; place < auth_affils.length; place++) {
             if (auth_affils[place] == inst_name) {
                 str += ' checked';
@@ -272,6 +271,9 @@ function generateTableRow(row, auth_affils, institutions) {
 
 /** 
  * "fold" a column in the table.
+ *
+ * FIXME: this would be significantly faster with id selectors instead of class selectors.  Also with selector caching.
+ *        Cf. http://net.tutsplus.com/tutorials/javascript-ajax/10-ways-to-instantly-increase-your-jquery-performance/
  * 
  * @param {int} col The column number to fold
  * @param {String} title The mouseover floating text for the element
@@ -283,14 +285,16 @@ function foldColumn(col, title) {
             $('.empty'+col).remove();
             $('.col'+col).show();
             shared_data['folded'].splice($.inArray(col, shared_data['folded']));
+            return false;
         });
     $('.col'+col).hide();
+    return false;
 }
 
 /**
  * Search the affiliations for an author looking for this checkbox.
  */
-function addCheckBoxHandlers_changeHandler(shared_data, myvalue, mystatus) {
+function checkBoxHandler_changeState(shared_data, myvalue, mystatus) {
   var myrow = myvalue.substring(myvalue.lastIndexOf('_')+1);
   var myaffils = shared_data['authors'][myrow].slice(1);
   var myname = myvalue.slice(0, myvalue.indexOf('_'));
@@ -299,7 +303,7 @@ function addCheckBoxHandlers_changeHandler(shared_data, myvalue, mystatus) {
   if ((mystatus == true) && (cb_loc == -1)) {
       // we want it, but it's not here
       shared_data['authors'][myrow].push(myname);
-      addCheckBoxHandlers_inputSync(shared_data, myrow, myname);
+      checkBoxHandler_stateSync(shared_data, myrow, myname);
   } else if ((mystatus == true) && (cb_loc != -1)) {
       // we want it, but it's already here
       return;
@@ -310,14 +314,14 @@ function addCheckBoxHandlers_changeHandler(shared_data, myvalue, mystatus) {
       // we don't want it, and it's here
       cb_loc += 1; // XXX: index taken from slice, but used in a splice
       shared_data['authors'][myrow].splice(cb_loc, 1);
-      addCheckBoxHandlers_inputSync(shared_data, myrow, myname);
+      checkBoxHandler_stateSync(shared_data, myrow, myname);
   }
 }
 
 /**
  *Sync the contents of shared_data into this row's affils box
  */
-function addCheckBoxHandlers_inputSync(shared_data, myrow, myname) {
+function checkBoxHandler_stateSync(shared_data, myrow, myname) {
   $('#affils_'+myrow).attr("value", filter_ArrayToSemicolonString(shared_data['authors'][myrow].slice(1)));
 }
 
@@ -347,23 +351,23 @@ function addAuthBoxHandlers_changeHandler(shared_data, row, value) {
 
 /**
  * Sync the affiliations box to shared_data, then sync shared_data to the checkboxes
- * XXX: This is difficult to understand.
  */
 function addAffilBoxHandlers_changeHandler(shared_data, row, value) {
   var myname = shared_data['authors'][row][0];
   var newRow = filter_SemicolonStringToArray(value);
-  for (var i in newRow) {
-      var datum = newRow[i];
-      var iDatum = parseInt(datum);
-      /* column number given */
-      if ((iDatum == datum-0) &&       // small int w/ no junk chars
-          (iDatum > 0) &&              // value 1 or more
-          (iDatum <= shared_data['affiliations'].length)) { // but <= max + 1
-          newRow[i] = shared_data['affiliations'][datum-1];
-      } else {
-          /* unseen values get added as new columns */
-          if (jQuery.inArray(datum, shared_data['affiliations']) == -1) {
-            shared_data['affiliations'].push(datum);
+  for (var i = 0; i < newRow.length; i++) {
+      var item = newRow[i];
+      var item_as_colno = parseInt(item);
+      if ((item_as_colno == item-0) &&                             // it is:  small int w/ no junk chars
+          (item_as_colno > 0) &&                                   // it has: value 1 or more
+          (item_as_colno <= shared_data['affiliations'].length)) { // it has: value <= max + 1
+          /* column number given */
+          newRow[i] = shared_data['affiliations'][item-1];
+      } else {                                                     // it is: a normal affiliation
+          /* unseen, meaningful values get added as new columns 
+             FIXME: unseen meaningful values should fire an institution addition */
+          if ((jQuery.inArray(item, shared_data['affiliations']) == -1) && (item != '')) {
+            shared_data['affiliations'].push(item);
           }
       }
   }
@@ -388,13 +392,17 @@ function filter_SemicolonStringToArray(value) {
 
 /**
  * Convert a list into a semicolon-separated-value string.
+ * Remove empty strings and whitespace-only.  Collapse multiple spaces to one.
  * 
- * @param {Array} list A 1d arry of strings, e.g., ['cat', 'dog', 'tiger']
- * @returns {String} A string of the form 'cat; dog; tiger'
+ * @param {Array} list A 1d arry of strings, e.g., ['', 'cat', 'dog','    ', 'tiger']
+ * @returns {String} A string of the form 'cat;dog;tiger'
  */
 function filter_ArrayToSemicolonString(list) {
-    list.push( '' );        // placeholder so we always have semicolon-and-space at end
-    return list.join('; ');
+    list = jQuery.map(list, function(v, i) { v = jQuery.trim(v); if (v == '') return null; return v; });
+    retval = list.join(';');
+    if (retval != '') { retval += ';' };
+    retval = retval.replace(/\s+/g, ' ').replace(/; ;/g, ';').replace(/;+/g, ';');
+    return retval;
 }
 
 /**
@@ -471,4 +479,42 @@ function updateTableCopyRow(event) {
         return
     shared_data['row_cut'] = shared_data['authors'][row];
     event.preventDefault();
+}
+
+/** 
+ * Allow a checkbox to be clicked, setting one end of a range, and then
+ * another box to be shift-clicked, establishing the other end of the range.
+ * Selects both ends and all the checkboxes inbetween.
+ * 
+ * @param {String} id The unique identifier for a given checkbox
+ * @param {Boolean} checked Whether some given checkbox is checked
+ */
+function addShiftClickHandler(id, checked) {
+    var idparts = id.split('_');
+    var myrow = idparts[1];
+    var mycol = idparts[2];
+    // FIXME: HOW TO RESOLVE THESE TWO SETS OF IDEAS?  BELOW IMPL FROM http://media.sneeu.com/js/jquery.shiftclick.js
+    // NOT GOOD ENOUGH.  BUT WE WANT THE EVENT INFO TOO.
+}
+function shiftClick() {
+    var end1;
+    var end2 = this;
+    var column = $(this);
+
+    jQuery.each(this, function() {
+        $(this).click(function(event) {
+            if (!event.shiftKey) {
+                end1 = end2;
+            } else {
+                var end1i = column.index(end1);
+                var end2i = column.index(end2);
+                var lower = Math.min(end1i, end2i);
+                var upper = Math.max(end1i, end2i);
+                var val = end1.checked;
+                for (var i = end1i; i < end2i; i++) {
+                    column[i].checked = val;
+                }
+            }
+        })
+    });
 }
