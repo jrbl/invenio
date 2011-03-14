@@ -2732,7 +2732,7 @@ ul.detailedrecordactions{
    text-align:left;
    background:url(star_empty-icon-30x30.gif) no-repeat;
 }
-#detailedrecordminipanelreview div.star:hover{
+#detailedrecordminipanelreview div.star:hover {
    background-image:url(star-icon-30x30.gif) !important;
 }
 #detailedrecordminipanelreview:hover div.full, #detailedrecordminipanelreview:hover div.half{
@@ -2849,7 +2849,7 @@ text-decoration:underline;
        */
     width:99%;
 }
-#bibcircmenu li.on a, #bibcircmenu li.on a:hover, #bibcircmenu li.on a:visited{
+#bibcircmenu li.on a, #bibcircmenu li.on a:hover, #bibcircmenu li.on a:visited {
     text-decoration:none;
     color:#555;
 }
@@ -2915,12 +2915,12 @@ text-decoration:underline;
     position:relative;
     z-index:50;
 }
-#bibcircmenu li ul.subsubmenu li a, #bibcircmenu li ul.subsubmenu li a:hover, #bibcircmenu li ul.subsubmenu li a:visited{
+#bibcircmenu li ul.subsubmenu li a, #bibcircmenu li ul.subsubmenu li a:hover, #bibcircmenu li ul.subsubmenu li a:visited {
     background:transparent none;
     display:block;
     color:#36c;
 }
-#bibcircmenu li ul.subsubmenu li a:hover{
+#bibcircmenu li ul.subsubmenu li a:hover {
     text-decoration:underline
 }
 #bibcircmenu li:hover ul {

@@ -1,6 +1,7 @@
 import invenio.config
 
 import simplejson            # FIXME: remember to be defensive
+import math                  # floor()
 
 
 class Template:
@@ -9,13 +10,22 @@ class Template:
     def __init__(self):
         """Establish some variables we can use throughout"""
         self.javascript = [ # prerequisites for hotkeys, autocomplete
-                           'jquery.min.js', 
-                           'jquery.ui.core.min.js', 
-                           'jquery.ui.widget.min.js', 
-                           'jquery.ui.position.min.js', 
-                           # the good parts
-                           'jquery.hotkeys.min.js',
-                           'jquery.ui.autocomplete.min.js', 
+                           #'jquery.min.js', 
+                           #'jquery-1.4.4.js', 
+                           # FIXME we should be using a locally cached version of jquery-1.4.4... shouldn't we?
+                           'http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js',
+                           #'jquery.ui.core.min.js', 
+                           #'jquery.ui.widget.min.js', 
+                           #'jquery.ui.position.min.js', 
+                           ## the good parts
+                           #'jquery.hotkeys.min.js',
+                           #'jquery.ui.autocomplete.min.js', 
+                           # FIXME we should be using locally cached version of jquery-ui libs... shouldn't we?
+                           'https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.11/jquery-ui.min.js',
+                           # FIXME we should be using locally cached version of jquery hotkeys... but this version!
+                           #'https://github.com/jeresig/jquery.hotkeys/raw/master/jquery.hotkeys.js',
+                           #'http://js-hotkeys.googlecode.com/files/jquery.hotkeys-0.7.9.js',
+                           'http://www.openjs.com/scripts/events/keyboard_shortcuts/shortcut.js',
                            'editauthor.js'
                           ]
 
@@ -23,8 +33,11 @@ class Template:
         """Output a bunch of <script> bits."""
         ostr = ''
         for script in self.javascript:
-            ostr += ("<script type=\"text/javascript\" src=\"%s/js/%s\">" %
-                                       (invenio.config.CFG_SITE_URL, script))
+            if script.startswith('http'):
+                ostr += ("<script type=\"text/javascript\" src=\"%s\">" % script)
+            else:
+                ostr += ("<script type=\"text/javascript\" src=\"%s/js/%s\">" %
+                                           (invenio.config.CFG_SITE_URL, script))
             ostr += "</script>\n"
         return ostr
 
@@ -35,15 +48,18 @@ class Template:
                            "the records to work with.", tagas='FIXME_index')
         return ostr
 
-    def record(self, record_id, author_list, affiliations, valid_affils = []):
+    def record(self, record_id, author_list, affiliations, offset=0, per_page=100, title='', valid_affils = []):
         """Template for individual record display/edit"""
         return """%(script_parts)s
 <script type="text/javascript">
     shared_data["authors"] = %(author_list_json)s;
     shared_data["affiliations"] = %(affiliation_list_json)s;
+    shared_data["paging"] = {pages: 1, offset: %(offset)s, rows: %(per_page)s, };
+    shared_data["headline"] = {recid: "%(record_id)s", title: "%(paper_title)s", };
     //shared_data["valid_affils"] = %(valid_affils_list_json)s;
 </script>
 <form method="post" action="%(site_URL)s/editauthors/process">
+    <div id="paging_navigation" style="display: none;"></div>
     <table id="asm_uitable" bgcolor="#ff2200">     <!-- Red means a javascript parse error -->
         <thead id="TableHeaders">
             <td>
@@ -67,7 +83,10 @@ class Template:
        'affiliation_list_json'  : simplejson.dumps(affiliations),
        'valid_affils_list_json' : simplejson.dumps(valid_affils),
        'site_URL'               : invenio.config.CFG_SITE_URL,
-       'record_id'              : str(record_id)
+       'record_id'              : str(record_id),
+       'per_page'               : str(per_page),
+       'offset'                 : str(offset),
+       'paper_title'            : title,
       }
               
     def tPara(self, instr, indent=0, tagas=''):

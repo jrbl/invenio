@@ -5,6 +5,17 @@ from invenio.search_engine import search_pattern, print_record
 from invenio.bibrecord import create_record
 
 
+def get_title(recid):
+    """Return a paper's title for input record id."""
+    record = create_record(print_record(recid, 'xm'))[0]
+    retval = ''
+    try:
+        for code, txt in record['245'][0][0]:
+            if code == 'a':
+                retval = txt 
+    finally:
+        return retval
+
 def auPairs(recid):
     """Generate [author, affiliation ...] lists for input record id."""
     yieldedSomething = False
@@ -32,6 +43,14 @@ def auPairs(recid):
     try:
         fields = record['700']
     except KeyError:
+        # We may not have additional authors
+        if not yieldedSomething:
+            yield None, None
+        return
+    except TypeError, msg:
+        # We may not have a record object, for example if indexing is
+        # unfinished.  TODO: yield something that can be interpreted to give
+        # a useful message to the user.
         if not yieldedSomething:
             yield None, None
         return
