@@ -22,10 +22,10 @@ msgstr ""
 "PO-Revision-Date: 2011-01-17 15:31+0100\n"
 "Last-Translator: Jérôme Caffaro <jerome.caffaro@cern.ch>\n"
 "Language-Team: FR <info@invenio-software.org>\n"
-"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Language: \n"
 "Generated-By: pygettext.py 1.5\n"
 
 #: modules/websearch/doc/search-guide.webdoc:361
@@ -2089,14 +2089,15 @@ msgstr "Exemple"
 #: modules/bibupload/lib/batchuploader_templates.py:362
 #, python-format
 msgid "All fields with %(x_fmt_open)s*%(x_fmt_close)s are mandatory"
-msgstr "Tous les champs marqués %(x_fmt_open)s*%(x_fmt_close)s sont obligatoires"
+msgstr ""
+"Tous les champs marqués %(x_fmt_open)s*%(x_fmt_close)s sont obligatoires"
 
 #: modules/bibupload/lib/batchuploader_templates.py:191
 #, python-format
 msgid ""
-"Your file has been successfully queued. You can check your "
-"%(x_url1_open)supload history%(x_url1_close)s or %(x_url2_open)ssubmit "
-"another file%(x_url2_close)s"
+"Your file has been successfully queued. You can check your %(x_url1_open)"
+"supload history%(x_url1_close)s or %(x_url2_open)ssubmit another file%"
+"(x_url2_close)s"
 msgstr ""
 "Votre fichier a été inséré dans la file d'attente avec succès. Vous pouvez\n"
 "affichier votre %(x_url1_open)shistorique d'envois%(x_url1_close)s ou \n"
@@ -2161,7 +2162,8 @@ msgstr "<b>%s documents</b> ont été trouvés."
 
 #: modules/bibupload/lib/batchuploader_templates.py:373
 msgid "The following files have been successfully queued:"
-msgstr "Les fichiers suivants ont été placés dans la file d'attente avec succès:"
+msgstr ""
+"Les fichiers suivants ont été placés dans la file d'attente avec succès:"
 
 #: modules/bibupload/lib/batchuploader_templates.py:378
 msgid "The following errors have occurred:"
@@ -2170,7 +2172,9 @@ msgstr "Les erreurs suivantes sont survenues:"
 #: modules/bibupload/lib/batchuploader_templates.py:385
 msgid ""
 "Some files could not be moved to DONE folder. Please remove them manually."
-msgstr "Quelques fichiers n'ont pas pu être déplacés dans le dossier \"Done\". Veuillez les enlever manuellement."
+msgstr ""
+"Quelques fichiers n'ont pas pu être déplacés dans le dossier \"Done\". "
+"Veuillez les enlever manuellement."
 
 #: modules/bibupload/lib/batchuploader_templates.py:387
 msgid "All uploaded files were moved to DONE folder."
@@ -2181,14 +2185,18 @@ msgstr "Tous les fichiers envoyés ont été déplacés dans le dossier \"Done\"
 msgid ""
 "Using %(x_fmt_open)sweb interface upload%(x_fmt_close)s, actions are "
 "executed a single time."
-msgstr "En utilisant %(x_fmt_open)sl'interface web d'envoi%(x_fmt_close)s, les actions sont exécutées une seule fois."
+msgstr ""
+"En utilisant %(x_fmt_open)sl'interface web d'envoi%(x_fmt_close)s, les "
+"actions sont exécutées une seule fois."
 
 #: modules/bibupload/lib/batchuploader_templates.py:399
 #, python-format
 msgid ""
 "Check the %(x_url_open)sBatch Uploader daemon help page%(x_url_close)s for "
 "executing these actions periodically."
-msgstr "Veuillez vous référer à la %(x_url_open)spage d'aide de \"Batch Uploader\"%(x_url_close)s pour exécuter ces actions périodiquement."
+msgstr ""
+"Veuillez vous référer à la %(x_url_open)spage d'aide de \"Batch Uploader\"%"
+"(x_url_close)s pour exécuter ces actions périodiquement."
 
 #: modules/bibupload/lib/batchuploader_templates.py:404
 msgid "Metadata folders"
@@ -2903,12 +2911,12 @@ msgstr "EFFACER"
 #: modules/webalert/lib/webalert_templates.py:300
 #, python-format
 msgid ""
-"Set a new alert from %(x_url1_open)syour searches%(x_url1_close)s, the "
-"%(x_url2_open)spopular searches%(x_url2_close)s, or the input form."
+"Set a new alert from %(x_url1_open)syour searches%(x_url1_close)s, the %"
+"(x_url2_open)spopular searches%(x_url2_close)s, or the input form."
 msgstr ""
-"Créer une nouvelle alerte depuis %(x_url1_open)svos recherches"
-"%(x_url1_close)s, les %(x_url2_open)srecherches populaires%(x_url2_close)s, "
-"ou le formulaire."
+"Créer une nouvelle alerte depuis %(x_url1_open)svos recherches%(x_url1_close)"
+"s, les %(x_url2_open)srecherches populaires%(x_url2_close)s, ou le "
+"formulaire."
 
 #: modules/webalert/lib/webalert_templates.py:318
 #: modules/webcomment/lib/webcomment_templates.py:226
@@ -2981,8 +2989,8 @@ msgid ""
 "You have not executed any search yet. Please go to the %(x_url_open)ssearch "
 "interface%(x_url_close)s first."
 msgstr ""
-"Vous n'avez pas encore effectué de recherche. Vous pouvez aller sur "
-"%(x_url_open)sl'interface de recherche%(x_url_close)s."
+"Vous n'avez pas encore effectué de recherche. Vous pouvez aller sur %"
+"(x_url_open)sl'interface de recherche%(x_url_close)s."
 
 #: modules/webalert/lib/webalert_templates.py:446
 #, python-format
@@ -3228,23 +3236,27 @@ msgstr "Paniers publics"
 #: modules/webbasket/lib/webbasket.py:2191
 #, python-format
 msgid ""
-"You have %(x_nb_perso)s personal baskets and are subscribed to "
-"%(x_nb_group)s group baskets and %(x_nb_public)s other users public baskets."
+"You have %(x_nb_perso)s personal baskets and are subscribed to %(x_nb_group)"
+"s group baskets and %(x_nb_public)s other users public baskets."
 msgstr ""
-"Vous possédez %(x_nb_perso)s paniers personnels et êtes abonnés à "
-"%(x_nb_group)s paniers de groupes et à %(x_nb_public)s paniers publics."
+"Vous possédez %(x_nb_perso)s paniers personnels et êtes abonnés à %"
+"(x_nb_group)s paniers de groupes et à %(x_nb_public)s paniers publics."
 
 #: modules/webbasket/lib/webbasket_templates.py:86
 msgid ""
 "You have no personal or group baskets or are subscribed to any public "
 "baskets."
-msgstr "Vous n'avez pas de panier personnel ou de groupe, ni souscrit à un panier public."
+msgstr ""
+"Vous n'avez pas de panier personnel ou de groupe, ni souscrit à un panier "
+"public."
 
 #: modules/webbasket/lib/webbasket_templates.py:87
 #, python-format
 msgid ""
 "You may want to start by %(x_url_open)screating a new basket%(x_url_close)s."
-msgstr "Vous pouvez commencer par %(x_url_open)scréer un nouveau panier%(x_url_close)s."
+msgstr ""
+"Vous pouvez commencer par %(x_url_open)scréer un nouveau panier%(x_url_close)"
+"s."
 
 #: modules/webbasket/lib/webbasket_templates.py:111
 #: modules/webbasket/lib/webbasket_templates.py:177
@@ -3337,9 +3349,11 @@ msgstr "Il n'y a pas de panier public actuellement"
 #: modules/webbasket/lib/webbasket_templates.py:976
 #, python-format
 msgid ""
-"Displaying public baskets %(x_from)i - %(x_to)i out of "
-"%(x_total_public_basket)i public baskets in total."
-msgstr "Affichage des paniers publics de %(x_from)i - %(x_to)i parmi %(x_total_public_basket)i paniers publics."
+"Displaying public baskets %(x_from)i - %(x_to)i out of %"
+"(x_total_public_basket)i public baskets in total."
+msgstr ""
+"Affichage des paniers publics de %(x_from)i - %(x_to)i parmi %"
+"(x_total_public_basket)i paniers publics."
 
 #: modules/webbasket/lib/webbasket_templates.py:1043
 #: modules/webbasket/lib/webbasket_templates.py:1067
@@ -3399,7 +3413,9 @@ msgstr "Notice externe"
 msgid ""
 "Provide a url for the external item you wish to add and fill in a title and "
 "description"
-msgstr "Spécifiez l'URL de l'élément externe à ajouter, et indiquez un titre et une description"
+msgstr ""
+"Spécifiez l'URL de l'élément externe à ajouter, et indiquez un titre et une "
+"description"
 
 #: modules/webbasket/lib/webbasket_templates.py:1245
 #: modules/websubmit/lib/websubmit_templates.py:2715
@@ -3446,9 +3462,11 @@ msgstr "Ajout de %i notices à vos paniers"
 #: modules/webbasket/lib/webbasket_templates.py:1399
 #, python-format
 msgid ""
-"Please choose a basket: %(x_basket_selection_box)s %(x_fmt_open)s(or "
-"%(x_url_open)screate a new one%(x_url_close)s first)%(x_fmt_close)s"
-msgstr "Veuillez choisir un panier  %(x_basket_selection_box)s %(x_fmt_open)s(ou %(x_url_open)scréez en un nouveau%(x_url_close)s d'abord)%(x_fmt_close)s"
+"Please choose a basket: %(x_basket_selection_box)s %(x_fmt_open)s(or %"
+"(x_url_open)screate a new one%(x_url_close)s first)%(x_fmt_close)s"
+msgstr ""
+"Veuillez choisir un panier  %(x_basket_selection_box)s %(x_fmt_open)s(ou %"
+"(x_url_open)scréez en un nouveau%(x_url_close)s d'abord)%(x_fmt_close)s"
 
 #: modules/webbasket/lib/webbasket_templates.py:1405
 msgid "Optionally, add a note to each one of these items"
@@ -4162,21 +4180,25 @@ msgstr "Vous n'êtes pas autorisé à comment ou évaluer."
 #: modules/webcomment/lib/webcomment_templates.py:1070
 #, python-format
 msgid "Note: Your nickname, %s, will be displayed as author of this comment."
-msgstr "Note: Votre pseudonyme, %s, sera affiché en temps qu'auteur de ce commentaire "
+msgstr ""
+"Note: Votre pseudonyme, %s, sera affiché en temps qu'auteur de ce "
+"commentaire "
 
 #: modules/webcomment/lib/webcomment_templates.py:1074
 #: modules/webcomment/lib/webcomment_templates.py:1187
 #, python-format
 msgid ""
-"Note: you have not %(x_url_open)sdefined your nickname%(x_url_close)s. "
-"%(x_nickname)s will be displayed as the author of this comment."
+"Note: you have not %(x_url_open)sdefined your nickname%(x_url_close)s. %"
+"(x_nickname)s will be displayed as the author of this comment."
 msgstr ""
-"Note: Vous n'avez pas %(x_url_open)sdéfini de pseudonyme%(x_url_close)s. "
-"%(x_nickname)s sera affiché en temps qu'auteur de ce commentaire."
+"Note: Vous n'avez pas %(x_url_open)sdéfini de pseudonyme%(x_url_close)s. %"
+"(x_nickname)s sera affiché en temps qu'auteur de ce commentaire."
 
 #: modules/webcomment/lib/webcomment_templates.py:1091
 msgid "Once logged in, authorized users can also attach files."
-msgstr "Les utilisateurs connectés et autorisés peuvent également attacher des fichiers."
+msgstr ""
+"Les utilisateurs connectés et autorisés peuvent également attacher des "
+"fichiers."
 
 #: modules/webcomment/lib/webcomment_templates.py:1106
 msgid "Optionally, attach a file to this comment"
@@ -4314,7 +4336,9 @@ msgstr "Identifiant du commentaire:"
 
 #: modules/webcomment/lib/webcomment_templates.py:1449
 msgid "Or enter a record ID to list all the associated comments/reviews:"
-msgstr "Ou entrez l'identifiant d'une notice pour lister les commentaires/évaluations associés:"
+msgstr ""
+"Ou entrez l'identifiant d'une notice pour lister les commentaires/"
+"évaluations associés:"
 
 #: modules/webcomment/lib/webcomment_templates.py:1450
 msgid "Record ID:"
@@ -4505,7 +4529,9 @@ msgstr "Tous les commentaires signalés triés par ordre décroissant"
 #: modules/webcomment/lib/webcomment_templates.py:1875
 #, python-format
 msgid "Here are all reviews for record %i, sorted by the most reported"
-msgstr "Toutes les évaluations signalées pour la notice %i, triées par ordre décroissant"
+msgstr ""
+"Toutes les évaluations signalées pour la notice %i, triées par ordre "
+"décroissant"
 
 #: modules/webcomment/lib/webcomment_templates.py:1876
 msgid "Show comments"
@@ -4514,7 +4540,8 @@ msgstr "Voir les commentaires"
 #: modules/webcomment/lib/webcomment_templates.py:1878
 #, python-format
 msgid "Here are all comments for record %i, sorted by the most reported"
-msgstr "Tous les commentaires signalés pour la notice %i, triés par ordre décroissant"
+msgstr ""
+"Tous les commentaires signalés pour la notice %i, triés par ordre décroissant"
 
 #: modules/webcomment/lib/webcomment_templates.py:1879
 msgid "Show reviews"
@@ -4546,13 +4573,17 @@ msgstr "Pas encore évalué"
 #, python-format
 msgid ""
 "The following review was sent to %(CFG_SITE_NAME)s by %(user_nickname)s:"
-msgstr "L'évaluation suivante a été soumise sur %(CFG_SITE_NAME)s par %(user_nickname)s:"
+msgstr ""
+"L'évaluation suivante a été soumise sur %(CFG_SITE_NAME)s par %"
+"(user_nickname)s:"
 
 #: modules/webcomment/lib/webcomment_templates.py:2040
 #, python-format
 msgid ""
 "The following comment was sent to %(CFG_SITE_NAME)s by %(user_nickname)s:"
-msgstr "Le commentaire suivant a été soumis sur %(CFG_SITE_NAME)s par %(user_nickname)s:"
+msgstr ""
+"Le commentaire suivant a été soumis sur %(CFG_SITE_NAME)s par %"
+"(user_nickname)s:"
 
 #: modules/webcomment/lib/webcomment_templates.py:2067
 msgid "This is an automatic message, please don't reply to it."
@@ -4576,7 +4607,8 @@ msgstr "Pour vous désinscrire de cette discussion, allez à <%(x_url)s>"
 #: modules/webcomment/lib/webcomment_templates.py:2083
 #, python-format
 msgid "For any question, please use <%(CFG_SITE_SUPPORT_EMAIL)s>"
-msgstr "Pour d'autres questions, veuillez contacter <%(CFG_SITE_SUPPORT_EMAIL)s>"
+msgstr ""
+"Pour d'autres questions, veuillez contacter <%(CFG_SITE_SUPPORT_EMAIL)s>"
 
 #: modules/webcomment/lib/webcomment_webinterface.py:253
 #: modules/webcomment/lib/webcomment_webinterface.py:483
@@ -4933,25 +4965,31 @@ msgstr "Pas de résultat"
 msgid ""
 "Warning: full-text search is only available for a subset of papers mostly "
 "from 2006-2010."
-msgstr "Attention: la recherche dans les fichiers n'est disponible que pour un sous-ensemble des papiers, principalement pour 2006-2010."
+msgstr ""
+"Attention: la recherche dans les fichiers n'est disponible que pour un sous-"
+"ensemble des papiers, principalement pour 2006-2010."
 
 #: modules/websearch/lib/search_engine.py:1793
 msgid ""
 "Warning: figure caption search is only available for a subset of papers "
 "mostly from 2008-2010."
-msgstr "Attention: la recherche dans les légendes des figures n'est disponible que pour un sous-ensemble des papiers, principalement pour 2008-2010."
+msgstr ""
+"Attention: la recherche dans les légendes des figures n'est disponible que "
+"pour un sous-ensemble des papiers, principalement pour 2008-2010."
 
 #: modules/websearch/lib/search_engine.py:1800
 msgid ""
 "No phrase index available for fulltext yet, looking for word combination..."
-msgstr "Aucun index de phrase disponible pour le texte intégral, recherche pour une combinaison de mots..."
+msgstr ""
+"Aucun index de phrase disponible pour le texte intégral, recherche pour une "
+"combinaison de mots..."
 
 #: modules/websearch/lib/search_engine.py:1841
 #, python-format
 msgid "No exact match found for %(x_query1)s, using %(x_query2)s instead..."
 msgstr ""
-"Aucun résultat précis pour %(x_query1)s n'a été trouvé, remplacement par "
-"%(x_query2)s..."
+"Aucun résultat précis pour %(x_query1)s n'a été trouvé, remplacement par %"
+"(x_query2)s..."
 
 #: modules/websearch/lib/search_engine.py:1851
 #: modules/websearch/lib/search_engine.py:1860
@@ -4968,7 +5006,9 @@ msgstr "Désolé, cette notice n'existe pas."
 msgid ""
 "Search syntax misunderstood. Ignoring all parentheses in the query. If this "
 "doesn't help, please check your search and try again."
-msgstr "Syntaxe de recherche non reconnue. Les parenthèses sont ignorées. En cas de doute vérifiez votre recherche et réessayez."
+msgstr ""
+"Syntaxe de recherche non reconnue. Les parenthèses sont ignorées. En cas de "
+"doute vérifiez votre recherche et réessayez."
 
 #: modules/websearch/lib/search_engine.py:2304
 #, python-format
@@ -4977,8 +5017,8 @@ msgid ""
 "%(x_url_open)s%(x_nb_hits)d hits%(x_url_close)s."
 msgstr ""
 "Aucun résultat n'a été trouvé dans la collection %(x_collection)s. Les "
-"autres collections publiques ont donné %(x_url_open)s%(x_nb_hits)d résultats"
-"%(x_url_close)s."
+"autres collections publiques ont donné %(x_url_open)s%(x_nb_hits)d résultats%"
+"(x_url_close)s."
 
 #: modules/websearch/lib/search_engine.py:2313
 msgid ""
@@ -5216,14 +5256,17 @@ msgid ""
 "This collection is restricted.  If you are authorized to access it, please "
 "click on the Search button."
 msgstr ""
-"L'accès à cette collection est restreint. Si vous êtes autorisé à y accéder,\n"
+"L'accès à cette collection est restreint. Si vous êtes autorisé à y "
+"accéder,\n"
 "cliquez sur le bouton Recherche."
 
 #: modules/websearch/lib/websearch_templates.py:1452
 msgid ""
 "This is a hosted external collection. Please click on the Search button to "
 "see its content."
-msgstr "Ceci est une collection externe. Merci de cliquer sur le bouton \"Recherche\" pour afficher son contenu."
+msgstr ""
+"Ceci est une collection externe. Merci de cliquer sur le bouton \"Recherche"
+"\" pour afficher son contenu."
 
 #: modules/websearch/lib/websearch_templates.py:1467
 msgid "This collection does not contain any document yet."
@@ -5344,7 +5387,9 @@ msgstr "La recherche a duré %s secondes."
 msgid ""
 "%(x_fmt_open)sResults overview:%(x_fmt_close)s Found %(x_nb_records)s "
 "records in %(x_nb_seconds)s seconds."
-msgstr "%(x_fmt_open)sAperçu des résultats:%(x_fmt_close)s Trouvé %(x_nb_records)s notices en %(x_nb_seconds)s secondes."
+msgstr ""
+"%(x_fmt_open)sAperçu des résultats:%(x_fmt_close)s Trouvé %(x_nb_records)s "
+"notices en %(x_nb_seconds)s secondes."
 
 #: modules/websearch/lib/websearch_templates.py:2962
 #, python-format
@@ -5354,9 +5399,11 @@ msgstr "%(x_fmt_open)sAperçu des résultats%(x_fmt_close)s"
 #: modules/websearch/lib/websearch_templates.py:2970
 #, python-format
 msgid ""
-"%(x_fmt_open)sResults overview:%(x_fmt_close)s Found at least "
-"%(x_nb_records)s records in %(x_nb_seconds)s seconds."
-msgstr "%(x_fmt_open)sAperçu des résultats:%(x_fmt_close)s Trouvé au moins %(x_nb_records)s notices en %(x_nb_seconds)s secondes."
+"%(x_fmt_open)sResults overview:%(x_fmt_close)s Found at least %(x_nb_records)"
+"s records in %(x_nb_seconds)s seconds."
+msgstr ""
+"%(x_fmt_open)sAperçu des résultats:%(x_fmt_close)s Trouvé au moins %"
+"(x_nb_records)s notices en %(x_nb_seconds)s secondes."
 
 #: modules/websearch/lib/websearch_templates.py:3047
 msgid "No results found..."
@@ -5566,20 +5613,20 @@ msgstr "condensé"
 #: modules/websession/lib/webaccount.py:115
 #, python-format
 msgid ""
-"You are logged in as guest. You may want to %(x_url_open)slogin"
-"%(x_url_close)s as a regular user."
+"You are logged in as guest. You may want to %(x_url_open)slogin%(x_url_close)"
+"s as a regular user."
 msgstr ""
-"Vous êtes identifié comme invité. Vous pouvez vous %(x_url_open)sidentifier"
-"%(x_url_close)s en tant qu'utilisateur."
+"Vous êtes identifié comme invité. Vous pouvez vous %(x_url_open)sidentifier%"
+"(x_url_close)s en tant qu'utilisateur."
 
 #: modules/websession/lib/webaccount.py:119
 #, python-format
 msgid ""
-"The %(x_fmt_open)sguest%(x_fmt_close)s users need to %(x_url_open)sregister"
-"%(x_url_close)s first"
+"The %(x_fmt_open)sguest%(x_fmt_close)s users need to %(x_url_open)sregister%"
+"(x_url_close)s first"
 msgstr ""
-"Les %(x_fmt_open)sinvités%(x_fmt_close)s doivent d'abord "
-"%(x_url_open)s'enregistrer%(x_url_close)s."
+"Les %(x_fmt_open)sinvités%(x_fmt_close)s doivent d'abord %(x_url_open)"
+"s'enregistrer%(x_url_close)s."
 
 #: modules/websession/lib/webaccount.py:124
 msgid "No queries found"
@@ -5605,8 +5652,8 @@ msgstr "Paramètres de compte externe"
 #: modules/websession/lib/websession_templates.py:94
 #, python-format
 msgid ""
-"You can consult the list of your external groups directly in the "
-"%(x_url_open)sgroups page%(x_url_close)s."
+"You can consult the list of your external groups directly in the %"
+"(x_url_open)sgroups page%(x_url_close)s."
 msgstr ""
 "Vous pouvez consulter la liste de vos groupes externes directement sur\n"
 "la %(x_url_open)spage des groupes%(x_url_close)s."
@@ -5701,8 +5748,8 @@ msgstr ""
 #: modules/websession/lib/websession_templates.py:228
 #, python-format
 msgid ""
-"You can change or reset your CERN account password by means of the "
-"%(x_url_open)sCERN account system%(x_url_close)s."
+"You can change or reset your CERN account password by means of the %"
+"(x_url_open)sCERN account system%(x_url_close)s."
 msgstr ""
 "Vous pouvez changer ou réinitialiser votre mot de passe CERN\n"
 "directement sur la %(x_url_open)spage de gestion des comptes\n"
@@ -5796,9 +5843,9 @@ msgid ""
 "then you can recover your password through the %(x_url_open)sCERN "
 "authentication system%(x_url_close)s."
 msgstr ""
-"Si votre compte utilise le %(x_fmt_open)ssystème d'identification du CERN"
-"%(x_fmt_close)s, vous pouvez retrouver votre mot de passe sur la "
-"%(x_url_open)spage de gestion des comptes CERN%(x_url_close)s."
+"Si votre compte utilise le %(x_fmt_open)ssystème d'identification du CERN%"
+"(x_fmt_close)s, vous pouvez retrouver votre mot de passe sur la %(x_url_open)"
+"spage de gestion des comptes CERN%(x_url_close)s."
 
 #: modules/websession/lib/websession_templates.py:410
 msgid ""
@@ -5891,9 +5938,9 @@ msgstr ""
 #: modules/websession/lib/websession_templates.py:532
 #, python-format
 msgid ""
-"You are logged in as %(x_user)s. You may want to a) %(x_url1_open)slogout"
-"%(x_url1_close)s; b) edit your %(x_url2_open)saccount settings"
-"%(x_url2_close)s."
+"You are logged in as %(x_user)s. You may want to a) %(x_url1_open)slogout%"
+"(x_url1_close)s; b) edit your %(x_url2_open)saccount settings%(x_url2_close)"
+"s."
 msgstr ""
 "Vous êtes enregistré comme %(x_user)s. Vous pouvez a) %(x_url1_open)svous "
 "déconnecter%(x_url1_close)s; b) modifier vos %(x_url2_open)spréférences de "
@@ -5924,8 +5971,8 @@ msgid ""
 "You can consult the list of %(x_url_open)syour submissions%(x_url_close)s "
 "and inquire about their status."
 msgstr ""
-"Vous pouvez consulter la liste de %(x_url_open)svos soumissions"
-"%(x_url_close)s et vous informer sur leur statut."
+"Vous pouvez consulter la liste de %(x_url_open)svos soumissions%(x_url_close)"
+"s et vous informer sur leur statut."
 
 #: modules/websession/lib/websession_templates.py:628
 #: modules/websubmit/web/yoursubmissions.py:160
@@ -5938,8 +5985,8 @@ msgid ""
 "You can consult the list of %(x_url_open)syour approvals%(x_url_close)s with "
 "the documents you approved or refereed."
 msgstr ""
-"Vous pouvez consulter la liste de %(x_url_open)svos approbations"
-"%(x_url_close)s contenant les références des documents que vous avez "
+"Vous pouvez consulter la liste de %(x_url_open)svos approbations%"
+"(x_url_close)s contenant les références des documents que vous avez "
 "approuvés ou relus."
 
 #: modules/websession/lib/websession_templates.py:634
@@ -5950,7 +5997,8 @@ msgstr "Vos Approbations"
 #: modules/websession/lib/websession_templates.py:638
 #, python-format
 msgid "You can consult the list of %(x_url_open)syour tickets%(x_url_close)s."
-msgstr "Vous pouvez consulter la liste de %(x_url_open)svos tickets%(x_url_close)s."
+msgstr ""
+"Vous pouvez consulter la liste de %(x_url_open)svos tickets%(x_url_close)s."
 
 #: modules/websession/lib/websession_templates.py:641
 msgid "Your Tickets"
@@ -6001,8 +6049,8 @@ msgid ""
 "for the email address \"%(x_email)s\"."
 msgstr ""
 "Quelqu'un (vous-même?) provenant de %(x_ip_address)s a demandé "
-"l'enregistrement d'un nouveau compte %(x_sitename)s pour l'adresse "
-"\"%(x_email)s\"."
+"l'enregistrement d'un nouveau compte %(x_sitename)s pour l'adresse \"%"
+"(x_email)s\"."
 
 #: modules/websession/lib/websession_templates.py:737
 msgid "If you want to complete this account registration, please go to:"
@@ -6029,15 +6077,15 @@ msgid ""
 "                %(x_url_open)slogout from SSO%(x_url_close)s, too."
 msgstr ""
 "Vous êtes par contre toujours reconnu par le %(x_fmt_open)ssystème "
-"centralisé SSO%(x_fmt_close)s. Vous pouvez également vous "
-"%(x_url_open)sdéconnecter de SSO%(x_url_close)s."
+"centralisé SSO%(x_fmt_close)s. Vous pouvez également vous %(x_url_open)"
+"sdéconnecter de SSO%(x_url_close)s."
 
 #: modules/websession/lib/websession_templates.py:801
 #, python-format
 msgid "If you wish you can %(x_url_open)slogin here%(x_url_close)s."
 msgstr ""
-"Si vous le souhaitez, vous pouvez vous %(x_url_open)sidentifier"
-"%(x_url_close)s."
+"Si vous le souhaitez, vous pouvez vous %(x_url_open)sidentifier%(x_url_close)"
+"s."
 
 #: modules/websession/lib/websession_templates.py:832
 msgid "If you already have an account, please login using the form below."
@@ -6051,17 +6099,17 @@ msgid ""
 "If you don't own a CERN account yet, you can register a %(x_url_open)snew "
 "CERN lightweight account%(x_url_close)s."
 msgstr ""
-"Si vous ne possédez pas encore de compte CERN, vous pouvez "
-"%(x_url_open)scréer un compte CERN \"lightweight\"%(x_url_close)s."
+"Si vous ne possédez pas encore de compte CERN, vous pouvez %(x_url_open)"
+"scréer un compte CERN \"lightweight\"%(x_url_close)s."
 
 #: modules/websession/lib/websession_templates.py:839
 #, python-format
 msgid ""
-"If you don't own an account yet, please %(x_url_open)sregister"
-"%(x_url_close)s an internal account."
+"If you don't own an account yet, please %(x_url_open)sregister%(x_url_close)"
+"s an internal account."
 msgstr ""
-"Si vous ne possédez pas encore de compte, vous pouvez vous "
-"%(x_url_open)senregistrer%(x_url_close)s pour créer un compte interne."
+"Si vous ne possédez pas encore de compte, vous pouvez vous %(x_url_open)"
+"senregistrer%(x_url_close)s pour créer un compte interne."
 
 #: modules/websession/lib/websession_templates.py:847
 #, python-format
@@ -6176,8 +6224,8 @@ msgid ""
 "You seem to be a guest user. You have to %(x_url_open)slogin%(x_url_close)s "
 "first."
 msgstr ""
-"Vous n'êtes pas identifé. Vous devez d'abord vous %(x_url_open)sidentifier"
-"%(x_url_close)s."
+"Vous n'êtes pas identifé. Vous devez d'abord vous %(x_url_open)sidentifier%"
+"(x_url_close)s."
 
 #: modules/websession/lib/websession_templates.py:1076
 msgid "You are not authorized to access administrative functions."
@@ -6199,8 +6247,8 @@ msgstr "Voici quelques liens administratifs intéressants pour vous:"
 #: modules/websession/lib/websession_templates.py:1122
 #, python-format
 msgid ""
-"For more admin-level activities, see the complete %(x_url_open)sAdmin Area"
-"%(x_url_close)s."
+"For more admin-level activities, see the complete %(x_url_open)sAdmin Area%"
+"(x_url_close)s."
 msgstr ""
 "Pour plus d'activités administratives, affichez la %(x_url_open)szone "
 "d'administration%(x_url_close)s."
@@ -6423,7 +6471,8 @@ msgid ""
 msgstr ""
 "Bonjour,\n"
 "\n"
-"Je pense que vous pourriez être intéressé à rejoindre le groupe \"%(x_name)s\".\n"
+"Je pense que vous pourriez être intéressé à rejoindre le groupe \"%(x_name)s"
+"\".\n"
 "Vous pouvez vous y inscrire ici: %(x_url)s.\n"
 "\n"
 "Meilleures salutations.\n"
@@ -6431,12 +6480,12 @@ msgstr ""
 #: modules/websession/lib/websession_templates.py:2079
 #, python-format
 msgid ""
-"If you want to invite new members to join your group, please use the "
-"%(x_url_open)sweb message%(x_url_close)s system."
+"If you want to invite new members to join your group, please use the %"
+"(x_url_open)sweb message%(x_url_close)s system."
 msgstr ""
 "Si vous souhaitez inviter de nouveaux membres à rejoindre votre groupe, "
-"veuillez utiliser le %(x_url_open)ssystème de messagerie interne"
-"%(x_url_close)s."
+"veuillez utiliser le %(x_url_open)ssystème de messagerie interne%"
+"(x_url_close)s."
 
 #: modules/websession/lib/websession_templates.py:2083
 #, python-format
@@ -6525,38 +6574,48 @@ msgstr "Le groupe %s a été supprimé par son administrateur."
 #: modules/websession/lib/websession_templates.py:2422
 #, python-format
 msgid ""
-"You can consult the list of %(x_url_open)s%(x_nb_total)i groups"
-"%(x_url_close)s you are subscribed to (%(x_nb_member)i) or administering "
-"(%(x_nb_admin)i)."
+"You can consult the list of %(x_url_open)s%(x_nb_total)i groups%(x_url_close)"
+"s you are subscribed to (%(x_nb_member)i) or administering (%(x_nb_admin)i)."
 msgstr ""
-"Vous pouvez consulter la liste des %(x_url_open)s%(x_nb_total)i groupes"
-"%(x_url_close)s dont vous êtes membre (%(x_nb_member)i) ou administrateur"
-"(%(x_nb_admin)i)."
+"Vous pouvez consulter la liste des %(x_url_open)s%(x_nb_total)i groupes%"
+"(x_url_close)s dont vous êtes membre (%(x_nb_member)i) ou administrateur(%"
+"(x_nb_admin)i)."
 
 #: modules/websession/lib/websession_templates.py:2441
 msgid ""
 "Warning: The password set for MySQL root user is the same as the default "
 "Invenio password. For security purposes, you may want to change the password."
-msgstr "Attention: le mot de passe pour l'utilisateur root de MySQL est le même mot de passe que celui de l'utilisateur d'Invenio sur MySQL. Pour des raisons de sécurité veuillez changer ce mot de passe."
+msgstr ""
+"Attention: le mot de passe pour l'utilisateur root de MySQL est le même mot "
+"de passe que celui de l'utilisateur d'Invenio sur MySQL. Pour des raisons de "
+"sécurité veuillez changer ce mot de passe."
 
 #: modules/websession/lib/websession_templates.py:2447
 msgid ""
 "Warning: The password set for the Invenio MySQL user is the same as the "
 "shipped default. For security purposes, you may want to change the password."
-msgstr "Attention: le mot de passe pour l'utilisateur d'Invenio sur MySQL est resté celui par défaut d'Invenio. Pour des raisons de sécurité veuillez changer ce mot de passe."
+msgstr ""
+"Attention: le mot de passe pour l'utilisateur d'Invenio sur MySQL est resté "
+"celui par défaut d'Invenio. Pour des raisons de sécurité veuillez changer ce "
+"mot de passe."
 
 #: modules/websession/lib/websession_templates.py:2453
 msgid ""
 "Warning: The password set for the Invenio admin user is currently empty. For "
 "security purposes, it is strongly recommended that you add a password."
-msgstr "Attention: le mot de passe de l'utilisateur admin est resté vide. Pour des raisons de sécurité veuillez changer ce mot de passe."
+msgstr ""
+"Attention: le mot de passe de l'utilisateur admin est resté vide. Pour des "
+"raisons de sécurité veuillez changer ce mot de passe."
 
 #: modules/websession/lib/websession_templates.py:2459
 msgid ""
 "Warning: The email address set for support email is currently set to "
 "info@invenio-software.org. It is recommended that you change this to your "
 "own address."
-msgstr "Attention: l'adresse email du support de cette installation est restée \"info@invenio-software.org\". Il est recommandé de saisir votre propre adresse de support."
+msgstr ""
+"Attention: l'adresse email du support de cette installation est restée "
+"\"info@invenio-software.org\". Il est recommandé de saisir votre propre "
+"adresse de support."
 
 #: modules/websession/lib/websession_templates.py:2465
 msgid ""
@@ -6567,7 +6626,9 @@ msgstr "Une nouvelle version d'Invenio est disponible à "
 msgid ""
 "Cannot download or parse release notes from http://invenio-software.org/repo/"
 "invenio/tree/RELEASE-NOTES"
-msgstr "Impossible de charger ou lire les notes de version de http://invenio-software.org/repo/invenio/tree/RELEASE-NOTES"
+msgstr ""
+"Impossible de charger ou lire les notes de version de http://invenio-"
+"software.org/repo/invenio/tree/RELEASE-NOTES"
 
 #: modules/websession/lib/webuser.py:153
 msgid "Database problem"
@@ -6733,7 +6794,11 @@ msgid ""
 "with the internal login method then the system has set for you a randomly "
 "generated password. Please click the following button to obtain a password "
 "reset request link sent to you via email:"
-msgstr "Si vous utilisez ce compte avec la méthode d'identification interne pour la première fois, veuillez noter que le système vous a attribué un mot de passe par défaut. Cliquez sur le bouton ci-dessous pour recevoir un email vous permettant de changer ce mot de passe:"
+msgstr ""
+"Si vous utilisez ce compte avec la méthode d'identification interne pour la "
+"première fois, veuillez noter que le système vous a attribué un mot de passe "
+"par défaut. Cliquez sur le bouton ci-dessous pour recevoir un email vous "
+"permettant de changer ce mot de passe:"
 
 #: modules/websession/lib/websession_webinterface.py:357
 msgid "Send Password"
@@ -6778,9 +6843,11 @@ msgstr "Préférences modifiées."
 #: modules/websession/lib/websession_webinterface.py:397
 #, python-format
 msgid ""
-"Note that if you have changed your email address, you will have to "
-"%(x_url_open)sreset your password%(x_url_close)s anew."
-msgstr "Notez que si vous avez changé votre adresse email, vous devrez %(x_url_open)sréinitialiser votre mot de passe%(x_url_close)s."
+"Note that if you have changed your email address, you will have to %"
+"(x_url_open)sreset your password%(x_url_close)s anew."
+msgstr ""
+"Notez que si vous avez changé votre adresse email, vous devrez %(x_url_open)"
+"sréinitialiser votre mot de passe%(x_url_close)s."
 
 #: modules/websession/lib/websession_webinterface.py:405
 #: modules/websession/lib/websession_webinterface.py:899
@@ -7178,8 +7245,8 @@ msgstr "Désolé, la page %s n'existe pas."
 #: modules/webstyle/lib/webdoc_webinterface.py:190
 #, python-format
 msgid ""
-"You may want to look at the %(x_url_open)s%(x_category)s pages"
-"%(x_url_close)s."
+"You may want to look at the %(x_url_open)s%(x_category)s pages%(x_url_close)"
+"s."
 msgstr ""
 "Vous pouvez consulter %(x_url_open)sles page %(x_category)s%(x_url_close)s."
 
@@ -7197,13 +7264,15 @@ msgstr "Accès"
 #, python-format
 msgid ""
 "The uploaded file is too small (<%i o) and has therefore not been considered"
-msgstr "Le fichier chargé est trop petit (<%i o) et a par conséquence été ignoré"
+msgstr ""
+"Le fichier chargé est trop petit (<%i o) et a par conséquence été ignoré"
 
 #: modules/websubmit/lib/websubmit_managedocfiles.py:541
 #, python-format
 msgid ""
 "The uploaded file is too big (>%i o) and has therefore not been considered"
-msgstr "Le fichier chargé est trop grand (>%i o) et a par conséquence été ignoré"
+msgstr ""
+"Le fichier chargé est trop grand (>%i o) et a par conséquence été ignoré"
 
 #: modules/websubmit/lib/websubmit_managedocfiles.py:548
 msgid ""
@@ -7214,7 +7283,8 @@ msgstr "Le nom du fichier chargé est trop long et a par conséquence été igno
 msgid ""
 "You have already reached the maximum number of files for this type of "
 "document"
-msgstr "Vous avez déjà atteint le nombre de fichier maximum pour ce type de document"
+msgstr ""
+"Vous avez déjà atteint le nombre de fichier maximum pour ce type de document"
 
 #: modules/websubmit/lib/websubmit_managedocfiles.py:583
 #: modules/websubmit/lib/websubmit_managedocfiles.py:594
@@ -7226,14 +7296,19 @@ msgstr "Un fichier nommé %s existe déjà. Choisissez un autre nom."
 #: modules/websubmit/lib/websubmit_managedocfiles.py:605
 #, python-format
 msgid "A file with format '%s' already exists. Please upload another format."
-msgstr "Un fichier au format '%s' existe déjà. Veuillez charger un autre format."
+msgstr ""
+"Un fichier au format '%s' existe déjà. Veuillez charger un autre format."
 
 #: modules/websubmit/lib/websubmit_managedocfiles.py:613
 msgid ""
 "You are not allowed to use dot '.', slash '/', or backslash '\\\\' in file "
 "names. Choose a different name and upload your file again. In particular, "
 "note that you should not include the extension in the renaming field."
-msgstr "Vous n'êtes pas autorisé à utiliser des points '.', slash '/', ou backslash '\\\\\\\\' dans les noms de fichier. Choisissez un autre nom et chargez à nouveau votre fichier. En particulier, faites attention à ne pas inclure l'extension de fichier dans le nom."
+msgstr ""
+"Vous n'êtes pas autorisé à utiliser des points '.', slash '/', ou backslash "
+"'\\\\\\\\' dans les noms de fichier. Choisissez un autre nom et chargez à "
+"nouveau votre fichier. En particulier, faites attention à ne pas inclure "
+"l'extension de fichier dans le nom."
 
 #: modules/websubmit/lib/websubmit_managedocfiles.py:784
 msgid "Choose how you want to restrict access to this file."
@@ -7245,19 +7320,25 @@ msgstr "Ajouter un fichier"
 
 #: modules/websubmit/lib/websubmit_managedocfiles.py:842
 msgid "You can decide to hide or not previous version(s) of this file."
-msgstr "Vous pouvez choisir de cacher ou non les précédentes versions de ce fichier."
+msgstr ""
+"Vous pouvez choisir de cacher ou non les précédentes versions de ce fichier."
 
 #: modules/websubmit/lib/websubmit_managedocfiles.py:843
 msgid ""
 "When you revise a file, the additional formats that you might have "
 "previously uploaded are removed, since they no longer up-to-date with the "
 "new file."
-msgstr "Lors de la révision d'un fichier, les formats additionnels que vous pourriez avoir chargés auparavant sont enlevés, puisqu'ils ne correspondent plus à la dernière version du fichier."
+msgstr ""
+"Lors de la révision d'un fichier, les formats additionnels que vous pourriez "
+"avoir chargés auparavant sont enlevés, puisqu'ils ne correspondent plus à la "
+"dernière version du fichier."
 
 #: modules/websubmit/lib/websubmit_managedocfiles.py:844
 msgid ""
 "Alternative formats uploaded for current version of this file will be removed"
-msgstr "Les formats alternatifs chargés pour la version courante de ce fichier seront enlevés"
+msgstr ""
+"Les formats alternatifs chargés pour la version courante de ce fichier "
+"seront enlevés"
 
 #: modules/websubmit/lib/websubmit_managedocfiles.py:845
 msgid "Keep previous versions"
@@ -7276,7 +7357,8 @@ msgstr "Appliquer les modifications"
 #: modules/websubmit/lib/websubmit_managedocfiles.py:864
 #, python-format
 msgid "Need help revising or adding files to record %(recid)s"
-msgstr "Besoin d'aide pour réviser ou ajouter des fichiers à la notice %(recid)s"
+msgstr ""
+"Besoin d'aide pour réviser ou ajouter des fichiers à la notice %(recid)s"
 
 #: modules/websubmit/lib/websubmit_managedocfiles.py:866
 #, python-format
@@ -7287,23 +7369,28 @@ msgid ""
 "Best regards"
 msgstr ""
 "Cher Support,\n"
-"J'ai besoin d'aide pour réviser ou ajouter des fichiers à la notice %(recid)s.\n"
+"J'ai besoin d'aide pour réviser ou ajouter des fichiers à la notice %(recid)"
+"s.\n"
 "J'ai attaché la nouvelle version à cet email.\n"
 "Meilleures salutations"
 
 #: modules/websubmit/lib/websubmit_managedocfiles.py:871
 #, python-format
 msgid ""
-"Having a problem revising a file? Send the revised version to "
-"%(mailto_link)s."
-msgstr "Besoin d'aide pour réviser un fichier? Envoyez le fichier révisé à %(mailto_link)s."
+"Having a problem revising a file? Send the revised version to %(mailto_link)"
+"s."
+msgstr ""
+"Besoin d'aide pour réviser un fichier? Envoyez le fichier révisé à %"
+"(mailto_link)s."
 
 #: modules/websubmit/lib/websubmit_managedocfiles.py:874
 #, python-format
 msgid ""
-"Having a problem adding or revising a file? Send the new/revised version to "
-"%(mailto_link)s."
-msgstr "Besoin d'aide pour réviser ou ajouter un fichier? Envoyez le fichier révisé à %(mailto_link)s."
+"Having a problem adding or revising a file? Send the new/revised version to %"
+"(mailto_link)s."
+msgstr ""
+"Besoin d'aide pour réviser ou ajouter un fichier? Envoyez le fichier révisé "
+"à %(mailto_link)s."
 
 #: modules/websubmit/lib/websubmit_managedocfiles.py:989
 msgid "revise"
@@ -7317,7 +7404,9 @@ msgstr "ajouter format"
 msgid ""
 "Note that your submission as been inserted into the bibliographic task queue "
 "and is waiting for execution.\n"
-msgstr "Notez que votre soumission a été insérée dans la file d'attente et est en attente d'exécution.\n"
+msgstr ""
+"Notez que votre soumission a été insérée dans la file d'attente et est en "
+"attente d'exécution.\n"
 
 #: modules/websubmit/lib/functions/Shared_Functions.py:181
 #, python-format
@@ -7328,7 +7417,8 @@ msgid ""
 msgstr ""
 "La file d'attente des tâches tourne actuellement en mode automatique, et\n"
 "contient %s tâches en attente d'exécution. Votre notice devrait être \n"
-"disponible dans quelques minutes et recherchable dans un peu près une heure.\n"
+"disponible dans quelques minutes et recherchable dans un peu près une "
+"heure.\n"
 
 #: modules/websubmit/lib/functions/Shared_Functions.py:183
 msgid ""
@@ -7396,12 +7486,16 @@ msgstr "Impossible de déterminer le nombre de pages de la soumission."
 msgid ""
 "Unable to create a directory for this submission. The administrator has been "
 "alerted."
-msgstr "Impossible de créer un répertoire pour cette soumission. L'administrateur a été alerté."
+msgstr ""
+"Impossible de créer un répertoire pour cette soumission. L'administrateur a "
+"été alerté."
 
 #: modules/websubmit/lib/websubmit_engine.py:400
 #: modules/websubmit/lib/websubmit_engine.py:952
 msgid "Cannot create submission directory. The administrator has been alerted."
-msgstr "Impossible de créer le répertoire des soumissions. L'administrateur a été alerté."
+msgstr ""
+"Impossible de créer le répertoire des soumissions. L'administrateur a été "
+"alerté."
 
 #: modules/websubmit/lib/websubmit_engine.py:419
 #: modules/websubmit/lib/websubmit_engine.py:971
@@ -7424,7 +7518,8 @@ msgid ""
 msgstr ""
 "Une erreur grave a été rencontrée. Les administrateurs ont été alertés.\n"
 "<br /><em>Notez que cela pourrait être dû à des caractères problématiques\n"
-"insérés dans le formulaire </em> (par ex. en copiant du texte d'un fichier PDF)."
+"insérés dans le formulaire </em> (par ex. en copiant du texte d'un fichier "
+"PDF)."
 
 #: modules/websubmit/lib/websubmit_engine.py:1357
 #, python-format
@@ -7574,8 +7669,8 @@ msgstr "N° de soumission"
 #: modules/websubmit/lib/websubmit_templates.py:1061
 #, python-format
 msgid ""
-"Here is the %(x_action)s function list for %(x_doctype)s documents at level "
-"%(x_step)s"
+"Here is the %(x_action)s function list for %(x_doctype)s documents at level %"
+"(x_step)s"
 msgstr ""
 "Liste des fonctions %(x_action)s pour les documents de type %(x_doctype)s au "
 "niveau %(x_step)s"
@@ -7821,8 +7916,8 @@ msgstr "Note d'approbation:"
 msgid ""
 "This document is still %(x_fmt_open)swaiting for approval%(x_fmt_close)s."
 msgstr ""
-"Ce document est toujours %(x_fmt_open)sen attente d'approbation"
-"%(x_fmt_close)s."
+"Ce document est toujours %(x_fmt_open)sen attente d'approbation%(x_fmt_close)"
+"s."
 
 #: modules/websubmit/lib/websubmit_templates.py:2356
 #: modules/websubmit/lib/websubmit_templates.py:2376
@@ -8316,7 +8411,8 @@ msgstr ""
 #: modules/webjournal/lib/webjournal_templates.py:268
 #, python-format
 msgid "If you cannot read this email please go to %(x_journal_link)s"
-msgstr "Si vous ne pouvez pas lire cet email, veuillez consulter %(x_journal_link)s"
+msgstr ""
+"Si vous ne pouvez pas lire cet email, veuillez consulter %(x_journal_link)s"
 
 #: modules/webjournal/lib/webjournal_templates.py:415
 #: modules/webjournal/lib/webjournal_templates.py:664
@@ -8674,7 +8770,8 @@ msgid ""
 "these criteria."
 msgstr ""
 "Spécifiez le critère à utiliser pour filtrer les notices à modifier.\n"
-"Utiliser \"Recherche\" pour afficher les notices qui seraient filtrées en utilisant ce critère."
+"Utiliser \"Recherche\" pour afficher les notices qui seraient filtrées en "
+"utilisant ce critère."
 
 #: modules/bibedit/lib/bibeditmulti_templates.py:304
 msgid "Preview results"
@@ -8688,7 +8785,9 @@ msgstr "2. Définir les modifications"
 msgid ""
 "Specify fields and their subfields that should be changed in every record "
 "matching the search criteria."
-msgstr "Spécifiez les champs et sous-champs à modifier dans chaque notice correspondant au critère de recherche"
+msgstr ""
+"Spécifiez les champs et sous-champs à modifier dans chaque notice "
+"correspondant au critère de recherche"
 
 #: modules/bibedit/lib/bibeditmulti_templates.py:507
 msgid "Define new field action"
@@ -9552,7 +9651,9 @@ msgstr "Réinitialiser"
 msgid ""
 "The item %(x_title)s with barcode %(x_barcode)s has been returned with "
 "success."
-msgstr "L'exemplaire %(x_title)s avec code-barres %(x_barcode)s a été retourné avec succès."
+msgstr ""
+"L'exemplaire %(x_title)s avec code-barres %(x_barcode)s a été retourné avec "
+"succès."
 
 #: modules/bibcirculation/lib/bibcirculation_templates.py:1618
 msgid "Loan informations"
@@ -10496,7 +10597,9 @@ msgstr "Une nouvelle demande PEB a été enregistrée avec succès."
 #, python-format
 msgid ""
 "I accept the %s of the service in particular the return of books in due time."
-msgstr "J'accepte les %s de ce service, en particulier de retourner les livres avant leur échéance."
+msgstr ""
+"J'accepte les %s de ce service, en particulier de retourner les livres avant "
+"leur échéance."
 
 #: modules/bibcirculation/lib/bibcirculation_templates.py:10806
 #: modules/bibcirculation/lib/bibcirculation_templates.py:11013
@@ -10711,7 +10814,9 @@ msgstr "Veuillez remplir le formulaire."
 msgid ""
 "Borrower accepts the %s of the service in particular the return of books in "
 "due time."
-msgstr "L'emprunteur accepte les %s du service, en particulier le retour des livres avant leur échéance."
+msgstr ""
+"L'emprunteur accepte les %s du service, en particulier le retour des livres "
+"avant leur échéance."
 
 #: modules/bibcirculation/lib/bibcirculation_templates.py:14423
 #: modules/bibcirculation/lib/bibcirculation_templates.py:15904
@@ -10750,11 +10855,14 @@ msgstr "Continuer quand même"
 #: modules/bibcirculation/lib/bibcirculation_templates.py:15628
 msgid ""
 "Check if the book already exists on Invenio, before to send your ILL request."
-msgstr "Vérifiez si le livre existe déjà sur Invenio avant de transmettre votre demande de PEB."
+msgstr ""
+"Vérifiez si le livre existe déjà sur Invenio avant de transmettre votre "
+"demande de PEB."
 
 #: modules/bibcirculation/lib/bibcirculation_templates.py:15805
 msgid "Book does not exists on Invenio. Please fill the following form."
-msgstr "Ce livre n'existe pas sur Invenio. Veuillez remplir le formulaire suivant."
+msgstr ""
+"Ce livre n'existe pas sur Invenio. Veuillez remplir le formulaire suivant."
 
 #: modules/bibcirculation/lib/bibcirculation_templates.py:16160
 msgid "Article details"
@@ -10980,7 +11088,9 @@ msgstr "Erreur lors de l'accès à la notice"
 #: modules/bibharvest/lib/oai_harvest_admin.py:1132
 msgid ""
 "Error when formatting the Holding Pen entry. Probably it's content is broken"
-msgstr "Erreur lors du formattage de l'entrée de la liste d'attente. L'entrée est probablement corrompue"
+msgstr ""
+"Erreur lors du formattage de l'entrée de la liste d'attente. L'entrée est "
+"probablement corrompue"
 
 #: modules/bibharvest/lib/oai_harvest_admin.py:1137
 msgid "Accept Holding Pen version"
@@ -11303,7 +11413,9 @@ msgstr "Aucun droit pour envoyer vers la collection '%s'"
 #, python-format
 msgid ""
 "The user '%(x_user)s' is not authorized to modify collection '%(x_coll)s'"
-msgstr "L'utilisateur '%(x_user)s' n'est pas autorisé à modifier la collection '%(x_coll)s'"
+msgstr ""
+"L'utilisateur '%(x_user)s' n'est pas autorisé à modifier la collection '%"
+"(x_coll)s'"
 
 #~ msgid "Date:"
 #~ msgstr "Date:"
@@ -11413,11 +11525,11 @@ msgstr "L'utilisateur '%(x_user)s' n'est pas autorisé à modifier la collection
 #~ msgstr "mis à jour le"
 
 #~ msgid ""
-#~ "This basket belongs to %(x_name)s. You can freely %(x_url_open)ssubscribe"
-#~ "%(x_url_close)s to it"
+#~ "This basket belongs to %(x_name)s. You can freely %(x_url_open)ssubscribe%"
+#~ "(x_url_close)s to it"
 #~ msgstr ""
-#~ "Ce panier appartient à %(x_name)s. Vous pouvez librement vous y "
-#~ "%(x_url_open)sabonner%(x_url_close)s"
+#~ "Ce panier appartient à %(x_name)s. Vous pouvez librement vous y %"
+#~ "(x_url_open)sabonner%(x_url_close)s"
 
 #~ msgid "records"
 #~ msgstr "notices"
@@ -11499,8 +11611,8 @@ msgstr "L'utilisateur '%(x_user)s' n'est pas autorisé à modifier la collection
 #~ msgid ""
 #~ "Do you really want to revert to revision %(revdate)s of record #%(recid)s?"
 #~ msgstr ""
-#~ "Voulez-vous vraiment charger la révision %(revdate)s de la notice #"
-#~ "%(recid)s?"
+#~ "Voulez-vous vraiment charger la révision %(revdate)s de la notice #%"
+#~ "(recid)s?"
 
 #~ msgid ""
 #~ "The current version will be replaced with a copy of revision %(revdate)s"
@@ -11910,5 +12022,5 @@ msgstr "L'utilisateur '%(x_user)s' n'est pas autorisé à modifier la collection
 #~ "of the current session. If you wish you can %slogin or register here%s."
 #~ msgstr ""
 #~ "Vous êtes actuellement enregistré en tant qu'invité. Vos %s disparaîtront "
-#~ "à la fin de la session. Si vous le souhaitez, vous pouvez vous "
-#~ "%sidentifier ou vous enregister%s."
+#~ "à la fin de la session. Si vous le souhaitez, vous pouvez vous %"
+#~ "sidentifier ou vous enregister%s."

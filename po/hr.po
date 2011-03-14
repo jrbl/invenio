@@ -22,10 +22,10 @@ msgstr ""
 "PO-Revision-Date: 2008-02-29 15:34+0100\n"
 "Last-Translator: Alen Vodopijevec <alen@irb.hr>\n"
 "Language-Team: HR <info@invenio-software.org>\n"
-"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Language: \n"
 "X-Poedit-Language: Croatian\n"
 "X-Poedit-Country: CROATIA\n"
 "X-Poedit-SourceCharset: utf-8\n"
@@ -2124,13 +2124,13 @@ msgstr "ako %(x_fmt_open)sne%(x_fmt_close)s, morate odrediti košaricu"
 #: modules/bibupload/lib/batchuploader_templates.py:191
 #, fuzzy, python-format
 msgid ""
-"Your file has been successfully queued. You can check your "
-"%(x_url1_open)supload history%(x_url1_close)s or %(x_url2_open)ssubmit "
-"another file%(x_url2_close)s"
+"Your file has been successfully queued. You can check your %(x_url1_open)"
+"supload history%(x_url1_close)s or %(x_url2_open)ssubmit another file%"
+"(x_url2_close)s"
 msgstr ""
-"Prijavljeni ste kao %(x_user)s. Možda želite a) %(x_url1_open)sodjaviti se"
-"%(x_url1_close)s; b) urediti %(x_url2_open)spostavke svog korisničkog računa"
-"%(x_url2_close)s."
+"Prijavljeni ste kao %(x_user)s. Možda želite a) %(x_url1_open)sodjaviti se%"
+"(x_url1_close)s; b) urediti %(x_url2_open)spostavke svog korisničkog računa%"
+"(x_url2_close)s."
 
 #: modules/bibupload/lib/batchuploader_templates.py:205
 #, fuzzy
@@ -2954,11 +2954,11 @@ msgstr "IZBRIŠI PODATKE"
 #: modules/webalert/lib/webalert_templates.py:300
 #, fuzzy, python-format
 msgid ""
-"Set a new alert from %(x_url1_open)syour searches%(x_url1_close)s, the "
-"%(x_url2_open)spopular searches%(x_url2_close)s, or the input form."
+"Set a new alert from %(x_url1_open)syour searches%(x_url1_close)s, the %"
+"(x_url2_open)spopular searches%(x_url2_close)s, or the input form."
 msgstr ""
-"Postavite novo upozorenje iz %(x_url1_open)svaših pretraga%(x_url1_close)s, "
-"%(x_url2_open)spopularnih pretraga%(x_url2_close)s ili putem obrasca za unos."
+"Postavite novo upozorenje iz %(x_url1_open)svaših pretraga%(x_url1_close)s, %"
+"(x_url2_open)spopularnih pretraga%(x_url2_close)s ili putem obrasca za unos."
 
 #: modules/webalert/lib/webalert_templates.py:318
 #: modules/webcomment/lib/webcomment_templates.py:226
@@ -3283,8 +3283,8 @@ msgstr "Javna košarica"
 #: modules/webbasket/lib/webbasket.py:2191
 #, python-format
 msgid ""
-"You have %(x_nb_perso)s personal baskets and are subscribed to "
-"%(x_nb_group)s group baskets and %(x_nb_public)s other users public baskets."
+"You have %(x_nb_perso)s personal baskets and are subscribed to %(x_nb_group)"
+"s group baskets and %(x_nb_public)s other users public baskets."
 msgstr ""
 "Imate %(x_nb_perso)s osobnih košarica i predbilježeni ste na %(x_nb_group)s "
 "grupnih košarica i %(x_nb_public)s javnih košarica drugih korisnika"
@@ -3403,8 +3403,8 @@ msgstr "Trenutno nema javno dostupnih košarica"
 #: modules/webbasket/lib/webbasket_templates.py:976
 #, fuzzy, python-format
 msgid ""
-"Displaying public baskets %(x_from)i - %(x_to)i out of "
-"%(x_total_public_basket)i public baskets in total."
+"Displaying public baskets %(x_from)i - %(x_to)i out of %"
+"(x_total_public_basket)i public baskets in total."
 msgstr ""
 "Prikaz %(x_nb_begin)i-%(x_nb_end)i košarica od ukupno %(x_nb_total)i "
 "košarica."
@@ -3518,8 +3518,8 @@ msgstr "Vaša košarica"
 #: modules/webbasket/lib/webbasket_templates.py:1399
 #, python-format
 msgid ""
-"Please choose a basket: %(x_basket_selection_box)s %(x_fmt_open)s(or "
-"%(x_url_open)screate a new one%(x_url_close)s first)%(x_fmt_close)s"
+"Please choose a basket: %(x_basket_selection_box)s %(x_fmt_open)s(or %"
+"(x_url_open)screate a new one%(x_url_close)s first)%(x_fmt_close)s"
 msgstr ""
 
 #: modules/webbasket/lib/webbasket_templates.py:1405
@@ -3690,8 +3690,8 @@ msgstr "Prijavljeni ste kao gost, pa će vaša košarica nestati kad se odjavite
 msgid ""
 "If you wish you can %(x_url_open)slogin or register here%(x_url_close)s."
 msgstr ""
-"Ako želite, možete se %(x_url_open)sprijaviti ili registrirati ovdje"
-"%(x_url_close)s."
+"Ako želite, možete se %(x_url_open)sprijaviti ili registrirati ovdje%"
+"(x_url_close)s."
 
 #: modules/webbasket/lib/webbasket_templates.py:1771
 #: modules/websession/lib/websession_webinterface.py:262
@@ -4279,11 +4279,11 @@ msgstr "Napomena: Vaš nadimak, %s, bit će prikazan kao autor ovog komentara"
 #: modules/webcomment/lib/webcomment_templates.py:1187
 #, python-format
 msgid ""
-"Note: you have not %(x_url_open)sdefined your nickname%(x_url_close)s. "
-"%(x_nickname)s will be displayed as the author of this comment."
+"Note: you have not %(x_url_open)sdefined your nickname%(x_url_close)s. %"
+"(x_nickname)s will be displayed as the author of this comment."
 msgstr ""
-"Napomena: niste %(x_url_open)sdefinirali svoj nadimak%(x_url_close)s. "
-"%(x_nickname)s ćebiti prikazano kao autor ovog komentara."
+"Napomena: niste %(x_url_open)sdefinirali svoj nadimak%(x_url_close)s. %"
+"(x_nickname)s ćebiti prikazano kao autor ovog komentara."
 
 #: modules/webcomment/lib/webcomment_templates.py:1091
 msgid "Once logged in, authorized users can also attach files."
@@ -5490,8 +5490,8 @@ msgstr "Dokument je %(x_fmt_open)sodobren%(x_fmt_close)s."
 #: modules/websearch/lib/websearch_templates.py:2970
 #, fuzzy, python-format
 msgid ""
-"%(x_fmt_open)sResults overview:%(x_fmt_close)s Found at least "
-"%(x_nb_records)s records in %(x_nb_seconds)s seconds."
+"%(x_fmt_open)sResults overview:%(x_fmt_close)s Found at least %(x_nb_records)"
+"s records in %(x_nb_seconds)s seconds."
 msgstr ""
 "%(x_fmt_open)sPrikaz rezultata:%(x_fmt_close)s Pronađeno %(x_nb_records)s "
 "zapisa u %(x_nb_seconds)s sekunda."
@@ -5712,17 +5712,17 @@ msgstr "sažeto"
 #: modules/websession/lib/webaccount.py:115
 #, python-format
 msgid ""
-"You are logged in as guest. You may want to %(x_url_open)slogin"
-"%(x_url_close)s as a regular user."
+"You are logged in as guest. You may want to %(x_url_open)slogin%(x_url_close)"
+"s as a regular user."
 msgstr ""
-"Prijavljeni ste kao gost. Možda se želite %(x_url_open)sprijaviti"
-"%(x_url_close)s kao redoviti korisnik."
+"Prijavljeni ste kao gost. Možda se želite %(x_url_open)sprijaviti%"
+"(x_url_close)s kao redoviti korisnik."
 
 #: modules/websession/lib/webaccount.py:119
 #, python-format
 msgid ""
-"The %(x_fmt_open)sguest%(x_fmt_close)s users need to %(x_url_open)sregister"
-"%(x_url_close)s first"
+"The %(x_fmt_open)sguest%(x_fmt_close)s users need to %(x_url_open)sregister%"
+"(x_url_close)s first"
 msgstr ""
 "%(x_fmt_open)sGosti%(x_fmt_close)s se prvo trebaju %(x_url_open)sregistrirati"
 "%(x_url_close)s"
@@ -5751,8 +5751,8 @@ msgstr "Postavke"
 #: modules/websession/lib/websession_templates.py:94
 #, fuzzy, python-format
 msgid ""
-"You can consult the list of your external groups directly in the "
-"%(x_url_open)sgroups page%(x_url_close)s."
+"You can consult the list of your external groups directly in the %"
+"(x_url_open)sgroups page%(x_url_close)s."
 msgstr ""
 "Možete se konzultirati listom %(x_url_open)sVaših grupa%(x_url_close)s."
 
@@ -5842,14 +5842,14 @@ msgid ""
 "If you are using a lightweight CERN account you can\n"
 "                %(x_url_open)sreset the password%(x_url_close)s."
 msgstr ""
-"Ako želite, možete se %(x_url_open)sprijaviti ili registrirati ovdje"
-"%(x_url_close)s."
+"Ako želite, možete se %(x_url_open)sprijaviti ili registrirati ovdje%"
+"(x_url_close)s."
 
 #: modules/websession/lib/websession_templates.py:228
 #, fuzzy, python-format
 msgid ""
-"You can change or reset your CERN account password by means of the "
-"%(x_url_open)sCERN account system%(x_url_close)s."
+"You can change or reset your CERN account password by means of the %"
+"(x_url_open)sCERN account system%(x_url_close)s."
 msgstr ""
 "Sada možete pristupiti %(x_url_open)sVašem korisničkom računu%(x_url_close)s."
 
@@ -6034,13 +6034,13 @@ msgstr ""
 #: modules/websession/lib/websession_templates.py:532
 #, python-format
 msgid ""
-"You are logged in as %(x_user)s. You may want to a) %(x_url1_open)slogout"
-"%(x_url1_close)s; b) edit your %(x_url2_open)saccount settings"
-"%(x_url2_close)s."
+"You are logged in as %(x_user)s. You may want to a) %(x_url1_open)slogout%"
+"(x_url1_close)s; b) edit your %(x_url2_open)saccount settings%(x_url2_close)"
+"s."
 msgstr ""
-"Prijavljeni ste kao %(x_user)s. Možda želite a) %(x_url1_open)sodjaviti se"
-"%(x_url1_close)s; b) urediti %(x_url2_open)spostavke svog korisničkog računa"
-"%(x_url2_close)s."
+"Prijavljeni ste kao %(x_user)s. Možda želite a) %(x_url1_open)sodjaviti se%"
+"(x_url1_close)s; b) urediti %(x_url2_open)spostavke svog korisničkog računa%"
+"(x_url2_close)s."
 
 #: modules/websession/lib/websession_templates.py:613
 #, fuzzy
@@ -6188,24 +6188,24 @@ msgid ""
 "If you don't own a CERN account yet, you can register a %(x_url_open)snew "
 "CERN lightweight account%(x_url_close)s."
 msgstr ""
-"Ukoliko već nemate otvoren korisnički račun, molimo "
-"%(x_url_open)sregistrirajte se%(x_url_close)s na unutarnji korisnički račun."
+"Ukoliko već nemate otvoren korisnički račun, molimo %(x_url_open)"
+"sregistrirajte se%(x_url_close)s na unutarnji korisnički račun."
 
 #: modules/websession/lib/websession_templates.py:839
 #, python-format
 msgid ""
-"If you don't own an account yet, please %(x_url_open)sregister"
-"%(x_url_close)s an internal account."
+"If you don't own an account yet, please %(x_url_open)sregister%(x_url_close)"
+"s an internal account."
 msgstr ""
-"Ukoliko već nemate otvoren korisnički račun, molimo "
-"%(x_url_open)sregistrirajte se%(x_url_close)s na unutarnji korisnički račun."
+"Ukoliko već nemate otvoren korisnički račun, molimo %(x_url_open)"
+"sregistrirajte se%(x_url_close)s na unutarnji korisnički račun."
 
 #: modules/websession/lib/websession_templates.py:847
 #, fuzzy, python-format
 msgid "If you don't own an account yet, please contact %s."
 msgstr ""
-"Ukoliko već nemate otvoren korisnički račun, molimo "
-"%(x_url_open)sregistrirajte se%(x_url_close)s na unutarnji korisnički račun."
+"Ukoliko već nemate otvoren korisnički račun, molimo %(x_url_open)"
+"sregistrirajte se%(x_url_close)s na unutarnji korisnički račun."
 
 #: modules/websession/lib/websession_templates.py:870
 #, fuzzy
@@ -6333,11 +6333,11 @@ msgstr "Neki zanimljivi linkovi za Vas:"
 #: modules/websession/lib/websession_templates.py:1122
 #, fuzzy, python-format
 msgid ""
-"For more admin-level activities, see the complete %(x_url_open)sAdmin Area"
-"%(x_url_close)s."
+"For more admin-level activities, see the complete %(x_url_open)sAdmin Area%"
+"(x_url_close)s."
 msgstr ""
-"Za još administracijskih aktivnosti, pogledajte %(x_url_open)sAdmin područje"
-"%(x_url_close)s."
+"Za još administracijskih aktivnosti, pogledajte %(x_url_open)sAdmin područje%"
+"(x_url_close)s."
 
 #: modules/websession/lib/websession_templates.py:1175
 msgid "guest"
@@ -6573,11 +6573,11 @@ msgstr ""
 #: modules/websession/lib/websession_templates.py:2079
 #, python-format
 msgid ""
-"If you want to invite new members to join your group, please use the "
-"%(x_url_open)sweb message%(x_url_close)s system."
+"If you want to invite new members to join your group, please use the %"
+"(x_url_open)sweb message%(x_url_close)s system."
 msgstr ""
-"Ako želite pozvati nove članove u svoju grupu, molimo koristite sistem "
-"%(x_url_open)sweb poruka%(x_url_close)s."
+"Ako želite pozvati nove članove u svoju grupu, molimo koristite sistem %"
+"(x_url_open)sweb poruka%(x_url_close)s."
 
 #: modules/websession/lib/websession_templates.py:2083
 #, python-format
@@ -6665,12 +6665,11 @@ msgstr "Grupa %s je obrisana od strane administratora."
 #: modules/websession/lib/websession_templates.py:2422
 #, python-format
 msgid ""
-"You can consult the list of %(x_url_open)s%(x_nb_total)i groups"
-"%(x_url_close)s you are subscribed to (%(x_nb_member)i) or administering "
-"(%(x_nb_admin)i)."
+"You can consult the list of %(x_url_open)s%(x_nb_total)i groups%(x_url_close)"
+"s you are subscribed to (%(x_nb_member)i) or administering (%(x_nb_admin)i)."
 msgstr ""
-"Možete se konzultirati listom %(x_url_open)s%(x_nb_total)i grupa"
-"%(x_url_close)s na koje ste predbilježeni (%(x_nb_member)i) ili ih "
+"Možete se konzultirati listom %(x_url_open)s%(x_nb_total)i grupa%"
+"(x_url_close)s na koje ste predbilježeni (%(x_nb_member)i) ili ih "
 "administrirate (%(x_nb_admin)i)."
 
 #: modules/websession/lib/websession_templates.py:2441
@@ -6911,8 +6910,8 @@ msgstr "Postavke su uspješno promijenjene."
 #: modules/websession/lib/websession_webinterface.py:397
 #, python-format
 msgid ""
-"Note that if you have changed your email address, you will have to "
-"%(x_url_open)sreset your password%(x_url_close)s anew."
+"Note that if you have changed your email address, you will have to %"
+"(x_url_open)sreset your password%(x_url_close)s anew."
 msgstr ""
 
 #: modules/websession/lib/websession_webinterface.py:405
@@ -7319,8 +7318,8 @@ msgstr "Nažalost, zapis %s ne postoji."
 #: modules/webstyle/lib/webdoc_webinterface.py:190
 #, fuzzy, python-format
 msgid ""
-"You may want to look at the %(x_url_open)s%(x_category)s pages"
-"%(x_url_close)s."
+"You may want to look at the %(x_url_open)s%(x_category)s pages%(x_url_close)"
+"s."
 msgstr ""
 "Sada možete pristupiti %(x_url_open)sVašem korisničkom računu%(x_url_close)s."
 
@@ -7436,15 +7435,15 @@ msgstr ""
 #: modules/websubmit/lib/websubmit_managedocfiles.py:871
 #, python-format
 msgid ""
-"Having a problem revising a file? Send the revised version to "
-"%(mailto_link)s."
+"Having a problem revising a file? Send the revised version to %(mailto_link)"
+"s."
 msgstr ""
 
 #: modules/websubmit/lib/websubmit_managedocfiles.py:874
 #, python-format
 msgid ""
-"Having a problem adding or revising a file? Send the new/revised version to "
-"%(mailto_link)s."
+"Having a problem adding or revising a file? Send the new/revised version to %"
+"(mailto_link)s."
 msgstr ""
 
 #: modules/websubmit/lib/websubmit_managedocfiles.py:989
@@ -7709,11 +7708,11 @@ msgstr "Broj prijave"
 #: modules/websubmit/lib/websubmit_templates.py:1061
 #, python-format
 msgid ""
-"Here is the %(x_action)s function list for %(x_doctype)s documents at level "
-"%(x_step)s"
+"Here is the %(x_action)s function list for %(x_doctype)s documents at level %"
+"(x_step)s"
 msgstr ""
-"Ovdje je %(x_action)s lista funkcija %(x_doctype)s za dokumente na razini "
-"%(x_step)s"
+"Ovdje je %(x_action)s lista funkcija %(x_doctype)s za dokumente na razini %"
+"(x_step)s"
 
 #: modules/websubmit/lib/websubmit_templates.py:1066
 msgid "Function"
@@ -11787,11 +11786,11 @@ msgstr ""
 #~ msgstr "osvježeno "
 
 #~ msgid ""
-#~ "This basket belongs to %(x_name)s. You can freely %(x_url_open)ssubscribe"
-#~ "%(x_url_close)s to it"
+#~ "This basket belongs to %(x_name)s. You can freely %(x_url_open)ssubscribe%"
+#~ "(x_url_close)s to it"
 #~ msgstr ""
-#~ "Ova košarica pripada %(x_name)s. Slobodno se %(x_url_open)spredbilježite"
-#~ "%(x_url_close)s na nju."
+#~ "Ova košarica pripada %(x_name)s. Slobodno se %(x_url_open)spredbilježite%"
+#~ "(x_url_close)s na nju."
 
 #~ msgid "records"
 #~ msgstr "Stavke"
@@ -12010,8 +12009,8 @@ msgstr ""
 #~ "Before you add your comment, you need to %(x_url_open)slogin%(x_url_close)"
 #~ "s first."
 #~ msgstr ""
-#~ "Prije dodavanja komentara, trebate se %(x_url_open)sprijaviti"
-#~ "%(x_url_close)s."
+#~ "Prije dodavanja komentara, trebate se %(x_url_open)sprijaviti%"
+#~ "(x_url_close)s."
 
 #, fuzzy
 #~ msgid "session"
@@ -12108,8 +12107,8 @@ msgstr ""
 #~ "You can now go back to %(x_url_open)sBibEdit Admin Interface%(x_url_close)"
 #~ "s."
 #~ msgstr ""
-#~ "Sada se možete vratiti na %(x_url_open)sadministracijsko sučelje"
-#~ "%(x_url_close)s."
+#~ "Sada se možete vratiti na %(x_url_open)sadministracijsko sučelje%"
+#~ "(x_url_close)s."
 
 #, fuzzy
 #~ msgid "Article Error"
