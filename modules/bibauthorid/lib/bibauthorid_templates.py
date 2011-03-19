@@ -488,6 +488,9 @@ class Template:
         pp_html = []
         h = pp_html.append
         
+        h('<form id="%s" action="/person/action" method="post">'
+                   % (form_id))
+                
         h('<div class="aid_reclist_selector">'+self._(' On all pages: '))
         h('<a rel="group_1" href="#select_all">'+self._('Select All')+'</a> | ')
         h('<a rel="group_1" href="#select_none">'+self._('Select None')+'</a> | ')
@@ -504,8 +507,7 @@ class Template:
         h('<input type="submit" name="reset" value="%s" class="aid_btn_blue" />' % verbiage_dict['b_forget'])
         h("  </div>")
         
-        h('<form id="%s" action="/person/action" method="post">'
-                   % (form_id))
+
         h('<table  class="paperstable" cellpadding="3" width="100%">')
         h("<thead>")
         h("  <tr>")

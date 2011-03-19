@@ -125,6 +125,7 @@ from invenio.errorlib import register_exception
 from invenio.bibedit_webinterface import WebInterfaceEditPages
 from invenio.bibeditmulti_webinterface import WebInterfaceMultiEditPages
 from invenio.bibmerge_webinterface import WebInterfaceMergePages
+from invenio.search_engine import get_record
 
 import invenio.template
 websearch_templates = invenio.template.load('websearch')
@@ -394,9 +395,18 @@ class WebInterfaceAuthorPages(WebInterfaceDirectory):
 
         if self.personid < 0 or not is_bibauthorid:
             # Well, no person. Fall back to the exact author name search then.
+            ptitle = ''
+            if recid:
+                try:
+                    ptitle = get_record(recid)['245'][0][0][0][1]  
+                except (IndexError,TypeError):
+                    ptitle = '"Title not available"'
             self.authorname = self.pageparam
             title = ''
-            message = "Sorry, the name '%s' you are searching couldn't be resolved to a person in the database." % self.pageparam
+            if ptitle:
+                message = "Sorry, the name '%s' on the paper '%s' you are searching has not yet been attributed to a person in the database." % (self.pageparam, ptitle)
+            else:
+                message = "Sorry, the name '%s' you are searching couldn't be associated to a person in the database." % self.pageparam
             return self._psearch(req, form, is_fallback=True, fallback_query=self.pageparam,  fallback_title=title, fallback_message=message)
         
             if not self.authorname:
@@ -606,7 +616,7 @@ class WebInterfaceAuthorPages(WebInterfaceDirectory):
                 h('<div id="header">%s</div><br>' % fallback_title)
         if fallback_message:
                 h('%s <br>' % fallback_message)
-        h('Try <a href=/person/search?q=%s> searching </a> the right person.' % fallback_query)
+        h('<a href=/person/search?q=%s> Please click here to search for possible persons for \'%s\'</a>' % (fallback_query, fallback_query))
         return "\n".join(html)
 
 
