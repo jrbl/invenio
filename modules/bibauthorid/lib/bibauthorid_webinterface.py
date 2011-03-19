@@ -1166,7 +1166,7 @@ class WebInterfaceBibAuthorIDPages(WebInterfaceDirectory):
             body = TEMPLATE.tmpl_person_detail_layout(body)
 
             metaheaderadd = self._scripts(kill_browser_cache=True)
-            title = _("Please review your actions")
+            title = _("Submit Attribution Information")
 
             return page(title=title,
                 metaheaderadd=metaheaderadd,
@@ -2117,7 +2117,7 @@ class WebInterfaceBibAuthorIDPages(WebInterfaceDirectory):
             return TEMPLATE.tmpl_search_ticket_box(teaser, message, search_ticket)
 
 
-    def search(self, req, form):
+    def search(self, req, form, is_fallback=False, fallback_query='', fallback_title='', fallback_message=''):
         '''
         Function used for searching a person based on a name with which the
         function is queried.
@@ -2163,6 +2163,9 @@ class WebInterfaceBibAuthorIDPages(WebInterfaceDirectory):
         if 'q' in argd:
             if argd['q']:
                 query = escape(argd['q'])
+        
+        if is_fallback and fallback_query:
+            query = fallback_query
 
         if query:
             authors = []
@@ -2201,11 +2204,14 @@ class WebInterfaceBibAuthorIDPages(WebInterfaceDirectory):
 
             search_results = authors
 
-        if recid and (len(search_results) == 1):
+        if recid and (len(search_results) == 1) and not is_fallback:
             return redirect_to_url(req, "/person/%s" % search_results[0][0])
 
-        body = body + TEMPLATE.tmpl_author_search(query, search_results, search_ticket)
-        body = TEMPLATE.tmpl_person_detail_layout(body)
+        body = body + TEMPLATE.tmpl_author_search(query, search_results, search_ticket, author_papges_mode=False, fallback_mode=is_fallback,
+                                                  fallback_title=fallback_title, fallback_message=fallback_message)
+        
+        if not is_fallback:
+            body = TEMPLATE.tmpl_person_detail_layout(body)
 
         return page(title=title,
                     metaheaderadd=self._scripts(kill_browser_cache=True),

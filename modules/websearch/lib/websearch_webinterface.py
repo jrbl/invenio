@@ -238,8 +238,7 @@ class WebInterfaceAuthorPages(WebInterfaceDirectory):
     def _lookup(self, component, path):
         """This handler parses dynamic URLs (/author/John+Doe)."""
         return WebInterfaceAuthorPages(component), path
-
-
+    
     def __call__(self, req, form):
         """Serve the page in the given language."""
         is_bibauthorid = False
@@ -396,7 +395,10 @@ class WebInterfaceAuthorPages(WebInterfaceDirectory):
         if self.personid < 0 or not is_bibauthorid:
             # Well, no person. Fall back to the exact author name search then.
             self.authorname = self.pageparam
-
+            title = ''
+            message = "Sorry, the name '%s' you are searching couldn't be resolved to a person in the database." % self.pageparam
+            return self._psearch(req, form, is_fallback=True, fallback_query=self.pageparam,  fallback_title=title, fallback_message=message)
+        
             if not self.authorname:
                 return websearch_templates.tmpl_author_information(req, {},
                                                             self.authorname,
@@ -594,7 +596,18 @@ class WebInterfaceAuthorPages(WebInterfaceDirectory):
 #        req.write(simauthbox)
         if verbose == 9:
             req.write("<br/>all: " + str(time.time() - genstart) + "<br/>")
+            
         return page_end(req, 'hb', ln)
+
+    def _psearch(self, req, form, is_fallback=True, fallback_query='',  fallback_title='', fallback_message=''):
+        html = []
+        h = html.append
+        if fallback_title:
+                h('<div id="header">%s</div><br>' % fallback_title)
+        if fallback_message:
+                h('%s <br>' % fallback_message)
+        h('Try <a href=/person/search?q=%s> searching </a> the right person.' % fallback_query)
+        return "\n".join(html)
 
 
     def get_institute_pub_dict(self, recids, names_list):

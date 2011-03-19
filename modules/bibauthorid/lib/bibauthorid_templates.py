@@ -487,6 +487,23 @@ class Template:
 
         pp_html = []
         h = pp_html.append
+        
+        h('<div class="aid_reclist_selector">'+self._(' On all pages: '))
+        h('<a rel="group_1" href="#select_all">'+self._('Select All')+'</a> | ')
+        h('<a rel="group_1" href="#select_none">'+self._('Select None')+'</a> | ')
+        h('<a rel="group_1" href="#invert_selection">'+self._('Invert Selection')+'</a>')
+        h('</div>')
+
+        h('<div class="aid_reclist_buttons">')
+        h(('<img src="%s/img/aid_90low_right.png" alt="∟" />'+self._(' With selected do: '))
+          % (CFG_SITE_URL))
+        h('<input type="hidden" name="pid" value="%s" />' % (person_id))
+        h('<input type="submit" name="confirm" value="%s" class="aid_btn_blue" />' % verbiage_dict['b_confirm'])
+        h('<input type="submit" name="repeal" value="%s" class="aid_btn_blue" />' % verbiage_dict['b_repeal'])
+        h('<input type="submit" name="to_other_person" value="%s" class="aid_btn_blue" />' % verbiage_dict['b_to_others'])
+        h('<input type="submit" name="reset" value="%s" class="aid_btn_blue" />' % verbiage_dict['b_forget'])
+        h("  </div>")
+        
         h('<form id="%s" action="/person/action" method="post">'
                    % (form_id))
         h('<table  class="paperstable" cellpadding="3" width="100%">')
@@ -1018,7 +1035,7 @@ class Template:
             h('<img src="%s/img/aid_warning_granted.png" '
               'alt="%s" width="30" height="30" />'
               % (CFG_SITE_URL, self._("Confirmation needed to continue")))
-            h(self._('The result of this request will be visible immediately but we need your confirmation to do so'))
+            h(self._('The result of this request will be visible immediately but we need your confirmation to do so for this paper have been manually claimed before'))
             h('</span><br />')
             h('<span style="margin-left:25px; vertical-align:middle;">')
             h('<img src="%s/img/aid_denied.png" '
@@ -1096,7 +1113,7 @@ class Template:
         html = []
         h = html.append
 
-        h(html_icon_legend())
+#        h(html_icon_legend())
 
         if "checkout_faulty_fields" in pinfo and pinfo["checkout_faulty_fields"]:
             h(self.tmpl_error_box(self._("Please Check your entries"), self._("Sorry.")))
@@ -1261,7 +1278,8 @@ class Template:
 
 
     def tmpl_author_search(self, query, results,
-                           search_ticket=None, author_papges_mode=False):
+                           search_ticket=None, author_papges_mode=False, 
+                           fallback_mode=False, fallback_title='', fallback_message=''):
         '''
         Generates the search for Person entities.
 
@@ -1284,13 +1302,19 @@ class Template:
         html = []
         h = html.append
 
-        if not author_papges_mode:
+        if not author_papges_mode and not fallback_mode:
             h('<div id="header">Search for a person</div>')
             h('<form id="searchform" action="/person/search" method="GET">')
             h('<input type="text" name="q" style="border:1px solid #333; width:500px;" '
                         'maxlength="250" value="%s" class="focus" />' % query)
             h('<input type="submit" value="Search" />')
             h('</form>')
+        
+        if fallback_mode:
+            if fallback_title:
+                h('<div id="header">%s</div>' % fallback_title)
+            if fallback_message:
+                h('%s' % fallback_message)
 
         if not results and not query:
             h('</div>')
