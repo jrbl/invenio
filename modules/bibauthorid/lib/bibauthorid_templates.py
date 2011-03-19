@@ -1368,7 +1368,7 @@ class Template:
             else:
                 h("<p>"+self._('Sorry, there are no documents known for this person')+"</p>")
 
-            h(('<p><a href="%s/perons/%d" target="_blank">'
+            h(('<p><a href="%s/person/%d" target="_blank">'
                         +self._('Show more information about this person in a new window or tab')+
                         '</a></p>') % (CFG_SITE_URL, pid))
             h('</div>')

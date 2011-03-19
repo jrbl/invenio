@@ -4090,7 +4090,7 @@ class Template:
         if person_link:
             req.write('<div><a href="%s/person/%s">%s</a></div>'
                       % (CFG_SITE_URL, person_link,
-                         _("Report problem!")))
+                         _("Fix this Record!")))
 
         req.write("<table width=80%><tr valign=top><td>")
         req.write(names_box)
