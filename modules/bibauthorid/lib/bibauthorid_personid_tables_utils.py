@@ -73,6 +73,24 @@ class PersonIDStatusDataCacher(DataCacher):
         DataCacher.__init__(self, cache_filler, timestamp_verifier)
 
 
+def create_new_person(uid, uid_is_owner=False):
+        #creates a new person
+        pid = run_sql("select max(personid) from aidPERSONID")[0][0]
+
+        if pid:
+            try:
+                pid = int(pid)
+            except (ValueError, TypeError):
+                pid = -1
+            pid += 1
+        if uid_is_owner:
+            set_person_data(pid, 'uid', str(uid))
+            set_person_data(pid, 'user-created', str(uid))
+        else:
+            set_person_data(pid, 'user-created', str(uid))
+            
+        return pid
+    
 def get_pid_from_name_bibrec(bibrecs, name_string):
     '''
     Finds a Person ID for a specific name on a specific list of record IDs

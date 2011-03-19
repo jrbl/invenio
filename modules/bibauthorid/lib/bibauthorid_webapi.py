@@ -1195,6 +1195,8 @@ def execute_action(action, pid, bibref, uid, userinfo='', comment=''):
         return False
     elif pid < 0:
         return False
+    elif pid == -3:
+        pid = tu.create_new_person(uid, user_is_owner=False)
     elif not is_valid_bibref(bibref):
         return False
 
