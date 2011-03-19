@@ -36,7 +36,7 @@ from invenio.template import load
 from invenio.webinterface_handler import wash_urlargd, WebInterfaceDirectory
 from invenio.session import get_session
 from invenio.urlutils import redirect_to_url
-from invenio.webuser import getUid, page_not_authorized, collect_user_info
+from invenio.webuser import getUid, page_not_authorized, collect_user_info, set_user_preferences
 from invenio.webuser import email_valid_p, emailUnique
 from invenio.webuser import get_email_from_username, get_uid_from_email, isUserSuperAdmin
 from invenio.access_control_admin import acc_find_user_role_actions
@@ -171,16 +171,18 @@ class WebInterfaceBibAuthorIDPages(WebInterfaceDirectory):
         self._session_bareinit(req)
         argd = wash_urlargd(form, {'ln': (str, CFG_SITE_LANG),
                                    'verbose': (int, 0),
-                                   'ticketid': (int, -1)})
+                                   'ticketid': (int, -1),
+                                   'open_claim': (str, None)})
         ln = wash_language(argd['ln'])
+
         rt_ticket_id = argd['ticketid']
         req.argd = argd #needed for perform_req_search
         session = get_session(req)
         ulevel = self.__get_user_role(req)
         uid = getUid(req)
         if isUserSuperAdmin({'uid':uid}):
-            ulevel = 'admin'
-
+            ulevel = 'admin'           
+            
         no_access = self._page_access_permission_wall(req, [self.person_id])
 
         if no_access:
@@ -191,7 +193,16 @@ class WebInterfaceBibAuthorIDPages(WebInterfaceDirectory):
         except KeyError:
             pinfo = dict()
             session['personinfo'] = pinfo
-
+        
+        if 'open_claim' in argd and argd['open_claim']:
+            pinfo['claim_in_process'] = True
+        else:
+            pinfo['claim_in_process'] = False
+            
+        uinfo = collect_user_info(req)
+        uinfo['precached_viewclaimlink'] =  pinfo['claim_in_process'] 
+        set_user_preferences(uid,uinfo)
+        
         pinfo['ulevel'] = ulevel
         if self.person_id != -1:
             pinfo["claimpaper_admin_last_viewed_pid"] = self.person_id
@@ -1417,7 +1428,15 @@ class WebInterfaceBibAuthorIDPages(WebInterfaceDirectory):
         '''
         session = get_session(req)
         pinfo = session["personinfo"]
-
+        
+        if 'claim_in_process' in pinfo:
+            pinfo['claim_in_process'] = False
+        
+        uinfo = collect_user_info(req)
+        uinfo['precached_viewclaimlink'] =  pinfo['claim_in_process']
+        uid = getUid(req) 
+        set_user_preferences(uid,uinfo)
+        
         if "referer" in pinfo and pinfo["referer"]:
             referer = pinfo["referer"]
             del(pinfo["referer"])

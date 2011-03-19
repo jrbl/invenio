@@ -1140,10 +1140,22 @@ def collect_user_info(req, login_time=False, refresh=False):
                 and acc_is_user_in_role(user_info, acc_get_role_id("paperattributionviewers"))):
                 usepaperattribution = True
 
+#            if (CFG_BIBAUTHORID_ENABLED
+#                and usepaperattribution
+#                and acc_is_user_in_role(user_info, acc_get_role_id("paperattributionlinkviewers"))):
+#                viewclaimlink = True
+            
+            session = get_session(req)
+            viewlink = False
+            try:
+                viewlink = user_info['session']['personinfo']['claim_in_process']
+            except (KeyError, TypeError):
+                viewlink = False
+                
             if (CFG_BIBAUTHORID_ENABLED
                 and usepaperattribution
-                and acc_is_user_in_role(user_info, acc_get_role_id("paperattributionlinkviewers"))):
-                viewclaimlink = True
+                and viewlink): 
+                    viewclaimlink = True
 
             user_info['precached_viewclaimlink'] = viewclaimlink
             user_info['precached_usepaperattribution'] = usepaperattribution
@@ -1215,11 +1227,23 @@ def collect_user_info(req, login_time=False, refresh=False):
                 if (CFG_BIBAUTHORID_ENABLED
                     and acc_is_user_in_role(user_info, acc_get_role_id("paperattributionviewers"))):
                     usepaperattribution = True
-
+                
+                session = get_session(req)
+                viewlink = False
+                try:
+                    viewlink = user_info['session']['personinfo']['claim_in_process']
+                except (KeyError, TypeError):
+                    viewlink = False
+                    
                 if (CFG_BIBAUTHORID_ENABLED
-                    and ((usepaperclaim or usepaperattribution)
-                         and acc_is_user_in_role(user_info, acc_get_role_id("paperattributionlinkviewers")))):
-                    viewclaimlink = True
+                    and usepaperattribution
+                    and viewlink): 
+                        viewclaimlink = True
+
+#                if (CFG_BIBAUTHORID_ENABLED
+#                    and ((usepaperclaim or usepaperattribution)
+#                         and acc_is_user_in_role(user_info, acc_get_role_id("paperattributionlinkviewers")))):
+#                    viewclaimlink = True
 
                 user_info['precached_viewclaimlink'] = viewclaimlink
                 user_info['precached_usepaperclaim'] = usepaperclaim
