@@ -843,8 +843,9 @@ class Template:
                         h('%(action)s - %(name)s on %(title)s'
                       % ({'action':a[0], 'url':CFG_SITE_URL, 'pid':str(person_id), 'bib':a[1], 'name':pname, 'title':title, 'rt':t[1]}))
                     if 'del_entry' in ticket_links:
-                        h(' - <a id="action" href="%(url)s/person/action?cancel_rt_ticket=True&pid=%(pid)s&selection=%(bib)s&rt_id=%(rt)s&rt_action=%(action)s"> Delete this entry </a> <br>'
+                        h(' - <a id="action" href="%(url)s/person/action?cancel_rt_ticket=True&pid=%(pid)s&selection=%(bib)s&rt_id=%(rt)s&rt_action=%(action)s"> Delete this entry </a>'
                       % ({'action':a[0], 'url':CFG_SITE_URL, 'pid':str(person_id), 'bib':a[1], 'name':pname, 'title':title, 'rt':t[1]}))
+                    h(' - <a id="show_paper" target="_blank" href="%(url)s/record/%(record)s"> View record <br>' % ({'url':CFG_SITE_URL, 'record':str(bibrec)}))
                 h('</dd>')
                 h('</dd><br>')
 #            h(str(open_rt_tickets))
