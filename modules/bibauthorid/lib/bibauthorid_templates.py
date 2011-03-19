@@ -638,13 +638,15 @@ class Template:
         h = html.append
         #class="ui-tabs ui-widget ui-widget-content ui-corner-all">
         h('<div id="aid_person_names"')
-        h('<p><strong>'+self._('Names of the person as collected from the records attached')+'</strong></p>')
+        h('<p><strong>'+self._('Names variants:')+'</strong></p>')
         h("<p>")
         h('<!--<span class="aid_lowlight_text">Person ID: <span id="pid%s">%s</span></span><br />!-->'
                       % (person_id, person_id))
 
         for name in names:
-            h(("%s "+self._('as appeared on')+" %s"+self._(' records')+"<br />")
+#            h(("%s "+self._('as appeared on')+" %s"+self._(' records')+"<br />")
+#                             % (name[0], name[1]))
+            h(("%s (%s); ")
                              % (name[0], name[1]))
 
         h("</p>")
@@ -957,8 +959,8 @@ class Template:
         h = html.append
         h('<div id="aid_menu">')
         h('  <ul>')
-        h('    <li><a href="#">'+self._('Navigation:')+'</a></li>')
-        h(('    <li><a href="%s/person/search">'+self._('Person Search')+'</a></li>') % CFG_SITE_URL)
+        h('    <li>'+self._('Navigation:')+'</li>')
+        h(('    <li><a href="%s/person/search">'+self._('Run paper attribution for another author')+'</a></li>') % CFG_SITE_URL)
         h('    <!--<li><a href="#">'+self._('Person Interface FAQ')+'</a></li>!-->')
         h('  </ul>')
         h('</div>')
@@ -1350,10 +1352,10 @@ class Template:
             else:
                 h(('<span style="margin-left: 40px;">'
                             '<em><a href="%s/%s/%s" id="aid_moreinfolink">'
-                            +self._('Show author page ')+'(person ID: %s - %d)</a></em></span>')
+                            +self._('Show author page ')+'(%s)</a></em></span>')
                             % (CFG_SITE_URL, linktarget,
                                get_person_redirect_link(pid),
-                               get_person_redirect_link(pid), pid))
+                               get_person_redirect_link(pid)))
             h('<div class="more-mpid%s" id="aid_moreinfo">' % (pid))
 
             if papers:

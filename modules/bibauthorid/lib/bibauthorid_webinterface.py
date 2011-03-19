@@ -402,7 +402,10 @@ class WebInterfaceBibAuthorIDPages(WebInterfaceDirectory):
         @param ln: language to show this page in
         @type ln: string
         '''
-        return 'BibAuthorID guest user interface'
+        if self.person_id:
+            return 'Attribute papers for: '+str(webapi.get_person_redirect_link(self.person_id))
+        else:
+            return 'Attribute papers'
 
 
     def _generate_title_user(self, req, form, ln):
@@ -415,8 +418,10 @@ class WebInterfaceBibAuthorIDPages(WebInterfaceDirectory):
         @param ln: language to show this page in
         @type ln: string
         '''
-        return 'BibAuthorID user user interface'
-
+        if self.person_id:
+            return 'Attribute papers (user interface) for: '+str(webapi.get_person_redirect_link(self.person_id))
+        else:
+            return 'Attribute papers'
 
     def _generate_title_admin(self, req, form, ln):
         '''
@@ -428,7 +433,10 @@ class WebInterfaceBibAuthorIDPages(WebInterfaceDirectory):
         @param ln: language to show this page in
         @type ln: string
         '''
-        return 'BibAuthorID admin user interface'
+        if self.person_id:
+            return 'Attribute papers (administrator interface) for: '+str(webapi.get_person_redirect_link(self.person_id))
+        else:
+            return 'Attribute papers'
 
 
     def _generate_optional_menu_guest(self, req, form, ln):
@@ -631,8 +639,8 @@ class WebInterfaceBibAuthorIDPages(WebInterfaceDirectory):
 
         links = [] # ['delete', 'commit','del_entry','commit_entry']
         tabs = ['records', 'repealed', 'review']
-        verbiage_dict={'confirmed':'Records','repealed':_('Not this person\'s records'),
-                                         'review':_('Records in need of review'),
+        verbiage_dict={'confirmed':'Papers','repealed':_('Papers removed from this profile'),
+                                         'review':_('Papers in need of review'),
                                          'tickets':_('Open Tickets'),'data':_('Data'),
                                          'confirmed_ns':_('Papers of this Person'),
                                          'repealed_ns':_('Papers _not_ of this Person'),
@@ -641,8 +649,8 @@ class WebInterfaceBibAuthorIDPages(WebInterfaceDirectory):
                                          'data_ns':_('Additional Data for this Person')}
 
         buttons_verbiage_dict ={'mass_buttons':{'no_doc_string':_('Sorry, there are currently no documents to be found in this category.'),
-                                                  'b_confirm':_('Assign to this person'),
-                                                  'b_repeal':_('Reject from this person'),
+                                                  'b_confirm':_('Yes, those papers are by this person.'),
+                                                  'b_repeal':_('No, those papers are not by this person'),
                                                   'b_to_others':_('Assign to other person'),
                                                   'b_forget':_('Forget decision')},
                                  'record_undecided':{'alt_confirm':_('Confirm!'),
@@ -696,8 +704,8 @@ class WebInterfaceBibAuthorIDPages(WebInterfaceDirectory):
         links = ['delete', 'del_entry']
         tabs = ['records', 'repealed', 'review', 'tickets']
         if pinfo["claimpaper_admin_last_viewed_pid"] == webapi.get_pid_from_uid(uid)[0][0]:
-            verbiage_dict={'confirmed':_('Your records'),'repealed':_('Not your records'),
-                                             'review':_('Records in need of review'),
+            verbiage_dict={'confirmed':_('Your papers'),'repealed':_('Not your papers'),
+                                             'review':_('Papers in need of review'),
                                              'tickets':_('Your tickets'),'data':_('Data'),
                                              'confirmed_ns':_('Your papers'),
                                              'repealed_ns':_('Not your papers'),
@@ -733,8 +741,8 @@ class WebInterfaceBibAuthorIDPages(WebInterfaceDirectory):
                                                                      'alt_to_other':_('To other person!')
                                                                     }}
         else:
-            verbiage_dict={'confirmed':_('Records'),'repealed':_('Not this person\'s records'),
-                                 'review':_('Records in need of review'),
+            verbiage_dict={'confirmed':_('Papers'),'repealed':_('Papers removed from this profile'),
+                                 'review':_('Papers in need of review'),
                                  'tickets':_('Your tickets'),'data':_('Data'),
                                  'confirmed_ns':_('Papers of this Person'),
                                  'repealed_ns':_('Papers _not_ of this Person'),
@@ -742,8 +750,8 @@ class WebInterfaceBibAuthorIDPages(WebInterfaceDirectory):
                                  'tickets_ns':_('Tickes you created about this person'),
                                  'data_ns':_('Additional Data for this Person')}
             buttons_verbiage_dict = {'mass_buttons':{'no_doc_string':_('Sorry, there are currently no documents to be found in this category.'),
-                                                  'b_confirm':_('Assign to this person'),
-                                                  'b_repeal':_('Reject from this person'),
+                                                  'b_confirm':_('Yes, those papers are by this person.'),
+                                                  'b_repeal':_('No, those papers are not< by this person'),
                                                   'b_to_others':_('Assign to other person'),
                                                   'b_forget':_('Forget decision')},
                                  'record_undecided':{'alt_confirm':_('Confirm!'),
@@ -886,8 +894,8 @@ class WebInterfaceBibAuthorIDPages(WebInterfaceDirectory):
             ln =  CFG_SITE_LANG
         _ = gettext_set_language(ln)
 
-        verbiage_dict = {'confirmed':_('Records'),'repealed':_('Not this person\'s records'),
-                                 'review':_('Records in need of review'),
+        verbiage_dict = {'confirmed':_('Papers'),'repealed':_('Papers removed from this profile'),
+                                 'review':_('Papers in need of review'),
                                  'tickets':_('Tickets'),'data':_('Data'),
                                  'confirmed_ns':_('Papers of this Person'),
                                  'repealed_ns':_('Papers _not_ of this Person'),
@@ -914,8 +922,8 @@ class WebInterfaceBibAuthorIDPages(WebInterfaceDirectory):
         _ = gettext_set_language(ln)
 
         buttons_verbiage_dict = {'mass_buttons':{'no_doc_string':_('Sorry, there are currently no documents to be found in this category.'),
-                                                  'b_confirm':_('Assign to this person'),
-                                                  'b_repeal':_('Reject from this person'),
+                                                  'b_confirm':_('Yes, those papers are by this person.'),
+                                                  'b_repeal':_('No, those papers are not by this person'),
                                                   'b_to_others':_('Assign to other person'),
                                                   'b_forget':_('Forget decision')},
                                  'record_undecided':{'alt_confirm':_('Confirm!'),
@@ -1152,7 +1160,7 @@ class WebInterfaceBibAuthorIDPages(WebInterfaceDirectory):
                 pinfo["bibref_check_required"] = False
 
             session.save()
-
+            
             body = TEMPLATE.tmpl_bibref_check(bibrefs_auto_assigned,
                                           bibrefs_to_confirm)
             body = TEMPLATE.tmpl_person_detail_layout(body)
@@ -1830,6 +1838,9 @@ class WebInterfaceBibAuthorIDPages(WebInterfaceDirectory):
             if 'search_ticket' in pinfo:
                 del(pinfo['search_ticket'])
             session.save()
+            if "claimpaper_admin_last_viewed_pid" in pinfo:
+                pid = pinfo["claimpaper_admin_last_viewed_pid"]
+                return redirect_to_url(req, "/person/%s" % webapi.get_person_redirect_link(pid))
             return self.search(req, form)
 
         elif action in ['checkout']:
