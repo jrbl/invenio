@@ -334,12 +334,27 @@ def update_personID_canonical_names(persons_list=[], overwrite=False, suggested=
                 run_sql("insert into aidPERSONID (personid,tag,data) values (%s,%s,%s) ", (pid[0], 'canonical_name', canonical_name))
 
 
-def update_personID_table_from_paper(papers_list=[]):
+def update_personID_table_from_paper(papers_list=[], personid=None):
     '''
     Updates the personID table removing the bibrec/bibrefs couples no longer existing (after a paper has been
     updated (name changed))
     @param: list of papers to consider for the update (bibrecs) (('1'),)
+    @param: limit to given personid (('1',),)
     '''
+    
+    personid_q = ''
+    if personid:
+        personid_q = '( '
+        for p in personid:
+            personid_q += " '" + str(p[0]) + "',"
+        personid_q = personid_q[0:len(personid_q)-1]   + ' )'  
+
+    if not papers_list and personid_q:
+        papers_list = []
+        bibrefrec_list = run_sql("select data from aidPERSONID where tag='paper' and personid in %s" % (personid_q))
+        for b in bibrefrec_list:
+            papers_list.append(b)
+            
     for paper in papers_list:
         fullbibrefs100 = run_sql("select id_bibxxx from bibrec_bib10x where id_bibrec=%s", (paper[0],))
         fullbibrefs700 = run_sql("select id_bibxxx from bibrec_bib70x where id_bibrec=%s", (paper[0],))
@@ -375,11 +390,19 @@ def update_personID_table_from_paper(papers_list=[]):
             print "update_personID_table_from_paper: searching for pids owning " + str(paper[0])
 
         pid_rows = []
-
-        try:
-            pid_rows = run_sql("select id,personid,tag,data,flag,lcul from aidPERSONID use index (`tdf-b`) where tag='paper' and data like %s", ('%,' + str(paper[0]),))
-        except (ProgrammingError, OperationalError):
-            pid_rows = run_sql("select id,personid,tag,data,flag,lcul from aidPERSONID where tag='paper' and data like %s", ('%,' + str(paper[0]),))
+        
+        if personid_q:
+            try:
+                query = "select id,personid,tag,data,flag,lcul from aidPERSONID use index (`tdf-b`) where tag='paper'  and personid in %s" %  personid_q + " and data like %s"
+                pid_rows = run_sql(query, ('%,' + str(paper[0]),))
+            except (ProgrammingError, OperationalError):
+                query = "select id,personid,tag,data,flag,lcul from aidPERSONID where tag='paper'  and personid in %s" %  personid_q + " and data like %s"
+                pid_rows = run_sql(query, ('%,' + str(paper[0]),))
+        else:
+            try:
+                pid_rows = run_sql("select id,personid,tag,data,flag,lcul from aidPERSONID use index (`tdf-b`) where tag='paper' and data like %s", ('%,' + str(paper[0]),))
+            except (ProgrammingError, OperationalError):
+                pid_rows = run_sql("select id,personid,tag,data,flag,lcul from aidPERSONID where tag='paper' and data like %s", ('%,' + str(paper[0]),))
 
         #finally, if a bibrec/ref pair is in the authornames table but not in this list that name of that paper
         #is no longer existing and must be removed from the table. The new one will be addedd by the
