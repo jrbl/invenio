@@ -403,10 +403,15 @@ class WebInterfaceAuthorPages(WebInterfaceDirectory):
                     ptitle = '"Title not available"'
             self.authorname = self.pageparam
             title = ''
+            pmsg = ''
             if ptitle:
-                message = "Sorry, the name '%s' on the paper '%s' you are searching has not yet been attributed to a person in the database." % (self.pageparam, ptitle)
-            else:
-                message = "Sorry, the name '%s' you are searching couldn't be associated to a person in the database." % self.pageparam
+                pmsg = " on paper '%s'" % ptitle
+            # We're sorry we're introducing html tags where they weren't before. XXX
+            message  = "<p>We are in the process of attributing papers to people so that we can"
+            message += "improve publication lists.</p>"
+            message += "<p>We have not generated the publication list for author '%s'%s.  Please be patient as we"
+            message += "continue to match people to author names and publications. '%s' may be attributed in the next"
+            message += "few weeks.</p>" % (self.pageparam, ptitle, self.pageparam)
             return self._psearch(req, form, is_fallback=True, fallback_query=self.pageparam,  fallback_title=title, fallback_message=message)
         
             if not self.authorname:
@@ -615,7 +620,8 @@ class WebInterfaceAuthorPages(WebInterfaceDirectory):
                 h('<div id="header">%s</div><br>' % fallback_title)
         if fallback_message:
                 h('%s <br>' % fallback_message)
-        h('<a href=/person/search?q=%s> Please click here to search for possible persons for \'%s\'</a>' % (fallback_query, fallback_query))
+        h(' We may have \'%s\' partially matched; <a href=/person/search?q=%s>click here</a> ' % (fallback_query, fallback_query))
+        h('to see what we have so far.  (Note: this is likely to update frequently.')
         return "\n".join(html)
 
 

@@ -2226,7 +2226,7 @@ class WebInterfaceBibAuthorIDPages(WebInterfaceDirectory):
         if recid and (len(search_results) == 1) and not is_fallback:
             return redirect_to_url(req, "/person/%s" % search_results[0][0])
 
-        body = body + TEMPLATE.tmpl_author_search(query, search_results, search_ticket, author_papges_mode=False, fallback_mode=is_fallback,
+        body = body + TEMPLATE.tmpl_author_search(query, search_results, search_ticket, author_pages_mode=True, fallback_mode=is_fallback,
                                                   fallback_title=fallback_title, fallback_message=fallback_message)
         
         if not is_fallback:

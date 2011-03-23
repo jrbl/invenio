@@ -27,6 +27,7 @@
 from invenio.config import CFG_SITE_LANG
 from invenio.config import CFG_SITE_URL
 from invenio.config import CFG_SITE_SUPPORT_EMAIL
+from invenio.config import CFG_BIBAUTHORID_AUTHOR_TICKET_ADMIN_EMAIL
 from invenio.bibformat import format_record
 from invenio.session import get_session
 from invenio.search_engine import get_fieldvalues
@@ -1281,7 +1282,7 @@ class Template:
 
 
     def tmpl_author_search(self, query, results,
-                           search_ticket=None, author_papges_mode=False, 
+                           search_ticket=None, author_pages_mode=True, 
                            fallback_mode=False, fallback_title='', fallback_message=''):
         '''
         Generates the search for Person entities.
@@ -1296,7 +1297,7 @@ class Template:
         '''
         linktarget = "person"
 
-        if author_papges_mode:
+        if author_pages_mode:
             linktarget = "author"
 
         if not query:
@@ -1305,8 +1306,7 @@ class Template:
         html = []
         h = html.append
 
-        if not author_papges_mode and not fallback_mode:
-            h('<div id="header">Search for a person</div>')
+        if not author_pages_mode and not fallback_mode:
             h('<form id="searchform" action="/person/search" method="GET">')
             h('<input type="text" name="q" style="border:1px solid #333; width:500px;" '
                         'maxlength="250" value="%s" class="focus" />' % query)
@@ -1326,11 +1326,15 @@ class Template:
         h("<p>&nbsp;</p>")
 
         if query and not results:
-            h(('<strong>'+self._('Sorry, no results could be found for the query')+' "%s"</strong>') % query)
+            authemail = CFG_BIBAUTHORID_AUTHOR_TICKET_ADMIN_EMAIL
+            h(('<strong>'+self._("We do not have a publication list for '%s'." +
+                                 " Try using a less specific author name, or check" +
+                                 " back in a few days as attributions are updated " +
+                                 "frequently.  Or you can send us feedback, at ") + 
+                                 "<a href=\"mailto:%s\">%s</a>.</strong>") % (query, authemail, authemail))
             h('</div>')
             return "\n".join(html)
 
-        h(('<p><strong>'+self._('Results for the query ')+'"%s"</strong></p>') % query)
         base_color = 100
         row_color = 0
 
@@ -1360,7 +1364,7 @@ class Template:
                         '<img src="../img/aid_plus_16.png" '
                         'alt = "toggle additional information." '
                         'width="11" height="11"/> '
-                        +self._('Show additional information')+
+                        +self._('Recent Papers')+
                         '</a></em>' )
                         % (pid))
 
@@ -1373,13 +1377,13 @@ class Template:
                 h(('<span style="margin-left: 40px;">'
                             '<em><a href="%s" id="confirmlink">'
                             '<strong>'+self._('YES!')+'</strong>'
-                            +self._(' Assign papers to ')+
+                            +self._(' Attribute Papers To ')+
                             '%s (PersonID: %d )</a></em></span>')
                             % (link, get_person_redirect_link(pid), pid))
             else:
                 h(('<span style="margin-left: 40px;">'
                             '<em><a href="%s/%s/%s" id="aid_moreinfolink">'
-                            +self._('Show author page ')+'(%s)</a></em></span>')
+                            +self._('Publication List ')+'(%s)</a></em></span>')
                             % (CFG_SITE_URL, linktarget,
                                get_person_redirect_link(pid),
                                get_person_redirect_link(pid)))
@@ -1397,9 +1401,12 @@ class Template:
             else:
                 h("<p>"+self._('Sorry, there are no documents known for this person')+"</p>")
 
-            h(('<p><a href="%s/person/%d" target="_blank">'
-                        +self._('Show more information about this person in a new window or tab')+
-                        '</a></p>') % (CFG_SITE_URL, pid))
+            h(('<span style="margin-left: 40px;">'
+                        '<em><a href="%s/%s/%s" target="_blank" id="aid_moreinfolink">'
+                        +self._('Publication List ')+'(%s)</a> (in a new window or tab)</em></span>')
+                        % (CFG_SITE_URL, linktarget,
+                           get_person_redirect_link(pid),
+                           get_person_redirect_link(pid)))
             h('</div>')
             h('</div>')
 

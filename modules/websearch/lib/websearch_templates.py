@@ -4085,12 +4085,13 @@ class Template:
 
         coauthor_box = self.tmpl_print_searchresultbox(header, "<br />\n".join(content))
 
-        req.write("<h1>%s</h1>" % authorname)
+        pubs_to_papers_link = create_html_link(self.build_search_url(p=rec_query), {} str(len(pubs)))
+        req.write("<h1>%s (%s)</h1>" % (authorname, pubs_to_papers_link))
 
         if person_link:
             req.write('<div><a href="%s/person/%s">%s</a></div>'
                       % (CFG_SITE_URL, person_link,
-                         _("Fix this Record!")))
+                         _("This is me.  Update my publication list.")))
 
         req.write("<table width=80%><tr valign=top><td>")
         req.write(names_box)
