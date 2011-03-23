@@ -541,7 +541,6 @@ class WebInterfaceAuthorPages(WebInterfaceDirectory):
             and "precached_viewclaimlink" in userinfo
             and "precached_usepaperattribution" in userinfo
             and "precached_usepaperclaim" in userinfo
-            and userinfo["precached_viewclaimlink"]
             and (userinfo["precached_usepaperclaim"]
                  or userinfo["precached_usepaperattribution"])
             ):
