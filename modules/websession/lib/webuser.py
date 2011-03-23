@@ -1148,7 +1148,7 @@ def collect_user_info(req, login_time=False, refresh=False):
             session = get_session(req)
             viewlink = False
             try:
-                viewlink = user_info['session']['personinfo']['claim_in_process']
+                viewlink = session['personinfo']['claim_in_process']
             except (KeyError, TypeError):
                 viewlink = False
                 
