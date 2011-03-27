@@ -1,10 +1,71 @@
 /* Begin: editauthor.css: Stylesheet for AuthorSpecialMode */
 table#asm_uitable {
+    table-layout: fixed;
     background-color: #22aa66;
+    /* width: 920px; /* FIXME: can this be done w/o px? */
+    width: 100%;
+}
+
+/*.ui-dialog {
+    width: 95%;
+}
+
+.ui-dialog-title {
+    color: white;
+    background-color: #6699cc;
+    width: 100%;
+}
+*/
+
+#TableHeaders {
+    display: block;
+}
+
+.allrows {
+    height: 2em;
+}
+
+.rownum {
+    width: 40px;
+    text-align: right;
+}
+
+.author_box {
+    width: 120px;
+    text-align: left;
+}
+
+.author_head {
+    text-align: center;
+}
+
+.affil_box {
+    width: 200px;
+    text-align: left;
+}
+
+.affil_head {
+    text-align: center;
+}
+
+.column_content {
+    text-align: center;
+    width: 50px;
+}
+
+#TableContents {
+    display: block;
+    overflow: auto;
+    width: 100%;
+    height: 400px; /* FIXME: can this be done w/o px? */
 }
 
 .column_no {
     font-size: .4em;
+}
+
+.column_label {
+    vertical-align: top;
 }
 
 .column_label a {
@@ -13,7 +74,7 @@ table#asm_uitable {
     text-decoration: none;
 }
 
-#ui-active-menuitem {
+/* #ui-active-menuitem {
     color: #ffffff;
     background-color: #22dd66;
 }
@@ -27,9 +88,22 @@ table#asm_uitable {
 }
 
 .ui-widget-content a {
-    /* color: #333333; */
     background-color: #333333;
     color: #ffffff;
+}
+
+.ui-widget-overlay {
+    -moz-background-clip: border;
+    -moz-background-origin: padding;
+    -moz-background-size: auto auto;
+    background-attachment: scroll;
+    background-position: 50% 50%;
+    background-repeat: repeat;
+    background-color: #666666;
+    opacity: 0.5;
+    left: 0;
+    position: absolute;
+    top: 0;
 }
 
 .ui-widget {
@@ -52,5 +126,5 @@ table#asm_uitable {
 
 .ui-autocomplete {
     cursor: default;
-}
+} */
 /* End: editauthor.css */

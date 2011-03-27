@@ -2,7 +2,7 @@
  * See: http://jsdoc.sourceforge.net/
  **********************/
 
-// FIXME: take advantage of jQuery 1.4+; use focusOut instead of blur where it makes sense
+// FIXME: take advantage of jQuery 1.4+; use focusOut instead of blur where it makes sense (etc)
 
 /** 
  * NB: Initialization values for debug purposes only.
@@ -28,8 +28,15 @@ $(document).ready(
     // calculate whether to show the pagination widget
     data.paging.pages = Math.ceil(data.authors.length / data.paging.rows);
 
-    // update our page title
-    $('.headline_div').html('<h1>' + data.headline.recid + ': ' + data.headline.title + '</h1>');
+    // startup behaviors
+    $('<link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.11/themes/redmond/jquery-ui.css" />').appendTo("head");
+    $.ajax({ url: "/img/editauthor.css", success: function(results) {
+        $("<style></style>").appendTo("head").html(results);
+    }}); 
+    $('#submit_button').css('display', 'inline'); // jQuery parses so make the button live
+
+    // set popup title
+    $('#asm_form').attr('title', data.headline.recid + ': ' + data.headline.title);
 
     // add the pagination widget (only displays if it's needed)
     updatePaginationControls(data);
@@ -39,11 +46,15 @@ $(document).ready(
     $('#TableContents').html('<p id="loading_msg">Loading; please wait...</p>');
     updateTable(data);
 
-    // startup behaviors
-    $.ajax({ url: "/img/editauthor.css", success: function(results) {
-        $("<style></style>").appendTo("head").html(results);
-    }}); 
-    $('#submit_button').css('display', 'inline'); // jQuery parses so make the button live
+    // create popup and display it
+    $('#asm_form').dialog({
+        autoOpen: true,
+        height: 550,
+        width: 1020,
+        modal: true,
+        position: "center",
+    });
+
     $('#affils_0').focus();
   }
 );
@@ -64,7 +75,7 @@ function updatePaginationControls(shared_data) {
     var offset = page_data.offset*1;
     var rows = page_data.rows*1;
     var max_rows = shared_data.authors.length*1;
-    var prev_button = '<a href="#" id="paging_button_back">previous</a>  '; // FIXME HACK XXX JRBL TODO make this work
+    var prev_button = '<a href="#" id="paging_button_back">previous</a>  '; 
     var status_text = 'Authors ' + (offset+1) + '-' + (offset+rows) + ' of ' + max_rows;
     status_text += ', in batches of <input type="text" id="maxRowsBox" size=4 title="If you change the value in this box and then click outside of ';
     status_text += 'it, you can change how many authors you can edit at one time." value="' + rows + '" />.';
@@ -141,7 +152,7 @@ function updateTable(shared_data) {
 
     // add text box handlers (table updates, keystrokes and autocompletes)
     addTextBoxHandlers(shared_data);
-    //addKeystrokes(shared_data); // FIXME: WTF is going on with the keybinding thing?  augh!
+    addKeyStrokes(shared_data); // FIXME: WTF is going on with the keybinding thing?  augh!
     addAutocompletes(shared_data);
 
     // fold the columns previously checked
@@ -159,58 +170,13 @@ function updateTable(shared_data) {
  * FIXME: This should be modified to use BibEdit's hotkey system, which should itself
  *        be using jQuery's HotKey UI.
  * FIXME: Does this need to be called every updateTable?
- * FIXME: this is broken; any keypress causes whatever the first dictionary item is to execute. Why?
  *
  * @param {Array} shared_data Passed to children
  */
-function addKeystrokes(shared_data) {
-    var keybindings = {
-/*        'submit'  : ['Submit the changes.  No input field should be selected.', 
-                     'alt+ctrl+shift+s', 
-                     function(event) { 
-                         $('#submit_button').click();  
-                         event.preventDefault(); }], */
-        'cutRow'  : ['Cut this author row.',
-                     'alt+ctrl+shift+x',
-                     updateTableCutRow,
-                     //updateTableCutRow,
-                     {extra_data: shared_data}],
-        'copyRow' : ['Copy this author row.',
-                     'alt+ctrl+shift+c',
-                     updateTableCopyRow,
-                     {extra_data: shared_data}],
-        'pasteRow': ['Paste an author row after this row.',
-                     'alt+ctrl+shift+v',
-                     updateTablePasteRow,
-                     {extra_data: shared_data}],
-    };
-
-    // FIXME: eliminate this use of each() ?
-    jQuery.each(keybindings, function(dummy, val) {
-        fn = function(event) {
-            console.log('calling ' + dummy + '...\n');
-            val[2](event, shared_data);
-            return false;
-        };
-        //data_dictionary = {combi: val[1]};
-        //target = document;
-        //if (val.length >= 4) {
-        //    for (key in val[3]) {
-        //        data_dictionary[key] = val[3][key];
-        //    }
-        //} 
-        //$(document).bind('keyup', val[1], function(event) {val[2](event, shared_data)} );
-        //$(document).bind('keypress', {combi: val[1], disableInInput: false}, fn );
-        shortcut.add(val[1], function(event) {
-                console.log('calling ' + dummy + '...\n');
-                val[2](event, shared_data);
-                return false;
-            }, {type: 'keypress', disable_in_input: false});
-        console.log('just assigned ' + val[1] + ' to ' + dummy + '\n');
-    });
-
-    // Extra stuff worth doing 
-    /* $('#submit_button').attr('title', keybindings['submit'][1] + ' to Submit'); */
+function addKeyStrokes(shared_data) {
+    $('input').bind('keydown', 'alt+ctrl+x', function(event) {updateTableCutRow(event, shared_data); return false;} );
+    $('input').bind('keydown', 'alt+ctrl+c', function(event) {updateTableCopyRow(event, shared_data); return false;} );
+    $('input').bind('keydown', 'alt+ctrl+v', function(event) {updateTablePasteRow(event, shared_data); return false;} );
 }
 
 /**
@@ -229,7 +195,10 @@ function addAutocompletes(shared_data) {
     }
     function add_selection_to(selection, to) {
         var to_str = penultimate(to.value);
-        $(to).val(to_str + '; ' + selection);
+        var new_value = jQuery.trim(to_str);
+        if (new_value == '') new_value = selection;
+        else new_value += '; ' + selection;
+        $(to).val(new_value);
         return false;
     }
     /* FIXME: Use ID selector, not class selector ? */
@@ -242,7 +211,7 @@ function addAutocompletes(shared_data) {
                    .autocomplete({
                        source: function( request, response ) {
                             $.getJSON("/kb/export",
-                                      { kbname: 'MyKB1', format: 'jquery', term: ultimate(request.term) },
+                                      { kbname: 'InstitutionsCollection', format: 'jquery', term: ultimate(request.term) },
                                       response);
                        },
                        focus: function(event, ui) {
@@ -276,23 +245,21 @@ function addAutocompletes(shared_data) {
  */
 function generateTableHeader(inst_list) {
 
-    var computed_text = '<tr><th>#</th><th title="Author\'s name, one per line.">name</th>';
-    computed_text += '<th title="Institutional affiliations.  Semicolon-separated list.">affiliation</th>';
+    var computed_text = '<tr class="allrows"><th class="rownum">#</th><th class="author_box author_head" title="Author\'s name, one per line.">name</th>';
+    computed_text += '<th class="affil_box affil_head" title="Institutional affiliations.  Semicolon-separated list.">affiliation</th>';
 
     for (var i = 0; i < inst_list.length; i++) {
         var label = inst_list[i];
         var sliced = '';
-        if (label.length > 10) {                 // XXX: 10 is magic number here and elsewhere in this loop
+        if (label.length > 10) {                 // XXX: 10 is magic number
             sliced = label.slice(0,7)+'...';
         } else {
             sliced = label;
-            for (var j = 10 - label.length; j > 0; j--) {
-                sliced += '&nbsp;';
-            }
-        }
+        } 
         label = (i+1).toString() + '. ' + label;
         sliced = '<span class="column_no">'+(i+1).toString() + '</span><br />' + sliced;
-        computed_text += '<th class="col'+i+' column_label"><a title="'+label+' - Click to hide." href="#" class="hide_link" name="'+i+'">'+sliced+'</a></th>';
+        computed_text += '<th class="column_content col'+i+' column_label">'
+        computed_text += '<a title="'+label+' - Click to hide." href="#" class="hide_link" name="'+i+'">'+sliced+'</a></th>';
     }
     computed_text += '</tr>\n';
     return computed_text;
@@ -356,14 +323,14 @@ function generateTableRow(row, auth_affils, institutions) {
     for (var i = 0; i < institutions.length; i++) {
         var inst_name = jQuery.trim(institutions[i]);
         var name_row = inst_name+'_'+row;
-        str += '<td><input type="checkbox" title="'+institutions[i];
+        str += '<td class="column_content"><input type="checkbox" title="'+institutions[i];
         str +=          '" class="col'+i+'" id="checkbox_'+row+'_'+i+'" value="'+name_row+'"';
         for (var place = 1; place < auth_affils.length; place++) {
             if (auth_affils[place] == inst_name) {
                 str += ' checked';
             }
         }
-        str += '></td>';
+        str += ' /></td>';
     }
     str += '</tr>\n';
     
