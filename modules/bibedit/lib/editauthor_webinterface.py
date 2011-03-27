@@ -19,7 +19,7 @@ class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
     _exports = ['', '/', 'rec', 'checkAffil', 'process']
 
     def __init__(self):
-        self.title = "BibEdit: Author Special Mode"
+        self.title = "Author Special Mode" 
         self.template = invenio.template.load('editauthor')
         self.columns_to_show = 10
 
@@ -30,7 +30,9 @@ class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
             return permission
 
         f = wash_urlargd(form, {
-                'recID': (int, -1),
+                'recID':   (int, -1),
+                'offset':  (int, 0),
+                'perPage': (int, 100),
                 })
 
         if f['recID'] != -1:
@@ -50,6 +52,8 @@ class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
             return self.index(request, {})
 
         record_id = form['recID']
+        offset    = form['offset']
+        per_page  = form['perPage']
 
         author_list_gen = engine.auPairs(record_id)
 
@@ -60,16 +64,13 @@ class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
             place_list.extend(group[1:])
         place_list = engine.flattenByCounts(place_list)
 
-        # FIXME: hardcoded (& incorrect) KB name
-        #validated_affiliations = [x[0] for x in
-        #                          bibknowledge.get_kbr_keys("JoeTestInstitutionsKB") if
-        #                          x[0] != '']
-        validated_affiliations = [ ]
-
         text = self.template.record(record_id,
                                     author_list,
                                     place_list,
-                                    validated_affiliations)
+                                    offset,
+                                    per_page,
+                                    engine.get_title(record_id),
+                                    )
 
         return invenio.webpage.page(title = self.title,
                                     body = text,

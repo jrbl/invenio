@@ -2,15 +2,19 @@
  * See: http://jsdoc.sourceforge.net/
  **********************/
 
+// FIXME: take advantage of jQuery 1.4+; use focusOut instead of blur where it makes sense
+
 /** 
  * NB: Initialization values for debug purposes only.
  */
 shared_data = {
   'authors':      [ [], ],        // set of all [author, affiliation1, affiliation2 ...]
   'affiliations': [],             // list of institutions present in this data
+  'paging':       {},             // dictionary for keeping track of pagination of large lists
   'valid_affils': [],             // list of possible institutional affiliations // FIXME: Remove?
   'folded':       [],             // which columns are currently hidden
   'row_cut':      [],             // the row recently removed from the data set with 'cut'
+  'headline':     {},             // recid, paper title
 };
 
 /** 
@@ -19,20 +23,95 @@ shared_data = {
  */
 $(document).ready(
   function() {
+    var data = shared_data;
+
+    // calculate whether to show the pagination widget
+    data.paging.pages = Math.ceil(data.authors.length / data.paging.rows);
+
+    // update our page title
+    $('.headline_div').html('<h1>' + data.headline.recid + ': ' + data.headline.title + '</h1>');
+
+    // add the pagination widget (only displays if it's needed)
+    updatePaginationControls(data);
+
     // Tell the user the tables are loading, then go build them
     $('#TableHeaders').html('<p id="loading_msg">Loading; please wait...</p>');
     $('#TableContents').html('<p id="loading_msg">Loading; please wait...</p>');
-    updateTable(shared_data);
+    updateTable(data);
 
     // startup behaviors
-    $('#affils_0').focus()
-    $('#submit_button').css('display', 'inline') // jQuery parses so make the button live
-
-    $.ajax({ url: "/img/editauthor.css", success: function(data) {
-        $("<style></style>").appendTo("head").html(data);
-    }});
+    $.ajax({ url: "/img/editauthor.css", success: function(results) {
+        $("<style></style>").appendTo("head").html(results);
+    }}); 
+    $('#submit_button').css('display', 'inline'); // jQuery parses so make the button live
+    $('#affils_0').focus();
   }
 );
+
+/**
+ * Determine whether the pagination widget is needed, and if it is, paint it
+ * and add its event handlers.
+ * 
+ * // FIXME: Keystrokes left_arrow and right_arrow to go forward and back
+ * // FIXME: use bookmarkable hashtag urls like in http://ajaxpatterns.org/Unique_URLs
+ *
+ * @param {Array} shared_data The global dictionary of shared state
+ */
+function updatePaginationControls(shared_data) {
+    page_data = shared_data.paging;
+    if (page_data.pages == 1) return;
+    $('#paging_navigation').css('display', 'inline');
+    var offset = page_data.offset*1;
+    var rows = page_data.rows*1;
+    var max_rows = shared_data.authors.length*1;
+    var prev_button = '<a href="#" id="paging_button_back">previous</a>  '; // FIXME HACK XXX JRBL TODO make this work
+    var status_text = 'Authors ' + (offset+1) + '-' + (offset+rows) + ' of ' + max_rows;
+    status_text += ', in batches of <input type="text" id="maxRowsBox" size=4 title="If you change the value in this box and then click outside of ';
+    status_text += 'it, you can change how many authors you can edit at one time." value="' + rows + '" />.';
+    var next_button = '<a href="#" id="paging_button_forward">next</a>  ';
+    $('#paging_navigation').html(prev_button + status_text + next_button);
+    $('#paging_button_back').click(function() {
+            paginated_page_back(offset, rows, max_rows, shared_data);
+            return false;
+    });
+    $('#paging_button_forward').click(function() {
+            paginated_page_forward(offset, rows, max_rows, shared_data);
+            return false;
+    });
+    $('#maxRowsBox').change(function() {
+            shared_data.paging.rows = $('#maxRowsBox').val()*1;
+            updateTable(shared_data);
+            updatePaginationControls(shared_data);
+            //return false;
+    });
+}
+
+/**
+ * Next page of authors
+ * XXX: record params, all of these should come in as numbers
+ */
+function paginated_page_forward(offset, rows, max_rows, shared_data) {
+    if ((offset + rows) >= max_rows) return false;
+    offset += rows;
+    shared_data.paging.offset = offset;
+    updateTable(shared_data);
+    updatePaginationControls(shared_data);
+}
+
+/**
+ * Previous page of authors
+ */
+function paginated_page_back(offset, rows, max_rows, shared_data) {
+    if (offset == 0) return false;
+    if ((offset - rows) < 0) {
+        shared_data.paging.offset = 0;
+    } else {
+        offset -= rows;
+        shared_data.paging.offset = offset;
+    }
+    updateTable(shared_data);
+    updatePaginationControls(shared_data);
+}
 
 /**
  * Create the HTML representation of a table representing shared_data, assign
@@ -57,12 +136,12 @@ function updateTable(shared_data) {
     $('input[type="checkbox"]').click( // FIXME: id selector faster?  does it matter?
         function() { 
             checkBoxHandler_changeState(shared_data, this.value, this.checked);
-            //addShiftClickHandler(this.id, this.checked);
+            //addShiftClickHandler(this.id, this.checked); // FIXME: write custom shift-click code
         });
 
     // add text box handlers (table updates, keystrokes and autocompletes)
     addTextBoxHandlers(shared_data);
-    /* addKeystrokes(shared_data); */
+    //addKeystrokes(shared_data); // FIXME: WTF is going on with the keybinding thing?  augh!
     addAutocompletes(shared_data);
 
     // fold the columns previously checked
@@ -80,19 +159,21 @@ function updateTable(shared_data) {
  * FIXME: This should be modified to use BibEdit's hotkey system, which should itself
  *        be using jQuery's HotKey UI.
  * FIXME: Does this need to be called every updateTable?
+ * FIXME: this is broken; any keypress causes whatever the first dictionary item is to execute. Why?
  *
  * @param {Array} shared_data Passed to children
  */
 function addKeystrokes(shared_data) {
     var keybindings = {
-        'submit'  : ['Submit the changes.  No input field should be selected.', 
+/*        'submit'  : ['Submit the changes.  No input field should be selected.', 
                      'alt+ctrl+shift+s', 
                      function(event) { 
                          $('#submit_button').click();  
-                         event.preventDefault(); }],
+                         event.preventDefault(); }], */
         'cutRow'  : ['Cut this author row.',
                      'alt+ctrl+shift+x',
                      updateTableCutRow,
+                     //updateTableCutRow,
                      {extra_data: shared_data}],
         'copyRow' : ['Copy this author row.',
                      'alt+ctrl+shift+c',
@@ -106,22 +187,30 @@ function addKeystrokes(shared_data) {
 
     // FIXME: eliminate this use of each() ?
     jQuery.each(keybindings, function(dummy, val) {
-        data_dictionary = {combi: val[1]};
-        target = document;
-        if (val.length >= 4) {
-            for (key in val[3]) {
-                data_dictionary[key] = val[3][key];
-            }
-        } 
-        if (val.length >= 5) {
-            target = val[4];
-        }
-        $(document).bind('keypress', data_dictionary, val[2]);
-        //$(target).bind('keypress', data_dictionary, val[2]);
+        fn = function(event) {
+            console.log('calling ' + dummy + '...\n');
+            val[2](event, shared_data);
+            return false;
+        };
+        //data_dictionary = {combi: val[1]};
+        //target = document;
+        //if (val.length >= 4) {
+        //    for (key in val[3]) {
+        //        data_dictionary[key] = val[3][key];
+        //    }
+        //} 
+        //$(document).bind('keyup', val[1], function(event) {val[2](event, shared_data)} );
+        //$(document).bind('keypress', {combi: val[1], disableInInput: false}, fn );
+        shortcut.add(val[1], function(event) {
+                console.log('calling ' + dummy + '...\n');
+                val[2](event, shared_data);
+                return false;
+            }, {type: 'keypress', disable_in_input: false});
+        console.log('just assigned ' + val[1] + ' to ' + dummy + '\n');
     });
 
     // Extra stuff worth doing 
-    $('#submit_button').attr('title', keybindings['submit'][1] + ' to Submit');
+    /* $('#submit_button').attr('title', keybindings['submit'][1] + ' to Submit'); */
 }
 
 /**
@@ -130,9 +219,20 @@ function addKeystrokes(shared_data) {
  * @param {Array} shared_data
  */
 function addAutocompletes(shared_data) {
-    function last_term(s) {
-        return jQuery.trim(filter_SemicolonStringToArray(s).pop());
+    function ultimate(s) {
+        /* gets the last bit of text in semicolon-separated list */
+        return jQuery.trim(s.slice(s.lastIndexOf(';')+1));
     }
+    function penultimate(s) {
+        /* gets everything up to last semicolon in semicolon-separated list */
+        return jQuery.trim(s.substring(0, s.lastIndexOf(';')));
+    }
+    function add_selection_to(selection, to) {
+        var to_str = penultimate(to.value);
+        $(to).val(to_str + '; ' + selection);
+        return false;
+    }
+    /* FIXME: Use ID selector, not class selector ? */
     $(".affil_box").bind( "keydown", function( event) {
                         // don't navigate away from the field on tab when selecting an item
                         if ( event.keyCode === $.ui.keyCode.TAB && $(this).data("autocomplete").menu.active) {
@@ -142,34 +242,28 @@ function addAutocompletes(shared_data) {
                    .autocomplete({
                        source: function( request, response ) {
                             $.getJSON("/kb/export",
-                                      { kbname: 'MyKB1', format: 'jquery', term: last_term(request.term) },
+                                      { kbname: 'MyKB1', format: 'jquery', term: ultimate(request.term) },
                                       response);
                        },
-                       focus: function() {
-                             // prevent value insertion of focus
-                            return false;
+                       focus: function(event, ui) {
+                           // focus happens when we use the mouse (cf. select)
+                           return add_selection_to(ui.item.value, this);
                        },
                        search: function() {
                            // custom minLength that knows to only use last item after semicolon
-                           var term = last_term(this.value);
+                           var term = ultimate(this.value);
                            if (term.length < 3) {
                                return false;
                            }
                        },
-                       /* FIXME HACK XXX JRBL:
-                          * Need to build KB of addresses and values which we can query.  or a static table that we
-                            can have the template insert into our page.  In both cases, sort entries by citecounts.
-                          * CSS improvements for autocomplete dropdowns 
-                          * Reduce number of DOM elements
-                          * Items that came up during demo with denise; on phone as pictures
-                          FIXME HACK XXX JRBL */
                        select: function(event, ui) {
-                           var terms = filter_SemicolonStringToArray(this.value);
-                           terms.pop();
-                           // add the selected item
-                           terms.push( ui.item.value );
-                           this.value = filter_ArrayToSemicolonString(terms);
-                           return false; 
+                           // select happens when we use the keyboard (cf. focus)
+                           // we add extra semicolon so we can keep typing and autocompleting
+                           return add_selection_to(ui.item.value+'; ', this);
+                       },
+                       close: function(event, ui) {
+                           this.focus();
+                           return false;
                        },
                    });
 }
@@ -205,15 +299,22 @@ function generateTableHeader(inst_list) {
 }
 
 /**
- * Dynamically create the table cells necessary to hold everything
- *
- * @param {Array} author_list A list of author_institution pairs
- * @param {Array} institution_list A list of institutions for checkbox columns
+ * Dynamically create the table cells necessary to hold up to shared_data.paging.rows of data
  */
 function generateTableBody(shared_data) {
+    var offset = shared_data['paging'].offset*1;       // caution: numbering starts at 0
+    var maxrows = shared_data['paging'].rows*1;
+    var authors = shared_data['authors'];
+    var stop_at;
+    if ((offset + maxrows) < (authors.length*1)) { // we have another page of results at least
+        stop_at = offset + maxrows;
+    } else {                                                  // this is the last page of results
+        stop_at = authors.length;
+    }
+
     var computed_body = '';
-    for (var row = 0; row < shared_data['authors'].length; row++) {
-        computed_body += generateTableRow(row, shared_data['authors'][row], shared_data['affiliations']);
+    for (var row = offset; row < stop_at; row++) {
+        computed_body += generateTableRow(row, authors[row], shared_data['affiliations']);
     }
     return computed_body;
 }
@@ -421,17 +522,17 @@ function filter_escapeHTML(value){
  * 
  * @param {Event} event The javascript event object associated with this cut.
  */
-function updateTableCutRow(event) {
+function updateTableCutRow(event, shared_data) {
     var target_id = event.target.getAttribute('id');
     var row_element = event.target.parentNode.parentNode;
     var row = $('#TableContents tr').index(row_element);
-    var shared_data = event.data.extra_data;
+    //var shared_data = event.data.extra_data;
 
     if ((row < 0) || (row > (shared_data.length -1)))
         return
     shared_data['row_cut'] = shared_data['authors'][row];
 
-    updateTableCopyRow(event);
+    updateTableCopyRow(event, shared_data);
     shared_data['authors'].splice(row, 1);
     updateTable(shared_data);
     if (row == $('#TableContents tr').length) {
@@ -447,11 +548,11 @@ function updateTableCutRow(event) {
  * 
  * @param {Event} event The javascript event object associated with this paste.
  */
-function updateTablePasteRow(event) {
+function updateTablePasteRow(event, shared_data) {
     var target_id = event.target.getAttribute('id');
     var row_element = event.target.parentNode.parentNode;
     var row = $('#TableContents tr').index(row_element) +1;
-    var shared_data = event.data.extra_data;
+    //var shared_data = event.data.extra_data;
     var cut = shared_data['row_cut'];
 
     if ((row < 1) || (row > shared_data.length))
@@ -469,11 +570,11 @@ function updateTablePasteRow(event) {
  * 
  * @param {Event} event The javascript event object associated with this copy.
  */
-function updateTableCopyRow(event) {
+function updateTableCopyRow(event, shared_data) {
     var target_id = event.target.getAttribute('id');
     var row_element = event.target.parentNode.parentNode;
     var row = $('#TableContents tr').index(row_element);
-    var shared_data = event.data.extra_data;
+    //var shared_data = event.data.extra_data;
 
     if ((row < 0) || (row > (shared_data.length -1)))
         return
