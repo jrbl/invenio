@@ -2,7 +2,7 @@
  * See: http://jsdoc.sourceforge.net/
  **********************/
 
-// FIXME: take advantage of jQuery 1.4+; use focusOut instead of blur where it makes sense
+// FIXME: take advantage of jQuery 1.4+; use focusOut instead of blur where it makes sense (etc)
 
 /** 
  * NB: Initialization values for debug purposes only.
@@ -64,7 +64,7 @@ function updatePaginationControls(shared_data) {
     var offset = page_data.offset*1;
     var rows = page_data.rows*1;
     var max_rows = shared_data.authors.length*1;
-    var prev_button = '<a href="#" id="paging_button_back">previous</a>  '; // FIXME HACK XXX JRBL TODO make this work
+    var prev_button = '<a href="#" id="paging_button_back">previous</a>  '; 
     var status_text = 'Authors ' + (offset+1) + '-' + (offset+rows) + ' of ' + max_rows;
     status_text += ', in batches of <input type="text" id="maxRowsBox" size=4 title="If you change the value in this box and then click outside of ';
     status_text += 'it, you can change how many authors you can edit at one time." value="' + rows + '" />.';
@@ -242,7 +242,7 @@ function addAutocompletes(shared_data) {
                    .autocomplete({
                        source: function( request, response ) {
                             $.getJSON("/kb/export",
-                                      { kbname: 'MyKB1', format: 'jquery', term: ultimate(request.term) },
+                                      { kbname: 'InstitutionsCollection', format: 'jquery', term: ultimate(request.term) },
                                       response);
                        },
                        focus: function(event, ui) {
