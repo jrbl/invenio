@@ -13,7 +13,8 @@ class Template:
                            #'jquery.min.js', 
                            #'jquery-1.4.4.js', 
                            # FIXME we should be using a locally cached version of jquery-1.4.4... shouldn't we?
-                           'http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js',
+                           #'http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js',
+                           'http://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js',
                            #'jquery.ui.core.min.js', 
                            #'jquery.ui.widget.min.js', 
                            #'jquery.ui.position.min.js', 
@@ -23,9 +24,9 @@ class Template:
                            # FIXME we should be using locally cached version of jquery-ui libs... shouldn't we?
                            'https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.11/jquery-ui.min.js',
                            # FIXME we should be using locally cached version of jquery hotkeys... but this version!
-                           #'https://github.com/jeresig/jquery.hotkeys/raw/master/jquery.hotkeys.js',
+                           'https://github.com/jeresig/jquery.hotkeys/raw/master/jquery.hotkeys.js',
                            #'http://js-hotkeys.googlecode.com/files/jquery.hotkeys-0.7.9.js',
-                           'http://www.openjs.com/scripts/events/keyboard_shortcuts/shortcut.js',
+                           #'http://www.openjs.com/scripts/events/keyboard_shortcuts/shortcut.js',
                            'editauthor.js'
                           ]
 
@@ -58,25 +59,27 @@ class Template:
     shared_data["headline"] = {recid: "%(record_id)s", title: "%(paper_title)s", };
     //shared_data["valid_affils"] = %(valid_affils_list_json)s;
 </script>
-<form method="post" action="%(site_URL)s/editauthors/process">
-    <div id="paging_navigation" style="display: none;"></div>
-    <table id="asm_uitable" bgcolor="#ff2200">     <!-- Red means a javascript parse error -->
-        <thead id="TableHeaders">
-            <td>
-            If you can read this message, then something went wrong during
-            document load.  The most likely explanation is that your site
-            hasn't installed the jQuery plugins.
-            </td>
-        </thead>
-        <tbody id="TableContents">
-        </tbody>
-    </table>
-    <span id="formbuttons">
-        <input name="recID" type="hidden" value="%(record_id)s">
-        <!-- Submit button is unhidden by jQuery code -->
-        <input id="submit_button" name="submit_button" type="submit" value="Submit" class="control_button" style="display: none;">
-    </span>
-</form>
+<div id="asm_form" title="Please wait while loading...">
+    <form method="post" action="%(site_URL)s/editauthors/process">
+        <div id="paging_navigation" style="display: none;"></div>
+        <table id="asm_uitable" bgcolor="#ff2200">     <!-- Red means a javascript parse error -->
+            <thead id="TableHeaders">
+                <td>
+                If you can read this message, then something went wrong during
+                document load.  The most likely explanation is that your site
+                hasn't installed the jQuery plugins.
+                </td>
+            </thead>
+            <tbody id="TableContents">
+            </tbody>
+        </table>
+        <span id="formbuttons">
+            <input name="recID" type="hidden" value="%(record_id)s">
+            <!-- Submit button is unhidden by jQuery code -->
+            <input id="submit_button" name="submit_button" type="submit" value="Submit" class="control_button" style="display: none;">
+        </span>
+    </form>
+</div>
 """ % {
        'script_parts'           : self.setup_scripts(),
        'author_list_json'       : simplejson.dumps(author_list),
