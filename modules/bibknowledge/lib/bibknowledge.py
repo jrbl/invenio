@@ -141,7 +141,7 @@ def add_kb(kb_name="Untitled", kb_type=None):
 def add_dynamic_kb(kbname, tag, collection="", searchwith=""):
     """A convenience method"""
     kb_id = add_kb(kb_name=kbname, kb_type='dynamic')
-    bibknowledge_dblayer.save_kb_dyn_config(kb_id, tag, collection, searchwith)
+    bibknowledge_dblayer.save_kb_dyn_config(kb_id, tag, searchwith, collection)
     return kb_id
 
 def kb_mapping_exists(kb_name, key):
