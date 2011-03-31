@@ -28,8 +28,15 @@ $(document).ready(
     // calculate whether to show the pagination widget
     data.paging.pages = Math.ceil(data.authors.length / data.paging.rows);
 
-    // update our page title
-    $('.headline_div').html('<h1>' + data.headline.recid + ': ' + data.headline.title + '</h1>');
+    // startup behaviors
+    $('<link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.11/themes/redmond/jquery-ui.css" />').appendTo("head");
+    $.ajax({ url: "/img/editauthor.css", success: function(results) {
+        $("<style></style>").appendTo("head").html(results);
+    }}); 
+    $('#submit_button').css('display', 'inline'); // jQuery parses so make the button live
+
+    // set popup title
+    $('#asm_form').attr('title', data.headline.recid + ': ' + data.headline.title);
 
     // add the pagination widget (only displays if it's needed)
     updatePaginationControls(data);
@@ -39,11 +46,15 @@ $(document).ready(
     $('#TableContents').html('<p id="loading_msg">Loading; please wait...</p>');
     updateTable(data);
 
-    // startup behaviors
-    $.ajax({ url: "/img/editauthor.css", success: function(results) {
-        $("<style></style>").appendTo("head").html(results);
-    }}); 
-    $('#submit_button').css('display', 'inline'); // jQuery parses so make the button live
+    // create popup and display it
+    $('#asm_form').dialog({
+        autoOpen: true,
+        height: 550,
+        width: 1020,
+        modal: true,
+        position: "center",
+    });
+
     $('#affils_0').focus();
   }
 );
@@ -141,7 +152,7 @@ function updateTable(shared_data) {
 
     // add text box handlers (table updates, keystrokes and autocompletes)
     addTextBoxHandlers(shared_data);
-    //addKeystrokes(shared_data); // FIXME: WTF is going on with the keybinding thing?  augh!
+    addKeyStrokes(shared_data); // FIXME: WTF is going on with the keybinding thing?  augh!
     addAutocompletes(shared_data);
 
     // fold the columns previously checked
@@ -151,6 +162,11 @@ function updateTable(shared_data) {
         }
     }
     return false;
+}
+
+function addKeyStrokes(shared_data) {
+    $('input').bind('keydown', 'alt+ctrl+x', function(event) {alert('keypress'); updateTableCutRow(event, shared_data); return false;} );
+    alert('post-binding');
 }
 
 /**
@@ -163,7 +179,7 @@ function updateTable(shared_data) {
  *
  * @param {Array} shared_data Passed to children
  */
-function addKeystrokes(shared_data) {
+function addKeystrokesX(shared_data) {
     var keybindings = {
 /*        'submit'  : ['Submit the changes.  No input field should be selected.', 
                      'alt+ctrl+shift+s', 
@@ -229,7 +245,10 @@ function addAutocompletes(shared_data) {
     }
     function add_selection_to(selection, to) {
         var to_str = penultimate(to.value);
-        $(to).val(to_str + '; ' + selection);
+        var new_value = jQuery.trim(to_str);
+        if (new_value == '') new_value = selection;
+        else new_value += '; ' + selection;
+        $(to).val(new_value);
         return false;
     }
     /* FIXME: Use ID selector, not class selector ? */
@@ -276,23 +295,21 @@ function addAutocompletes(shared_data) {
  */
 function generateTableHeader(inst_list) {
 
-    var computed_text = '<tr><th>#</th><th title="Author\'s name, one per line.">name</th>';
-    computed_text += '<th title="Institutional affiliations.  Semicolon-separated list.">affiliation</th>';
+    var computed_text = '<tr class="allrows"><th class="rownum">#</th><th class="author_box author_head" title="Author\'s name, one per line.">name</th>';
+    computed_text += '<th class="affil_box affil_head" title="Institutional affiliations.  Semicolon-separated list.">affiliation</th>';
 
     for (var i = 0; i < inst_list.length; i++) {
         var label = inst_list[i];
         var sliced = '';
-        if (label.length > 10) {                 // XXX: 10 is magic number here and elsewhere in this loop
+        if (label.length > 10) {                 // XXX: 10 is magic number
             sliced = label.slice(0,7)+'...';
         } else {
             sliced = label;
-            for (var j = 10 - label.length; j > 0; j--) {
-                sliced += '&nbsp;';
-            }
-        }
+        } 
         label = (i+1).toString() + '. ' + label;
         sliced = '<span class="column_no">'+(i+1).toString() + '</span><br />' + sliced;
-        computed_text += '<th class="col'+i+' column_label"><a title="'+label+' - Click to hide." href="#" class="hide_link" name="'+i+'">'+sliced+'</a></th>';
+        computed_text += '<th class="column_content col'+i+' column_label">'
+        computed_text += '<a title="'+label+' - Click to hide." href="#" class="hide_link" name="'+i+'">'+sliced+'</a></th>';
     }
     computed_text += '</tr>\n';
     return computed_text;
@@ -356,14 +373,14 @@ function generateTableRow(row, auth_affils, institutions) {
     for (var i = 0; i < institutions.length; i++) {
         var inst_name = jQuery.trim(institutions[i]);
         var name_row = inst_name+'_'+row;
-        str += '<td><input type="checkbox" title="'+institutions[i];
+        str += '<td class="column_content"><input type="checkbox" title="'+institutions[i];
         str +=          '" class="col'+i+'" id="checkbox_'+row+'_'+i+'" value="'+name_row+'"';
         for (var place = 1; place < auth_affils.length; place++) {
             if (auth_affils[place] == inst_name) {
                 str += ' checked';
             }
         }
-        str += '></td>';
+        str += ' /></td>';
     }
     str += '</tr>\n';
     
