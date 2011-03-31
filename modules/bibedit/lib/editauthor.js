@@ -164,69 +164,19 @@ function updateTable(shared_data) {
     return false;
 }
 
-function addKeyStrokes(shared_data) {
-    $('input').bind('keydown', 'alt+ctrl+x', function(event) {alert('keypress'); updateTableCutRow(event, shared_data); return false;} );
-    alert('post-binding');
-}
-
 /**
  * Bind keyboard events to particular keystrokes; called after table initialization
  * 
  * FIXME: This should be modified to use BibEdit's hotkey system, which should itself
  *        be using jQuery's HotKey UI.
  * FIXME: Does this need to be called every updateTable?
- * FIXME: this is broken; any keypress causes whatever the first dictionary item is to execute. Why?
  *
  * @param {Array} shared_data Passed to children
  */
-function addKeystrokesX(shared_data) {
-    var keybindings = {
-/*        'submit'  : ['Submit the changes.  No input field should be selected.', 
-                     'alt+ctrl+shift+s', 
-                     function(event) { 
-                         $('#submit_button').click();  
-                         event.preventDefault(); }], */
-        'cutRow'  : ['Cut this author row.',
-                     'alt+ctrl+shift+x',
-                     updateTableCutRow,
-                     //updateTableCutRow,
-                     {extra_data: shared_data}],
-        'copyRow' : ['Copy this author row.',
-                     'alt+ctrl+shift+c',
-                     updateTableCopyRow,
-                     {extra_data: shared_data}],
-        'pasteRow': ['Paste an author row after this row.',
-                     'alt+ctrl+shift+v',
-                     updateTablePasteRow,
-                     {extra_data: shared_data}],
-    };
-
-    // FIXME: eliminate this use of each() ?
-    jQuery.each(keybindings, function(dummy, val) {
-        fn = function(event) {
-            console.log('calling ' + dummy + '...\n');
-            val[2](event, shared_data);
-            return false;
-        };
-        //data_dictionary = {combi: val[1]};
-        //target = document;
-        //if (val.length >= 4) {
-        //    for (key in val[3]) {
-        //        data_dictionary[key] = val[3][key];
-        //    }
-        //} 
-        //$(document).bind('keyup', val[1], function(event) {val[2](event, shared_data)} );
-        //$(document).bind('keypress', {combi: val[1], disableInInput: false}, fn );
-        shortcut.add(val[1], function(event) {
-                console.log('calling ' + dummy + '...\n');
-                val[2](event, shared_data);
-                return false;
-            }, {type: 'keypress', disable_in_input: false});
-        console.log('just assigned ' + val[1] + ' to ' + dummy + '\n');
-    });
-
-    // Extra stuff worth doing 
-    /* $('#submit_button').attr('title', keybindings['submit'][1] + ' to Submit'); */
+function addKeyStrokes(shared_data) {
+    $('input').bind('keydown', 'alt+ctrl+x', function(event) {updateTableCutRow(event, shared_data); return false;} );
+    $('input').bind('keydown', 'alt+ctrl+c', function(event) {updateTableCopyRow(event, shared_data); return false;} );
+    $('input').bind('keydown', 'alt+ctrl+v', function(event) {updateTablePasteRow(event, shared_data); return false;} );
 }
 
 /**
