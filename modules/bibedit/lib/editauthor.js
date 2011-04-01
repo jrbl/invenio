@@ -35,6 +35,9 @@ $(document).ready(
     }}); 
     $('#submit_button').css('display', 'inline'); // jQuery parses so make the button live
 
+    // keep enter key from submitting the page form
+    $(window).keydown(function(event){ if(event.keyCode == 13) { event.preventDefault(); return false; } });
+
     // set popup title
     $('#asm_form').attr('title', data.headline.recid + ': ' + data.headline.title);
 
@@ -143,17 +146,17 @@ function updateTable(shared_data) {
             foldColumn(this.name, this.title.replace('hide', 'expand'));
         });
 
-    // add checkbox handlers
-    $('input[type="checkbox"]').click( // FIXME: id selector faster?  does it matter?
-        function() { 
-            checkBoxHandler_changeState(shared_data, this.value, this.checked);
-            //addShiftClickHandler(this.id, this.checked); // FIXME: write custom shift-click code
-        });
-
     // add text box handlers (table updates, keystrokes and autocompletes)
     addTextBoxHandlers(shared_data);
-    addKeyStrokes(shared_data); // FIXME: WTF is going on with the keybinding thing?  augh!
+    addKeyStrokes(shared_data); 
     addAutocompletes(shared_data);
+
+    // add checkbox handlers
+    $('input[type="checkbox"]').click( // FIXME: id selector faster?  does it matter?
+        function(event) { 
+            var lastBox = false;
+            checkBoxHandler_changeState(event, this, shared_data);
+        });
 
     // fold the columns previously checked
     for (var i in shared_data['folded']) {
@@ -174,9 +177,89 @@ function updateTable(shared_data) {
  * @param {Array} shared_data Passed to children
  */
 function addKeyStrokes(shared_data) {
-    $('input').bind('keydown', 'alt+ctrl+x', function(event) {updateTableCutRow(event, shared_data); return false;} );
-    $('input').bind('keydown', 'alt+ctrl+c', function(event) {updateTableCopyRow(event, shared_data); return false;} );
-    $('input').bind('keydown', 'alt+ctrl+v', function(event) {updateTablePasteRow(event, shared_data); return false;} );
+    var min_row = shared_data.paging.offset;
+    var max_row = shared_data.paging.rows - 1;
+    /** 
+     * Put a row's data onto a holding stack.
+     * 
+     * @param {Input} box The input element in which this method was called.
+     * @param {Array} shared_data The global state object. */
+    function copyRowAndUpdateTable(box, shared_data) {
+        var row = box.parentNode.parentNode.getAttribute('row') * 1;
+        shared_data['row_cut'] = shared_data['authors'][row];
+    }
+    /** 
+     * Remove a row from the displayed table and put its data onto a holding stack.
+     * 
+     * @param {Input} box The javascript input element associated with this cut.
+     * @param {Array} shared_data The global state object. */
+    function cutRowAndUpdateTable(box, shared_data) {
+        var target_id = box.getAttribute('id');
+        var row = box.parentNode.parentNode.getAttribute('row') * 1;
+        copyRowAndUpdateTable(box, shared_data);
+        shared_data['authors'].splice(row, 1);
+        updateTable(shared_data);
+        if (row == shared_data['authors'].length) {
+            target = '#' + target_id.slice(0, target_id.lastIndexOf('_')+1) + (row - 1);
+            $(target).focus();
+        } else { $('#'+target_id).focus(); }
+    }
+    /** 
+     * Insert a row from the holding stack onto the displayed table.
+     * 
+     * @param {Input} box The input element associated with this paste.
+     * @param {Array} shared_data The global state object. */
+    function pasteBelowAndUpdateTable(box, shared_data) {
+        var target_id = box.getAttribute('id');
+        var row = box.parentNode.parentNode.getAttribute('row') * 1 + 1;
+        var cut = shared_data['row_cut'];
+        if (cut == null) return;
+        shared_data['authors'].splice(row, 0, cut);
+        updateTable(shared_data);
+        $('#'+target_id).focus();
+    }
+    /**
+     * Move to the next author box.
+     *
+     * @param {String} direction 'up' or 'down'
+     * @param {Array} shared_data The global state object. */
+    function moveByAuthor(direction, box) {
+        var starting = box.parentNode.parentNode.getAttribute('row') * 1;
+        if (direction == 'up') {
+            if (starting == min_row) return;
+            $('#author_'+(starting - 1)).focus();
+        } else {
+            if (starting == max_row) return;
+            $('#author_'+(starting + 1)).focus();
+        }
+        return;
+    }
+    /**
+     * Move to the next affiliations box.
+     *
+     * @param {String} direction 'up' or 'down'
+     * @param {Array} shared_data The global state object. */
+    function moveByAffils(direction, box) {
+        var starting = box.parentNode.parentNode.getAttribute('row') * 1;
+        if (direction == 'up') {
+            if (starting == min_row) return;
+            $('#affils_'+(starting - 1)).focus();
+        } else {
+            if (starting == max_row) return;
+            $('#affils_'+(starting + 1)).focus();
+        }
+        return;
+    }
+
+    $('input').bind('keydown', 'alt+ctrl+x', function(event) {cutRowAndUpdateTable(this, shared_data); return false;} );
+    $('input').bind('keydown', 'alt+ctrl+c', function(event) {copyRowAndUpdateTable(this, shared_data); return false;} );
+    $('input').bind('keydown', 'alt+ctrl+v', function(event) {pasteBelowAndUpdateTable(this, shared_data); return false;} );
+    $('.author_box').bind('keydown', 'alt+down',  function(event) {moveByAuthor('down', this); return false;});
+    $('.affil_box').bind( 'keydown', 'alt+down',  function(event) {moveByAffils('down', this); return false;});
+    $('.author_box').bind('keydown', 'alt+up',    function(event) {moveByAuthor('up',   this); return false;});
+    $('.affil_box').bind( 'keydown', 'alt+up',    function(event) {moveByAffils('up',   this); return false;});
+    $('.affil_box').bind( 'keydown', 'tab',       function(event) {moveByAuthor('down', this); return false;});
+    $('.author_box').bind('keydown', 'shift+tab', function(event) {moveByAffils('up', this); return false;});
 }
 
 /**
@@ -298,7 +381,7 @@ function generateTableRow(row, auth_affils, institutions) {
 
     var str = '';
     // preamble
-    str += '\n<tr id="table_row_'+row+'" class="row'+row+'"><td class="rownum">'+ (row+1) +'</td>';
+    str += '\n<tr id="table_row_'+row+'" class="row row'+row+'" row="'+row+'"><td class="rownum">'+ (row+1) +'</td>';
         
     // author name
     str += '<td><input type="text" class="author_box" id="author_'+row+'" name="autho'+row+'" value="'+auth_affils[0]+'"';
@@ -320,11 +403,11 @@ function generateTableRow(row, auth_affils, institutions) {
     str += '></td>';
 
     // checkboxes
-    for (var i = 0; i < institutions.length; i++) {
-        var inst_name = jQuery.trim(institutions[i]);
+    for (var col = 0; col < institutions.length; col++) {
+        var inst_name = jQuery.trim(institutions[col]);
         var name_row = inst_name+'_'+row;
-        str += '<td class="column_content"><input type="checkbox" title="'+institutions[i];
-        str +=          '" class="col'+i+'" id="checkbox_'+row+'_'+i+'" value="'+name_row+'"';
+        str += '<td class="column_content"><input type="checkbox" title="'+institutions[col];
+        str +=          '" class="col'+col+'" row='+row+' col='+col+' id="checkbox_'+row+'_'+col+'" value="'+name_row+'"';
         for (var place = 1; place < auth_affils.length; place++) {
             if (auth_affils[place] == inst_name) {
                 str += ' checked';
@@ -362,35 +445,61 @@ function foldColumn(col, title) {
 /**
  * Search the affiliations for an author looking for this checkbox.
  */
-function checkBoxHandler_changeState(shared_data, myvalue, mystatus) {
-  var myrow = myvalue.substring(myvalue.lastIndexOf('_')+1);
-  var myaffils = shared_data['authors'][myrow].slice(1);
-  var myname = myvalue.slice(0, myvalue.indexOf('_'));
-  var cb_loc = $.inArray(myname, myaffils);
+function checkBoxHandler_changeState(event, thisBox, shared_data) {
+    // lastBox brought in from enclosing scope in updateTable
+    function cdr(arr) {
+        return arr.slice(1);
+    }
 
-  if ((mystatus == true) && (cb_loc == -1)) {
-      // we want it, but it's not here
-      shared_data['authors'][myrow].push(myname);
-      checkBoxHandler_stateSync(shared_data, myrow, myname);
-  } else if ((mystatus == true) && (cb_loc != -1)) {
-      // we want it, but it's already here
-      return;
-  } else if ((mystatus == false) && (cb_loc == -1)) {
-      // we don't want it, and it's not here
-      return;
-  } else if ((mystatus == false) && (cb_loc != -1)) {
-      // we don't want it, and it's here
-      cb_loc += 1; // XXX: index taken from slice, but used in a splice
-      shared_data['authors'][myrow].splice(cb_loc, 1);
-      checkBoxHandler_stateSync(shared_data, myrow, myname);
-  }
-}
+    function set_box(box, state) {
+        var row = box.getAttribute('row') * 1;
+        var col = box.getAttribute('col') * 1;
+        var institution = box.title;
+        var auth_affils = shared_data['authors'][row];
+        var affils_idx = $.inArray(institution, cdr(auth_affils)) + 1;
+        box.checked = state
+        if (box.checked) {
+          // we want it
+          if (! affils_idx) {
+              // if it's not here, add it
+              auth_affils.push(institution);
+              $('#affils_'+row).val(filter_ArrayToSemicolonString(cdr(auth_affils)));
+          } 
+        } else {
+          // we don't want it
+          if (affils_idx) {
+              // it's here, though, so remove it
+              auth_affils.splice(affils_idx, 1);
+              $('#affils_'+row).val(filter_ArrayToSemicolonString(cdr(auth_affils)));
+          } 
+        }
+    }
 
-/**
- *Sync the contents of shared_data into this row's affils box
- */
-function checkBoxHandler_stateSync(shared_data, myrow, myname) {
-  $('#affils_'+myrow).attr("value", filter_ArrayToSemicolonString(shared_data['authors'][myrow].slice(1)));
+    // FIXME: when iterating to do a shiftClick, skip folded columns
+    // FIXME: there must be a way to make this use fewer lines of code, mustn't there?
+    if (event.shiftKey && lastBox) {   // shift click in effect, and
+        var row = thisBox.getAttribute('row') * 1;
+        var col = thisBox.getAttribute('col') * 1;
+        var lastRow = lastBox.getAttribute('row') * 1;
+        var lastCol = lastBox.getAttribute('col') * 1;
+        var startRow = Math.min(row, lastRow);
+        var endRow = Math.max(row, lastRow);
+        var startCol = Math.min(col, lastCol);
+        var endCol = Math.max(col, lastCol);
+        for (var i = startRow; i <= endRow; i++) {
+            $('#table_row_'+i+' [type=checkbox]').each(function (j, box) {
+                if ((j < startCol) || (j > endCol)) return;
+                set_box(box, lastBox.checked);
+            });
+        }
+
+        lastBox = false;
+    }
+    else {                             // unshifted (ie, normal) click
+        lastBox = thisBox;
+        set_box(thisBox, thisBox.checked);
+    }
+
 }
 
 /**
@@ -414,7 +523,6 @@ function addTextBoxHandlers(shared_data) {
  */
 function addAuthBoxHandlers_changeHandler(shared_data, row, value) {
   shared_data['authors'][row][0] = filter_escapeHTML(value);
-  updateTable(shared_data);
 }
 
 /**
@@ -484,105 +592,3 @@ function filter_escapeHTML(value){
   return value;
 }
 
-/** 
-* Remove a row from the displayed table and put its data onto a holding stack.
- * 
- * @param {Event} event The javascript event object associated with this cut.
- */
-function updateTableCutRow(event, shared_data) {
-    var target_id = event.target.getAttribute('id');
-    var row_element = event.target.parentNode.parentNode;
-    var row = $('#TableContents tr').index(row_element);
-    //var shared_data = event.data.extra_data;
-
-    if ((row < 0) || (row > (shared_data.length -1)))
-        return
-    shared_data['row_cut'] = shared_data['authors'][row];
-
-    updateTableCopyRow(event, shared_data);
-    shared_data['authors'].splice(row, 1);
-    updateTable(shared_data);
-    if (row == $('#TableContents tr').length) {
-        tag = target_id.slice(0, target_id.lastIndexOf('_')+1);
-        $('#'+tag+row).focus();
-    } else
-        $('#'+target_id).focus();
-    event.preventDefault();
-}
-
-/** 
- * Insert a row from the holding stack onto the displayed table.
- * 
- * @param {Event} event The javascript event object associated with this paste.
- */
-function updateTablePasteRow(event, shared_data) {
-    var target_id = event.target.getAttribute('id');
-    var row_element = event.target.parentNode.parentNode;
-    var row = $('#TableContents tr').index(row_element) +1;
-    //var shared_data = event.data.extra_data;
-    var cut = shared_data['row_cut'];
-
-    if ((row < 1) || (row > shared_data.length))
-        return
-    if (cut == null)
-        return
-    shared_data['authors'].splice(row, 0, cut);
-    updateTable(shared_data);
-    $('#'+target_id).focus();
-    event.preventDefault();
-}
-
-/** 
- * Put a row's data onto a holding stack.
- * 
- * @param {Event} event The javascript event object associated with this copy.
- */
-function updateTableCopyRow(event, shared_data) {
-    var target_id = event.target.getAttribute('id');
-    var row_element = event.target.parentNode.parentNode;
-    var row = $('#TableContents tr').index(row_element);
-    //var shared_data = event.data.extra_data;
-
-    if ((row < 0) || (row > (shared_data.length -1)))
-        return
-    shared_data['row_cut'] = shared_data['authors'][row];
-    event.preventDefault();
-}
-
-/** 
- * Allow a checkbox to be clicked, setting one end of a range, and then
- * another box to be shift-clicked, establishing the other end of the range.
- * Selects both ends and all the checkboxes inbetween.
- * 
- * @param {String} id The unique identifier for a given checkbox
- * @param {Boolean} checked Whether some given checkbox is checked
- */
-function addShiftClickHandler(id, checked) {
-    var idparts = id.split('_');
-    var myrow = idparts[1];
-    var mycol = idparts[2];
-    // FIXME: HOW TO RESOLVE THESE TWO SETS OF IDEAS?  BELOW IMPL FROM http://media.sneeu.com/js/jquery.shiftclick.js
-    // NOT GOOD ENOUGH.  BUT WE WANT THE EVENT INFO TOO.
-}
-function shiftClick() {
-    var end1;
-    var end2 = this;
-    var column = $(this);
-
-    jQuery.each(this, function() {
-        $(this).click(function(event) {
-            if (!event.shiftKey) {
-                end1 = end2;
-            } else {
-                var end1i = column.index(end1);
-                var end2i = column.index(end2);
-                var lower = Math.min(end1i, end2i);
-                var upper = Math.max(end1i, end2i);
-                var val = end1.checked;
-                for (var i = end1i; i < end2i; i++) {
-                    column[i].checked = val;
-                }
-            }
-        })
-    });
-}
