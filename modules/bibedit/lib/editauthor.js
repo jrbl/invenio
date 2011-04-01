@@ -143,17 +143,19 @@ function updateTable(shared_data) {
             foldColumn(this.name, this.title.replace('hide', 'expand'));
         });
 
+    // add text box handlers (table updates, keystrokes and autocompletes)
+    addTextBoxHandlers(shared_data);
+    addKeyStrokes(shared_data); 
+    addAutocompletes(shared_data);
+
     // add checkbox handlers
     $('input[type="checkbox"]').click( // FIXME: id selector faster?  does it matter?
         function() { 
             checkBoxHandler_changeState(shared_data, this.value, this.checked);
-            //addShiftClickHandler(this.id, this.checked); // FIXME: write custom shift-click code
         });
-
-    // add text box handlers (table updates, keystrokes and autocompletes)
-    addTextBoxHandlers(shared_data);
-    addKeyStrokes(shared_data); // FIXME: WTF is going on with the keybinding thing?  augh!
-    addAutocompletes(shared_data);
+    for (var i = 0; i < shared_data['affiliations'].length; i++) {
+        //$('.col'+i).shiftClick(); // FIXME: Inline the jquery extension (at bottom) and figure out why it doesn't fire a .change()
+    }
 
     // fold the columns previously checked
     for (var i in shared_data['folded']) {
@@ -549,40 +551,22 @@ function updateTableCopyRow(event, shared_data) {
     event.preventDefault();
 }
 
-/** 
- * Allow a checkbox to be clicked, setting one end of a range, and then
- * another box to be shift-clicked, establishing the other end of the range.
- * Selects both ends and all the checkboxes inbetween.
- * 
- * @param {String} id The unique identifier for a given checkbox
- * @param {Boolean} checked Whether some given checkbox is checked
- */
-function addShiftClickHandler(id, checked) {
-    var idparts = id.split('_');
-    var myrow = idparts[1];
-    var mycol = idparts[2];
-    // FIXME: HOW TO RESOLVE THESE TWO SETS OF IDEAS?  BELOW IMPL FROM http://media.sneeu.com/js/jquery.shiftclick.js
-    // NOT GOOD ENOUGH.  BUT WE WANT THE EVENT INFO TOO.
-}
-function shiftClick() {
-    var end1;
-    var end2 = this;
-    var column = $(this);
-
-    jQuery.each(this, function() {
-        $(this).click(function(event) {
-            if (!event.shiftKey) {
-                end1 = end2;
-            } else {
-                var end1i = column.index(end1);
-                var end2i = column.index(end2);
-                var lower = Math.min(end1i, end2i);
-                var upper = Math.max(end1i, end2i);
-                var val = end1.checked;
-                for (var i = end1i; i < end2i; i++) {
-                    column[i].checked = val;
-                }
-            }
-        })
-    });
-}
+/* * Copyright (c) 2008 John Sutherland <john@sneeu.com> * * Permission to use,
+ * copy, modify, and distribute this software for any * purpose with or without
+ * fee is hereby granted, provided that the above * copyright notice and this
+ * permission notice appear in all copies. * * THE SOFTWARE IS PROVIDED "AS IS"
+ * AND THE AUTHOR DISCLAIMS ALL WARRANTIES * WITH REGARD TO THIS SOFTWARE
+ * INCLUDING ALL IMPLIED WARRANTIES OF * MERCHANTABILITY AND FITNESS. IN NO
+ * EVENT SHALL THE AUTHOR BE LIABLE FOR * ANY SPECIAL, DIRECT, INDIRECT, OR
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES * WHATSOEVER RESULTING FROM LOSS OF
+ * USE, DATA OR PROFITS, WHETHER IN AN * ACTION OF CONTRACT, NEGLIGENCE OR
+ * OTHER TORTIOUS ACTION, ARISING OUT OF * OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE. */ 
+/*(function($) { $.fn.shiftClick = function()
+         { var lastSelected; var checkBoxes = $(this); this.each(function() {
+             $(this).click(function(ev) { if (ev.shiftKey) { var last =
+                 checkBoxes.index(lastSelected); var first =
+                 checkBoxes.index(this); var start = Math.min(first, last); var
+                 end = Math.max(first, last); var chk = lastSelected.checked;
+                 for (var i = start; i < end; i++) { checkBoxes[i].checked =
+                 chk; } } else { lastSelected = this; } }) }); }; })(jQuery); */
