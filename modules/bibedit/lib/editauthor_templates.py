@@ -10,23 +10,13 @@ class Template:
     def __init__(self):
         """Establish some variables we can use throughout"""
         self.javascript = [ # prerequisites for hotkeys, autocomplete
-                           #'jquery.min.js', 
                            #'jquery-1.4.4.js', 
                            # FIXME we should be using a locally cached version of jquery-1.4.4... shouldn't we?
-                           #'http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js',
                            'http://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js',
-                           #'jquery.ui.core.min.js', 
-                           #'jquery.ui.widget.min.js', 
-                           #'jquery.ui.position.min.js', 
-                           ## the good parts
-                           #'jquery.hotkeys.min.js',
-                           #'jquery.ui.autocomplete.min.js', 
                            # FIXME we should be using locally cached version of jquery-ui libs... shouldn't we?
                            'https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.11/jquery-ui.min.js',
                            # FIXME we should be using locally cached version of jquery hotkeys... but this version!
                            'https://github.com/jeresig/jquery.hotkeys/raw/master/jquery.hotkeys.js',
-                           #'http://js-hotkeys.googlecode.com/files/jquery.hotkeys-0.7.9.js',
-                           #'http://www.openjs.com/scripts/events/keyboard_shortcuts/shortcut.js',
                            'editauthor.js'
                           ]
 
