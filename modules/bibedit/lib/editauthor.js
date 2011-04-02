@@ -375,9 +375,7 @@ function checkBoxHandler_changeState(event, thisBox, shared_data) {
         var institution = thisBox.title;
         var auth_affils = shared_data['authors'][row];
         var affils_idx = $.inArray(institution, cdr(auth_affils)) + 1;
-        if (state != null) {
-            thisBox.checked = state
-        }
+        thisBox.checked = state
         if (thisBox.checked) {
           // we want it
           if (! affils_idx) {
@@ -401,7 +399,8 @@ function checkBoxHandler_changeState(event, thisBox, shared_data) {
         lastBox = thisBox;
         var row = thisBox.id.slice(9,thisBox.id.lastIndexOf('_')) * 1;
         var col = thisBox.id.slice(thisBox.id.lastIndexOf('_')+1) * 1;
-        set_box(row, col);
+        console.log('thisBox: ' + row + ',' + col);
+        set_box(row, col, thisBox.checked);
     } else {
         // shift click in effect
         // lastBox brought in from enclosing scope in updateTable
@@ -411,8 +410,8 @@ function checkBoxHandler_changeState(event, thisBox, shared_data) {
             var row = thisBox.id.slice(9,thisBox.id.lastIndexOf('_')) * 1;
             var col = thisBox.id.slice(thisBox.id.lastIndexOf('_')+1) * 1;
             console.log('thisBox: ' + row + ',' + col);
-            var lastRow = lastBox.id.slice(9,thisBox.id.lastIndexOf('_')) * 1;
-            var lastCol = lastBox.id.slice(thisBox.id.lastIndexOf('_')+1) * 1;
+            var lastRow = lastBox.id.slice(9,lastBox.id.lastIndexOf('_')) * 1;
+            var lastCol = lastBox.id.slice(lastBox.id.lastIndexOf('_')+1) * 1;
             console.log('lastBox: ' + lastRow + ',' + lastCol);
             var startRow = Math.min(row, lastRow);
             var endRow = Math.max(row, lastRow);
@@ -430,7 +429,8 @@ function checkBoxHandler_changeState(event, thisBox, shared_data) {
             lastBox = thisBox;
             var row = thisBox.id.slice(9,thisBox.id.lastIndexOf('_')) * 1;
             var col = thisBox.id.slice(thisBox.id.lastIndexOf('_')+1) * 1;
-            set_box(row, col);
+            console.log('thisBox: ' + row + ',' + col);
+            set_box(row, col, thisBox.checked);
         }
         lastBox = false;
     }
