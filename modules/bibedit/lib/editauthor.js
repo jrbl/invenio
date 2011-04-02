@@ -150,11 +150,12 @@ function updateTable(shared_data) {
 
     // add checkbox handlers
     $('input[type="checkbox"]').click( // FIXME: id selector faster?  does it matter?
-        function() { 
-            checkBoxHandler_changeState(shared_data, this.value, this.checked);
+        function(event) { 
+            var lastBox = false;
+            checkBoxHandler_changeState(event, this, shared_data);
         });
     for (var i = 0; i < shared_data['affiliations'].length; i++) {
-        //$('.col'+i).shiftClick(); // FIXME: Inline the jquery extension (at bottom) and figure out why it doesn't fire a .change()
+        $('.col'+i).shiftClick(); // FIXME: Inline the jquery extension (at bottom) and figure out why it doesn't fire a .change()
     }
 
     // fold the columns previously checked
@@ -364,35 +365,76 @@ function foldColumn(col, title) {
 /**
  * Search the affiliations for an author looking for this checkbox.
  */
-function checkBoxHandler_changeState(shared_data, myvalue, mystatus) {
-  var myrow = myvalue.substring(myvalue.lastIndexOf('_')+1);
-  var myaffils = shared_data['authors'][myrow].slice(1);
-  var myname = myvalue.slice(0, myvalue.indexOf('_'));
-  var cb_loc = $.inArray(myname, myaffils);
+function checkBoxHandler_changeState(event, thisBox, shared_data) {
+    function cdr(arr) {
+        return arr.slice(1);
+    }
 
-  if ((mystatus == true) && (cb_loc == -1)) {
-      // we want it, but it's not here
-      shared_data['authors'][myrow].push(myname);
-      checkBoxHandler_stateSync(shared_data, myrow, myname);
-  } else if ((mystatus == true) && (cb_loc != -1)) {
-      // we want it, but it's already here
-      return;
-  } else if ((mystatus == false) && (cb_loc == -1)) {
-      // we don't want it, and it's not here
-      return;
-  } else if ((mystatus == false) && (cb_loc != -1)) {
-      // we don't want it, and it's here
-      cb_loc += 1; // XXX: index taken from slice, but used in a splice
-      shared_data['authors'][myrow].splice(cb_loc, 1);
-      checkBoxHandler_stateSync(shared_data, myrow, myname);
-  }
-}
+    function set_box(row, col, state) {
+        var thisBox = $('#checkbox_'+row+'_'+col)[0];
+        var institution = thisBox.title;
+        var auth_affils = shared_data['authors'][row];
+        var affils_idx = $.inArray(institution, cdr(auth_affils)) + 1;
+        if (state != null) {
+            thisBox.checked = state
+        }
+        if (thisBox.checked) {
+          // we want it
+          if (! affils_idx) {
+              // if it's not here, add it
+              auth_affils.push(institution);
+              $('#affils_'+row).val(filter_ArrayToSemicolonString(cdr(auth_affils)));
+          } 
+        } else {
+          // we don't want it
+          if (affils_idx) {
+              // it's here, though, so remove it
+              auth_affils.splice(affils_idx, 1);
+              $('#affils_'+row).val(filter_ArrayToSemicolonString(cdr(auth_affils)));
+          } 
+        }
+    }
 
-/**
- *Sync the contents of shared_data into this row's affils box
- */
-function checkBoxHandler_stateSync(shared_data, myrow, myname) {
-  $('#affils_'+myrow).attr("value", filter_ArrayToSemicolonString(shared_data['authors'][myrow].slice(1)));
+    if (! event.shiftKey) {
+        // unshifted (ie, normal) click
+        // lastBox brought in from enclosing scope in updateTable
+        lastBox = thisBox;
+        var row = thisBox.id.slice(9,thisBox.id.lastIndexOf('_')) * 1;
+        var col = thisBox.id.slice(thisBox.id.lastIndexOf('_')+1) * 1;
+        set_box(row, col);
+    } else {
+        // shift click in effect
+        // lastBox brought in from enclosing scope in updateTable
+        if (lastBox) {
+            // and we did a normal click before
+            console.log(thisBox.id);
+            var row = thisBox.id.slice(9,thisBox.id.lastIndexOf('_')) * 1;
+            var col = thisBox.id.slice(thisBox.id.lastIndexOf('_')+1) * 1;
+            console.log('thisBox: ' + row + ',' + col);
+            var lastRow = lastBox.id.slice(9,thisBox.id.lastIndexOf('_')) * 1;
+            var lastCol = lastBox.id.slice(thisBox.id.lastIndexOf('_')+1) * 1;
+            console.log('lastBox: ' + lastRow + ',' + lastCol);
+            var startRow = Math.min(row, lastRow);
+            var endRow = Math.max(row, lastRow);
+            var startCol = Math.min(col, lastCol);
+            var endCol = Math.max(col, lastCol);
+            console.log('From: ' + startRow + ',' + startCol + ' to ' + endRow + ',' + endCol)
+            for (var i = startRow; i <= endRow; i++) {
+                for (var j = startCol; j <= endCol; j++) {
+                    console.log('Sending ' + i + ',' + j + ' ' + lastBox.checked);
+                    set_box(i, j, lastBox.checked);
+                } 
+            }
+        } else {
+            // if no normal click previous, treat like a normal click
+            lastBox = thisBox;
+            var row = thisBox.id.slice(9,thisBox.id.lastIndexOf('_')) * 1;
+            var col = thisBox.id.slice(thisBox.id.lastIndexOf('_')+1) * 1;
+            set_box(row, col);
+        }
+        lastBox = false;
+    }
+
 }
 
 /**
@@ -416,7 +458,6 @@ function addTextBoxHandlers(shared_data) {
  */
 function addAuthBoxHandlers_changeHandler(shared_data, row, value) {
   shared_data['authors'][row][0] = filter_escapeHTML(value);
-  updateTable(shared_data);
 }
 
 /**
@@ -551,6 +592,27 @@ function updateTableCopyRow(event, shared_data) {
     event.preventDefault();
 }
 
+function addShiftClickHandler(i) {
+    /* adds shiftclick handler by column */
+    var here = $('.col'+i);
+    var startofrange;
+    $(here).click(function (event) {
+        if (!ev.shiftKey) {
+            startofrange = this;
+            return true;
+        } else {
+            var j = $(here).index(startofrange);
+            var k = $(here).index(this);
+            var i = Math.min(j,k);
+            var j = Math.max(j,k);
+            for (i; i < j; i++) {
+                here
+            }
+            return true;
+        }
+    });
+}
+
 /* * Copyright (c) 2008 John Sutherland <john@sneeu.com> * * Permission to use,
  * copy, modify, and distribute this software for any * purpose with or without
  * fee is hereby granted, provided that the above * copyright notice and this
@@ -562,11 +624,23 @@ function updateTableCopyRow(event, shared_data) {
  * USE, DATA OR PROFITS, WHETHER IN AN * ACTION OF CONTRACT, NEGLIGENCE OR
  * OTHER TORTIOUS ACTION, ARISING OUT OF * OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE. */ 
-/*(function($) { $.fn.shiftClick = function()
-         { var lastSelected; var checkBoxes = $(this); this.each(function() {
-             $(this).click(function(ev) { if (ev.shiftKey) { var last =
-                 checkBoxes.index(lastSelected); var first =
-                 checkBoxes.index(this); var start = Math.min(first, last); var
-                 end = Math.max(first, last); var chk = lastSelected.checked;
-                 for (var i = start; i < end; i++) { checkBoxes[i].checked =
-                 chk; } } else { lastSelected = this; } }) }); }; })(jQuery); */
+$.fn.shiftClick = function() { 
+    var lastSelected; 
+    var checkBoxes = $(this); 
+    jQuery.each(function() {
+        $(this).click(function(ev) { 
+            if (ev.shiftKey) { 
+                var last = checkBoxes.index(lastSelected); 
+                var first = checkBoxes.index(this); 
+                var start = Math.min(first, last); 
+                var end = Math.max(first, last); 
+                var chk = lastSelected.checked;
+                for (var i = start; i < end; i++) { 
+                    checkBoxes[i].checked = chk; 
+                } 
+            } else { 
+                lastSelected = this; 
+            } 
+        }) 
+    }); 
+};
