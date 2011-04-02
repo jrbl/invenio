@@ -370,10 +370,10 @@ function checkBoxHandler_changeState(event, thisBox, shared_data) {
         return arr.slice(1);
     }
 
-    function set_box(row, col, state) {
-        var thisBox = $('#checkbox_'+row+'_'+col)[0];
+    function set_box(pt, state) {
+        var thisBox = $('#checkbox_'+pt.row+'_'+pt.col)[0];
         var institution = thisBox.title;
-        var auth_affils = shared_data['authors'][row];
+        var auth_affils = shared_data['authors'][pt.row];
         var affils_idx = $.inArray(institution, cdr(auth_affils)) + 1;
         thisBox.checked = state
         if (thisBox.checked) {
@@ -381,26 +381,28 @@ function checkBoxHandler_changeState(event, thisBox, shared_data) {
           if (! affils_idx) {
               // if it's not here, add it
               auth_affils.push(institution);
-              $('#affils_'+row).val(filter_ArrayToSemicolonString(cdr(auth_affils)));
+              $('#affils_'+pt.row).val(filter_ArrayToSemicolonString(cdr(auth_affils)));
           } 
         } else {
           // we don't want it
           if (affils_idx) {
               // it's here, though, so remove it
               auth_affils.splice(affils_idx, 1);
-              $('#affils_'+row).val(filter_ArrayToSemicolonString(cdr(auth_affils)));
+              $('#affils_'+pt.row).val(filter_ArrayToSemicolonString(cdr(auth_affils)));
           } 
         }
+    }
+    function Point(box_id) {
+        return {'row': box_id.slice(9,thisBox.id.lastIndexOf('_')) * 1,
+                'col': box_id.slice(thisBox.id.lastIndexOf('_')+1) * 1}
     }
 
     if (! event.shiftKey) {
         // unshifted (ie, normal) click
         // lastBox brought in from enclosing scope in updateTable
         lastBox = thisBox;
-        var row = thisBox.id.slice(9,thisBox.id.lastIndexOf('_')) * 1;
-        var col = thisBox.id.slice(thisBox.id.lastIndexOf('_')+1) * 1;
         console.log('thisBox: ' + row + ',' + col);
-        set_box(row, col, thisBox.checked);
+        set_box(Point(thisBox.id), thisBox.checked);
     } else {
         // shift click in effect
         // lastBox brought in from enclosing scope in updateTable
@@ -409,28 +411,28 @@ function checkBoxHandler_changeState(event, thisBox, shared_data) {
             console.log(thisBox.id);
             var row = thisBox.id.slice(9,thisBox.id.lastIndexOf('_')) * 1;
             var col = thisBox.id.slice(thisBox.id.lastIndexOf('_')+1) * 1;
+            thisPt = Point(thisBox.id)
             console.log('thisBox: ' + row + ',' + col);
             var lastRow = lastBox.id.slice(9,lastBox.id.lastIndexOf('_')) * 1;
             var lastCol = lastBox.id.slice(lastBox.id.lastIndexOf('_')+1) * 1;
+            thatPt = Point(lastBox.id)
             console.log('lastBox: ' + lastRow + ',' + lastCol);
-            var startRow = Math.min(row, lastRow);
-            var endRow = Math.max(row, lastRow);
-            var startCol = Math.min(col, lastCol);
-            var endCol = Math.max(col, lastCol);
+            var startRow = Math.min(thisPt.row, thatPt.row);
+            var endRow = Math.max(thisPt.row, thatPt.row);
+            var startCol = Math.min(thisPt.col, thatPt.col);
+            var endCol = Math.max(thisPt.col, thatPt.col);
             console.log('From: ' + startRow + ',' + startCol + ' to ' + endRow + ',' + endCol)
             for (var i = startRow; i <= endRow; i++) {
                 for (var j = startCol; j <= endCol; j++) {
                     console.log('Sending ' + i + ',' + j + ' ' + lastBox.checked);
-                    set_box(i, j, lastBox.checked);
+                    set_box({'row': i, 'col': j}, lastBox.checked);
                 } 
             }
         } else {
             // if no normal click previous, treat like a normal click
             lastBox = thisBox;
-            var row = thisBox.id.slice(9,thisBox.id.lastIndexOf('_')) * 1;
-            var col = thisBox.id.slice(thisBox.id.lastIndexOf('_')+1) * 1;
             console.log('thisBox: ' + row + ',' + col);
-            set_box(row, col, thisBox.checked);
+            set_box(Point(thisBox.id), thisBox.checked);
         }
         lastBox = false;
     }
