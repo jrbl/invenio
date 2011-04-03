@@ -320,11 +320,12 @@ function generateTableRow(row, auth_affils, institutions) {
     str += '></td>';
 
     // checkboxes
-    for (var col = 0; col < institutions.length; col++) {
-        var inst_name = jQuery.trim(institutions[col]);
+    for (var i = 0; i < institutions.length; i++) {
+        var inst_name = jQuery.trim(institutions[i]);
         var name_row = inst_name+'_'+row;
+        // FIXME: go through and make $('.colN') use 1-based columns names
         str += '<td class="column_content"><input type="checkbox" title="'+institutions[col];
-        str +=          '" class="col'+col+'" row='+row+' col='+col+' id="checkbox_'+row+'_'+col+'" value="'+name_row+'"';
+        str +=          '" class="col'+i+'" row='+row+' col='+(i+1)+' id="checkbox_'+row+'_'+(i+1)+'" value="'+name_row+'"';
         for (var place = 1; place < auth_affils.length; place++) {
             if (auth_affils[place] == inst_name) {
                 str += ' checked';
@@ -394,6 +395,7 @@ function checkBoxHandler_changeState(event, thisBox, shared_data) {
     }
 
     // FIXME: when iterating to do a shiftClick, skip folded columns
+    // FIXME: this introduces wackiness that some things are 0-based and some things are 1-based.  oops.
     if (event.shiftKey && lastBox) {   // shift click in effect, and
         console.log(thisBox.id);
         var row = thisBox.getAttribute('row') * 1;
