@@ -154,9 +154,6 @@ function updateTable(shared_data) {
             var lastBox = false;
             checkBoxHandler_changeState(event, this, shared_data);
         });
-    for (var i = 0; i < shared_data['affiliations'].length; i++) {
-        $('.col'+i).shiftClick(); // FIXME: Inline the jquery extension (at bottom) and figure out why it doesn't fire a .change()
-    }
 
     // fold the columns previously checked
     for (var i in shared_data['folded']) {
@@ -323,11 +320,11 @@ function generateTableRow(row, auth_affils, institutions) {
     str += '></td>';
 
     // checkboxes
-    for (var i = 0; i < institutions.length; i++) {
-        var inst_name = jQuery.trim(institutions[i]);
+    for (var col = 0; col < institutions.length; col++) {
+        var inst_name = jQuery.trim(institutions[col]);
         var name_row = inst_name+'_'+row;
-        str += '<td class="column_content"><input type="checkbox" title="'+institutions[i];
-        str +=          '" class="col'+i+'" id="checkbox_'+row+'_'+i+'" value="'+name_row+'"';
+        str += '<td class="column_content"><input type="checkbox" title="'+institutions[col];
+        str +=          '" class="col'+col+'" row='+row+' col='+col+' id="checkbox_'+row+'_'+col+'" value="'+name_row+'"';
         for (var place = 1; place < auth_affils.length; place++) {
             if (auth_affils[place] == inst_name) {
                 str += ' checked';
@@ -366,75 +363,61 @@ function foldColumn(col, title) {
  * Search the affiliations for an author looking for this checkbox.
  */
 function checkBoxHandler_changeState(event, thisBox, shared_data) {
+    // lastBox brought in from enclosing scope in updateTable
     function cdr(arr) {
         return arr.slice(1);
     }
 
-    function set_box(pt, state) {
-        var thisBox = $('#checkbox_'+pt.row+'_'+pt.col)[0];
-        var institution = thisBox.title;
-        var auth_affils = shared_data['authors'][pt.row];
+    function set_box(box, state) {
+        var row = box.getAttribute('row') * 1;
+        var col = box.getAttribute('col') * 1;
+        console.log('box: ' + row + ',' + col); // DEBUG
+        var institution = box.title;
+        var auth_affils = shared_data['authors'][row];
         var affils_idx = $.inArray(institution, cdr(auth_affils)) + 1;
-        thisBox.checked = state
-        if (thisBox.checked) {
+        box.checked = state
+        if (box.checked) {
           // we want it
           if (! affils_idx) {
               // if it's not here, add it
               auth_affils.push(institution);
-              $('#affils_'+pt.row).val(filter_ArrayToSemicolonString(cdr(auth_affils)));
+              $('#affils_'+row).val(filter_ArrayToSemicolonString(cdr(auth_affils)));
           } 
         } else {
           // we don't want it
           if (affils_idx) {
               // it's here, though, so remove it
               auth_affils.splice(affils_idx, 1);
-              $('#affils_'+pt.row).val(filter_ArrayToSemicolonString(cdr(auth_affils)));
+              $('#affils_'+row).val(filter_ArrayToSemicolonString(cdr(auth_affils)));
           } 
         }
     }
-    function Point(box_id) {
-        return {'row': box_id.slice(9,thisBox.id.lastIndexOf('_')) * 1,
-                'col': box_id.slice(thisBox.id.lastIndexOf('_')+1) * 1}
-    }
 
-    if (! event.shiftKey) {
-        // unshifted (ie, normal) click
-        // lastBox brought in from enclosing scope in updateTable
-        lastBox = thisBox;
+    // FIXME: when iterating to do a shiftClick, skip folded columns
+    if (event.shiftKey && lastBox) {   // shift click in effect, and
+        console.log(thisBox.id);
+        var row = thisBox.getAttribute('row') * 1;
+        var col = thisBox.getAttribute('col') * 1;
         console.log('thisBox: ' + row + ',' + col);
-        set_box(Point(thisBox.id), thisBox.checked);
-    } else {
-        // shift click in effect
-        // lastBox brought in from enclosing scope in updateTable
-        if (lastBox) {
-            // and we did a normal click before
-            console.log(thisBox.id);
-            var row = thisBox.id.slice(9,thisBox.id.lastIndexOf('_')) * 1;
-            var col = thisBox.id.slice(thisBox.id.lastIndexOf('_')+1) * 1;
-            thisPt = Point(thisBox.id)
-            console.log('thisBox: ' + row + ',' + col);
-            var lastRow = lastBox.id.slice(9,lastBox.id.lastIndexOf('_')) * 1;
-            var lastCol = lastBox.id.slice(lastBox.id.lastIndexOf('_')+1) * 1;
-            thatPt = Point(lastBox.id)
-            console.log('lastBox: ' + lastRow + ',' + lastCol);
-            var startRow = Math.min(thisPt.row, thatPt.row);
-            var endRow = Math.max(thisPt.row, thatPt.row);
-            var startCol = Math.min(thisPt.col, thatPt.col);
-            var endCol = Math.max(thisPt.col, thatPt.col);
-            console.log('From: ' + startRow + ',' + startCol + ' to ' + endRow + ',' + endCol)
-            for (var i = startRow; i <= endRow; i++) {
-                for (var j = startCol; j <= endCol; j++) {
-                    console.log('Sending ' + i + ',' + j + ' ' + lastBox.checked);
-                    set_box({'row': i, 'col': j}, lastBox.checked);
-                } 
-            }
-        } else {
-            // if no normal click previous, treat like a normal click
-            lastBox = thisBox;
-            console.log('thisBox: ' + row + ',' + col);
-            set_box(Point(thisBox.id), thisBox.checked);
+        var lastRow = lastBox.getAttribute('row') * 1;
+        var lastCol = lastBox.getAttribute('col') * 1;
+        console.log('lastBox: ' + lastRow + ',' + lastCol);
+        var startRow = Math.min(row, lastRow);
+        var endRow = Math.max(row, lastRow);
+        var startCol = Math.min(col, lastCol);
+        var endCol = Math.max(col, lastCol);
+        console.log('From: ' + startRow + ',' + startCol + ' to ' + endRow + ',' + endCol)
+        for (var i = startRow; i <= endRow; i++) {
+            $('#table_row_'+i+' [type=checkbox]:lt('+(endCol+1)+'):gt('+(startCol-1)+')').each(function (j, box) {
+                set_box(box, lastBox.checked);
+            });
         }
+
         lastBox = false;
+    }
+    else {                             // unshifted (ie, normal) click
+        lastBox = thisBox;
+        set_box(thisBox, thisBox.checked);
     }
 
 }
@@ -614,35 +597,3 @@ function addShiftClickHandler(i) {
         }
     });
 }
-
-/* * Copyright (c) 2008 John Sutherland <john@sneeu.com> * * Permission to use,
- * copy, modify, and distribute this software for any * purpose with or without
- * fee is hereby granted, provided that the above * copyright notice and this
- * permission notice appear in all copies. * * THE SOFTWARE IS PROVIDED "AS IS"
- * AND THE AUTHOR DISCLAIMS ALL WARRANTIES * WITH REGARD TO THIS SOFTWARE
- * INCLUDING ALL IMPLIED WARRANTIES OF * MERCHANTABILITY AND FITNESS. IN NO
- * EVENT SHALL THE AUTHOR BE LIABLE FOR * ANY SPECIAL, DIRECT, INDIRECT, OR
- * CONSEQUENTIAL DAMAGES OR ANY DAMAGES * WHATSOEVER RESULTING FROM LOSS OF
- * USE, DATA OR PROFITS, WHETHER IN AN * ACTION OF CONTRACT, NEGLIGENCE OR
- * OTHER TORTIOUS ACTION, ARISING OUT OF * OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE. */ 
-$.fn.shiftClick = function() { 
-    var lastSelected; 
-    var checkBoxes = $(this); 
-    jQuery.each(function() {
-        $(this).click(function(ev) { 
-            if (ev.shiftKey) { 
-                var last = checkBoxes.index(lastSelected); 
-                var first = checkBoxes.index(this); 
-                var start = Math.min(first, last); 
-                var end = Math.max(first, last); 
-                var chk = lastSelected.checked;
-                for (var i = start; i < end; i++) { 
-                    checkBoxes[i].checked = chk; 
-                } 
-            } else { 
-                lastSelected = this; 
-            } 
-        }) 
-    }); 
-};

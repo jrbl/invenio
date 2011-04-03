@@ -17,8 +17,6 @@ class Template:
                            'https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.11/jquery-ui.min.js',
                            # FIXME we should be using locally cached version of jquery hotkeys... but this version!
                            'https://github.com/jeresig/jquery.hotkeys/raw/master/jquery.hotkeys.js',
-                           # FIXME we should be using a locally cached version of jquery shiftclick... assuming this works
-                           ##'http://media.sneeu.com/js/jquery.shiftclick.js',
                            'editauthor.js'
                           ]
 
