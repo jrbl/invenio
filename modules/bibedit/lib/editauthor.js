@@ -410,7 +410,9 @@ function checkBoxHandler_changeState(event, thisBox, shared_data) {
         var endCol = Math.max(col, lastCol);
         console.log('From: ' + startRow + ',' + startCol + ' to ' + endRow + ',' + endCol)
         for (var i = startRow; i <= endRow; i++) {
-            $('#table_row_'+i+' [type=checkbox]:lt('+(endCol+1)+'):gt('+(startCol-1)+')').each(function (j, box) {
+            //$('#table_row_'+i+' [type=checkbox]:lt('+(endCol+1)+'):gt('+(startCol-1)+')').each(function (j, box) {
+            $('#table_row_'+i+' [type=checkbox]').each(function (j, box) {
+                if ((j < startCol) || (j > endCol)) return;
                 set_box(box, lastBox.checked);
             });
         }
