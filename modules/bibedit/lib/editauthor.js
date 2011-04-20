@@ -49,18 +49,50 @@ $(document).ready(
     $('#TableContents').html('<p id="loading_msg">Loading; please wait...</p>');
     updateTable(data);
 
-    // create popup and display it
-    $('#asm_form').dialog({
-        autoOpen: true,
-        height: 550,
-        width: 1020,
-        modal: true,
-        position: "center",
-    });
-
     $('#affils_0').focus();
   }
 );
+
+/**
+ * Create the HTML representation of a table representing shared_data, assign
+ * event handlers, and maintain folding status.
+ * 
+ * @param {Array} shared_data The dictionary of shared state
+ */
+function updateTable(shared_data) {
+
+    // generate table header & body
+    $('#asm_uitable').width( (shared_data['affiliations'].length * 60) + 410 );
+    $('#TableHeaders').html(  generateTableHeader(shared_data['affiliations']) );
+    $('#TableContents').html( generateTableBody(shared_data) );
+
+    // add column folding click handlers
+    $('a.hide_link').click(       // FIXME: id selector faster?  does it matter?
+        function() { 
+            shared_data['folded'].push(this.name); 
+            foldColumn(this.name, this.title.replace('hide', 'expand'));
+        });
+
+    // add text box handlers (table updates, keystrokes and autocompletes)
+    addTextBoxHandlers(shared_data);
+    addKeyStrokes(shared_data); 
+    addAutocompletes(shared_data);
+
+    // add checkbox handlers
+    $('input[type="checkbox"]').click( // FIXME: id selector faster?  does it matter?
+        function(event) { 
+            var lastBox = false;
+            checkBoxHandler_changeState(event, this, shared_data);
+        });
+
+    // fold the columns previously checked
+    for (var i in shared_data['folded']) {
+        if (shared_data['folded'][i]  != null) {
+            foldColumn(shared_data['folded'][i], "Click to expand.");
+        }
+    }
+    return false;
+}
 
 /**
  * Determine whether the pagination widget is needed, and if it is, paint it
@@ -125,46 +157,6 @@ function paginated_page_back(offset, rows, max_rows, shared_data) {
     }
     updateTable(shared_data);
     updatePaginationControls(shared_data);
-}
-
-/**
- * Create the HTML representation of a table representing shared_data, assign
- * event handlers, and maintain folding status.
- * 
- * @param {Array} shared_data The dictionary of shared state
- */
-function updateTable(shared_data) {
-
-    // generate table header & body
-    $('#TableHeaders').html(  generateTableHeader(shared_data['affiliations']) );
-    $('#TableContents').html( generateTableBody(shared_data) );
-
-    // add column folding click handlers
-    $('a.hide_link').click(       // FIXME: id selector faster?  does it matter?
-        function() { 
-            shared_data['folded'].push(this.name); 
-            foldColumn(this.name, this.title.replace('hide', 'expand'));
-        });
-
-    // add text box handlers (table updates, keystrokes and autocompletes)
-    addTextBoxHandlers(shared_data);
-    addKeyStrokes(shared_data); 
-    addAutocompletes(shared_data);
-
-    // add checkbox handlers
-    $('input[type="checkbox"]').click( // FIXME: id selector faster?  does it matter?
-        function(event) { 
-            var lastBox = false;
-            checkBoxHandler_changeState(event, this, shared_data);
-        });
-
-    // fold the columns previously checked
-    for (var i in shared_data['folded']) {
-        if (shared_data['folded'][i]  != null) {
-            foldColumn(shared_data['folded'][i], "Click to expand.");
-        }
-    }
-    return false;
 }
 
 /**
@@ -406,8 +398,8 @@ function generateTableRow(row, auth_affils, institutions) {
     for (var col = 0; col < institutions.length; col++) {
         var inst_name = jQuery.trim(institutions[col]);
         var name_row = inst_name+'_'+row;
-        str += '<td class="column_content"><input type="checkbox" title="'+institutions[col];
-        str +=          '" class="col'+col+'" row='+row+' col='+col+' id="checkbox_'+row+'_'+col+'" value="'+name_row+'"';
+        str += '<td class="column_content col'+col+'"><input type="checkbox" title="'+institutions[col];
+        str +=          '" class="check_col'+col+'" row='+row+' col='+col+' id="checkbox_'+row+'_'+col+'" value="'+name_row+'"';
         for (var place = 1; place < auth_affils.length; place++) {
             if (auth_affils[place] == inst_name) {
                 str += ' checked';
@@ -430,7 +422,9 @@ function generateTableRow(row, auth_affils, institutions) {
  * @param {String} title The mouseover floating text for the element
  */
 function foldColumn(col, title) {
-    $('.col'+col).before('<td title="'+title+'" class="empty'+col+'" style="border-style: hidden solid hidden solid;"></td>');
+//header    $('.col'+col).before('<td title="'+title+'" class="empty'+col+' empty" style="border-style: hidden solid hidden solid;"><span class="column_no"></span></td>');
+//body    $('.col'+col).before('<td title="'+title+'" class="empty'+col+' empty" style="border-style: hidden solid hidden solid;"><span class="column_no"></span></td>');
+    $('.col'+col).before('<td title="'+title+'" class="empty'+col+' empty" style="width: 2px; border-style: hidden solid hidden solid;"><span class="column_no"></span></td>');
     $('.empty'+col).click( 
         function() { 
             $('.empty'+col).remove();

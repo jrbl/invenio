@@ -1,9 +1,35 @@
 /* Begin: editauthor.css: Stylesheet for AuthorSpecialMode */
+* {
+    box-sizing: border-box; /* CSS3 provisional */
+    -moz-box-sizing: border-box; /* mozilla / firefox */
+    -ms-box-sizing: border-box; /* IE */
+    border: none;
+    border-spacing: 0 0;
+    padding: 0 0 0 0;
+    margin: 0 0 0 0;
+}
+
 table#asm_uitable {
     table-layout: fixed;
     background-color: #22aa66;
-    /* width: 920px; /* FIXME: can this be done w/o px? */
-    width: 100%;
+    border: none;
+    border-spacing: 0 0;
+    padding: 0 0 0 0;
+    margin: 0 0 0 0;
+}
+
+td {
+    border: none;
+    border-spacing: 0 0;
+    padding: 0 0 0 0;
+    margin: 0 0 0 0;
+}
+
+th {
+    border: none;
+    border-spacing: 0 0;
+    padding: 0 0 0 0;
+    margin: 0 0 0 0;
 }
 
 /*.ui-dialog {
@@ -27,11 +53,17 @@ table#asm_uitable {
 
 .rownum {
     width: 40px;
+    min-width: 40px;
+    max-width: 40px;
+    overflow: hide;
     text-align: right;
 }
 
 .author_box {
     width: 120px;
+    min-width: 120px;
+    max-width: 120px;
+    overflow: hide;
     text-align: left;
 }
 
@@ -41,6 +73,9 @@ table#asm_uitable {
 
 .affil_box {
     width: 200px;
+    min-width: 200px;
+    max-width: 200px;
+    overflow: hide;
     text-align: left;
 }
 
@@ -50,13 +85,12 @@ table#asm_uitable {
 
 .column_content {
     text-align: center;
-    width: 50px;
+    width: 60px;
 }
 
 #TableContents {
     display: block;
     overflow: auto;
-    width: 100%;
     height: 400px; /* FIXME: can this be done w/o px? */
 }
 
@@ -70,8 +104,9 @@ table#asm_uitable {
 
 .column_label a {
     color: black;
-    font-weight: bold;
+    font-weight: normal;
     text-decoration: none;
+    font-size: small;
 }
 
 /* #ui-active-menuitem {
