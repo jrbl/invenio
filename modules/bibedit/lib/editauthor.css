@@ -60,11 +60,13 @@ th {
 }
 
 .author_box {
-    width: 120px;
+    width: 110px;
     min-width: 120px;
     max-width: 120px;
     overflow: hide;
     text-align: left;
+    margin-left: 5px;
+    margin-right: 5px;
 }
 
 .author_head {
@@ -86,6 +88,12 @@ th {
 .column_content {
     text-align: center;
     width: 60px;
+}
+
+.author_box_td {
+    border-right: 2px;
+    margin-right: 4px;
+    padding-left: 2px;
 }
 
 #TableContents {

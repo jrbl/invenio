@@ -376,7 +376,7 @@ function generateTableRow(row, auth_affils, institutions) {
     str += '\n<tr id="table_row_'+row+'" class="row row'+row+'" row="'+row+'"><td class="rownum">'+ (row+1) +'</td>';
         
     // author name
-    str += '<td><input type="text" class="author_box" id="author_'+row+'" name="autho'+row+'" value="'+auth_affils[0]+'"';
+    str += '<td class="author_box_td"><input type="text" class="author_box" id="author_'+row+'" name="autho'+row+'" value="'+auth_affils[0]+'"';
     if (row == 0) {
         str += ' title="100a: first author"';
     } else {
