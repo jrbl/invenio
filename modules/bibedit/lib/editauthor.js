@@ -217,6 +217,12 @@ function addKeyStrokes(shared_data) {
      * @param {Array} shared_data The global state object. */
     function moveByAuthor(direction, box) {
         var starting = box.parentNode.parentNode.getAttribute('row') * 1;
+        // If this is an author box the following lines don't matter.
+        // If it's an affil box, then these lines make it so hotkey
+        //    navigation away from a field makes it update the display.
+        $(box).autocomplete({ disabled: true }); 
+        $(box).change();
+        $(box).autocomplete({ disabled: false });
         if (direction == 'up') {
             if (starting == min_row) return;
             $('#author_'+(starting - 1)).focus();
@@ -233,6 +239,7 @@ function addKeyStrokes(shared_data) {
      * @param {Array} shared_data The global state object. */
     function moveByAffils(direction, box) {
         var starting = box.parentNode.parentNode.getAttribute('row') * 1;
+        $(box).change();
         if (direction == 'up') {
             if (starting == min_row) return;
             $('#affils_'+(starting - 1)).focus();
@@ -256,6 +263,9 @@ function addKeyStrokes(shared_data) {
 
 /**
  * Decorate entry fields with calls to jQuery's AutoComplete UI.
+ *
+ * FIXME: users have requested that each item between ; and ; autocomplete, not just the last on, see
+ *        also inputbox.getSelectionStart() and inputbox.getSelectionEnd(), http://javascript.nwbox.com/cursor_position/
  * 
  * @param {Array} shared_data
  */
@@ -291,7 +301,9 @@ function addAutocompletes(shared_data) {
                        },
                        focus: function(event, ui) {
                            // focus happens when we use the mouse (cf. select)
-                           return add_selection_to(ui.item.value, this);
+                           // because we send focus, input box blur handler is implicitly called
+                           add_selection_to(ui.item.value, this);
+                           return false;
                        },
                        search: function() {
                            // custom minLength that knows to only use last item after semicolon
@@ -303,10 +315,15 @@ function addAutocompletes(shared_data) {
                        select: function(event, ui) {
                            // select happens when we use the keyboard (cf. focus)
                            // we add extra semicolon so we can keep typing and autocompleting
-                           return add_selection_to(ui.item.value+'; ', this);
+                           // because we keyboard, focus stays in box, so we call blur handler explicitly
+                           add_selection_to(ui.item.value+'; ', this);
+                           var returnto = this.id;
+                           $(this).change();          // calls updateTable; DOM element 'this' ceases to exist
+                           $('#'+returnto).focus();   // so we get back to the value we want by id instead
+                           return false;
                        },
                        close: function(event, ui) {
-                           this.focus();
+                           $(this).focus();
                            return false;
                        },
                    });
@@ -535,7 +552,7 @@ function addAffilBoxHandlers_changeHandler(shared_data, row, value) {
           newRow[i] = shared_data['affiliations'][item-1];
       } else {                                                     // it is: a normal affiliation
           /* unseen, meaningful values get added as new columns 
-             FIXME: unseen meaningful values should fire an institution addition */
+             FIXME: unseen meaningful values should fire an institution addition RT Ticket */
           if ((jQuery.inArray(item, shared_data['affiliations']) == -1) && (item != '')) {
             shared_data['affiliations'].push(item);
           }
