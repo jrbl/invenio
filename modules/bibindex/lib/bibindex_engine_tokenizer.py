@@ -166,6 +166,7 @@ class BibIndexFuzzyNameTokenizer(BibIndexTokenizer):
                   'lastnames'      : [],
                   'nonlastnames'   : [],
                   'titles'         : []}
+        s = re.sub(r'\.\s*', r'. ', s)
         l = s.split(',')
         if len(l) < 2:
             # No commas means a simple name
