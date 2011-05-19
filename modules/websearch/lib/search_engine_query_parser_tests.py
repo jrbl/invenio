@@ -448,6 +448,24 @@ class TestSpiresToInvenioSyntaxConverter(unittest.TestCase):
         spires_search = 'find a ellis, john'
         self._compare_searches(invenio_search, spires_search)
 
+    def test_author_period_no_space(self):
+        """SPIRES search syntax - find a m.mangano"""
+        inv_search = 'author:"mangano, m*"'
+        spi_search = 'find a m.mangano'
+        self._compare_searches(inv_search, spi_search)
+
+    def test_author_space_no_period(self):
+        """SPIRES search syntax - find a m mangano"""
+        inv_search = 'author:"mangano, m*"'
+        spi_search = 'find a m mangano'
+        self._compare_searches(inv_search, spi_search)
+
+    def test_author_period_and_space(self):
+        """SPIRES search syntax - find a m. mangano"""
+        inv_search = 'author:"mangano, m*"'
+        spi_search = 'find a m. mangano'
+        self._compare_searches(inv_search, spi_search)
+
     def test_combine_multiple(self):
         """SPIRES search syntax - find a gattringer, c and k symmetry chiral and not title chiral"""
         inv_search = 'author:"gattringer, c*" keyword:chiral  keyword:symmetry -title:chiral'
