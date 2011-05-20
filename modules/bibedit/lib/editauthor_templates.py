@@ -10,9 +10,9 @@ class Template:
     def __init__(self):
         """Establish some variables we can use throughout"""
         self.javascript = [ # prerequisites for hotkeys, autocomplete
-                           #'jquery-1.4.4.js', 
+                           'jquery-1.4.4.js', 
                            # FIXME we should be using a locally cached version of jquery-1.4.4... shouldn't we?
-                           'http://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js',
+                           #'http://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js',
                            # FIXME we should be using locally cached version of jquery-ui libs... shouldn't we?
                            'https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.11/jquery-ui.min.js',
                            # FIXME we should be using locally cached version of jquery hotkeys... but this version!
@@ -39,7 +39,7 @@ class Template:
                            "the records to work with.", tagas='FIXME_index')
         return ostr
 
-    def record(self, record_id, author_list, affiliations, offset=0, per_page=50, title='', valid_affils = []):
+    def record(self, record_id, author_list, affiliations, offset=0, per_page=32, title='', valid_affils = []):
         """Template for individual record display/edit"""
         return """%(script_parts)s
 <script type="text/javascript">
@@ -57,7 +57,7 @@ class Template:
                 <td>
                 If you can read this message, then something went wrong during
                 document load.  The most likely explanation is that your site
-                hasn't installed the jQuery plugins.
+                hasn't installed the necessary jQuery plugins.
                 </td>
             </thead>
             <tbody id="TableContents">

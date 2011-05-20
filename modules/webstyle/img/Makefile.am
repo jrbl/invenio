@@ -249,8 +249,9 @@ img_DATA = add-small.png \
            wb-unsubscribe.png \
            white_field.gif \
            wsignout.gif \
-	   compare.png \
-           document-preview.png
+		   compare.png \
+           document-preview.png \
+		   ui-anim_basic_16x16.gif 
 
 tmpdir=$(localstatedir)/tmp
 

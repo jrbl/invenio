@@ -54,7 +54,7 @@ js_DATA = editauthor.js \
 
 cssdir=$(localstatedir)/www/img
 
-css_DATA = editauthor.css ui-anim_basic_16x16.gif
+css_DATA = editauthor.css 
 
 EXTRA_DIST = $(pylib_DATA) \
              $(js_DATA) \
