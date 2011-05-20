@@ -60,6 +60,8 @@ $(document).ready(
  * @param {Array} shared_data The dictionary of shared state
  */
 function updateTable(shared_data) {
+    shared_data['affiliations'] = shared_data['affiliations'].filter(function(x, dummy_idx, dummy_arr) { return x != ''; });
+    shared_data['affiliations'].sort();
 
     // generate table header & body
     $('#asm_uitable').width( (shared_data['affiliations'].length * 60) + 410 );
