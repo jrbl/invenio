@@ -2,7 +2,7 @@ import simplejson                 # FIXME: Remember to be defensive
 
 import invenio.webpage
 import invenio.template
-from invenio.config import CFG_SITE_URL
+from invenio.config import CFG_SITE_URL, CFG_SITE_RECORD
 from invenio.webinterface_handler import WebInterfaceDirectory, wash_urlargd
 
 import invenio.editauthor_engine as engine
@@ -143,7 +143,7 @@ class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
 #                                             debugPrint(form_data))
         ret_body = "The updated author list has been submitted to the job queue.  "
         ret_body += "Results are typically visible in five to ten minutes.  "
-        ret_body += "<a href='%s'>Click here to check.</a>" % (CFG_SITE_URL + '/record/' + form_data['recID'])
+        ret_body += "<a href='%s'>Click here to check.</a>" % (CFG_SITE_URL + '/' + CFG_SITE_RECORD + '/' + form_data['recID'])
         return invenio.webpage.page(title = ret_title,
                                     body = ret_body,
                                     req = request)

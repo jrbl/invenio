@@ -5,16 +5,20 @@
 // FIXME: take advantage of jQuery 1.4+; use focusOut instead of blur where it makes sense (etc)
 
 /** 
+ * This data structure is the heart of author special mode.  It is used as a 
+ * blackboard, as a display buffer, and to represent much of the state of the
+ * display
+ * 
  * NB: Initialization values for debug purposes only.
  */
 shared_data = {
   'authors':      [ [], ],        // set of all [author, affiliation1, affiliation2 ...]
   'affiliations': [],             // list of institutions present in this data
+  'affilcounts':  [],             // list of uses of institutions in affiliations list
   'paging':       {},             // dictionary for keeping track of pagination of large lists
-  'valid_affils': [],             // list of possible institutional affiliations // FIXME: Remove?
   'folded':       [],             // which columns are currently hidden
   'row_cut':      [],             // the row recently removed from the data set with 'cut'
-  'headline':     {},             // recid, paper title
+  'headline':     {},             // recid, paper title: used just once, at initialization
 };
 
 /** 
@@ -29,7 +33,7 @@ $(document).ready(
     data.paging.pages = Math.ceil(data.authors.length / data.paging.rows);
 
     // startup behaviors
-    $('<link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.11/themes/redmond/jquery-ui.css" />').appendTo("head");
+    $('<link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.11/themes/redmond/jquery-ui.css" />').appendTo("head"); // XXX
     $.ajax({ url: "/img/editauthor.css", success: function(results) {
         $("<style></style>").appendTo("head").html(results);
     }}); 
@@ -37,9 +41,7 @@ $(document).ready(
 
     // keep enter key from submitting the page form
     $(window).keydown(function(event){ if(event.keyCode == 13) { event.preventDefault(); return false; } });
-
-    // set popup title
-    $('#asm_form').attr('title', data.headline.recid + ': ' + data.headline.title);
+    $(window).resize(function(event) { calculate_box_sizes() });
 
     // add the pagination widget (only displays if it's needed)
     updatePaginationControls(data);
@@ -60,29 +62,19 @@ $(document).ready(
  * @param {Array} shared_data The dictionary of shared state
  */
 function updateTable(shared_data) {
+    // remove empty affiliation columns 
+    filter_affiliations(shared_data);
 
     // generate table header & body
-    $('#asm_uitable').width( (shared_data['affiliations'].length * 60) + 410 );
+    calculate_box_sizes(shared_data);
     $('#TableHeaders').html(  generateTableHeader(shared_data['affiliations']) );
-    $('#TableContents').html( generateTableBody(shared_data) );
+    generateTableBody('#TableContents', shared_data);
 
     // add column folding click handlers
     $('a.hide_link').click(       // FIXME: id selector faster?  does it matter?
         function() { 
             shared_data['folded'].push(this.name); 
             foldColumn(this.name, this.title.replace('hide', 'expand'));
-        });
-
-    // add text box handlers (table updates, keystrokes and autocompletes)
-    addTextBoxHandlers(shared_data);
-    addKeyStrokes(shared_data); 
-    addAutocompletes(shared_data);
-
-    // add checkbox handlers
-    $('input[type="checkbox"]').click( // FIXME: id selector faster?  does it matter?
-        function(event) { 
-            var lastBox = false;
-            checkBoxHandler_changeState(event, this, shared_data);
         });
 
     // fold the columns previously checked
@@ -92,6 +84,56 @@ function updateTable(shared_data) {
         }
     }
 
+    return false;
+}
+
+/** 
+ * Dynamically calculate a static CSS layout. Lets us have nice things like
+ * individually scrolling table portions which are hard to do with fully 
+ * dynamic layouts, but still have things resize nicely for different window
+ * sizes.  At least, theoretically.
+ */
+function calculate_box_sizes() {
+    var w_width = $(window).width();
+    var w_height = $(window).height();
+
+    var scrollbar_padding_w = 40;
+    var rownum_w = 40;
+    var auth_w = 120;
+    var affi_w = 200;
+    var column_w = 60;
+
+    $('.rownum').width(rownum_w);
+    $('.author_box').width(auth_w);
+    $('.affil_box').width(affi_w);
+    $('#asm_form').width(Math.floor(0.95 * w_width));
+    $('#asm_uitable').width( (shared_data['affiliations'].length * column_w) + (rownum_w + auth_w + affi_w + scrollbar_padding_w));
+    $('#TableContents').height(Math.floor(0.95 * w_height));
+}
+
+function addHandler_checkBoxesChangeState(tg, shared_data) {
+    $(tg).click( 
+        function(event) { 
+            var lastBox = false;
+            checkBoxHandler_changeState(event, this, shared_data);
+        });
+}
+
+/* FIXME: need abstract insertRow, deleteRow, interface */
+
+/**
+ * Filter and sort institutional affiliation columns
+ * 
+ * Set column text for completely unchecked columns to ''
+ * Then remove all instances of ''
+ * And finally reset our counters (NB: Requires generateTable* to run)
+ */
+function filter_affiliations(shared_data) {
+    for (var i = 0; i < shared_data.affilcounts.length; i++) { 
+        if (!shared_data.affilcounts[i]) { shared_data.affiliations[i] = ''; } }
+    shared_data['affiliations'] = shared_data['affiliations'].filter(function(x, dummy_idx, dummy_arr) { return x != ''; });
+    shared_data['affiliations'].sort();
+    shared_data['affilcounts'] = [];
     return false;
 }
 
@@ -126,6 +168,7 @@ function updatePaginationControls(shared_data) {
             return false;
     });
     $('#maxRowsBox').change(function() {
+            // TODO: instead of updateTable, calculate direction and magnitude of change and delet or insert rows
             shared_data.paging.rows = $('#maxRowsBox').val()*1;
             updateTable(shared_data);
             updatePaginationControls(shared_data);
@@ -169,7 +212,7 @@ function paginated_page_back(offset, rows, max_rows, shared_data) {
  *
  * @param {Array} shared_data Passed to children
  */
-function addKeyStrokes(shared_data) {
+function addHandler_keystrokesForInputBoxes(tg, shared_data) {
     var min_row = shared_data.paging.offset;
     var max_row = shared_data.paging.rows - 1;
     /** 
@@ -191,6 +234,7 @@ function addKeyStrokes(shared_data) {
         var row = box.parentNode.parentNode.getAttribute('row') * 1;
         copyRowAndUpdateTable(box, shared_data);
         shared_data['authors'].splice(row, 1);
+        // FIXME: use dom deletion by row instead
         updateTable(shared_data);
         if (row == shared_data['authors'].length) {
             target = '#' + target_id.slice(0, target_id.lastIndexOf('_')+1) + (row - 1);
@@ -208,6 +252,7 @@ function addKeyStrokes(shared_data) {
         var cut = shared_data['row_cut'];
         if (cut == null) return;
         shared_data['authors'].splice(row, 0, cut);
+        // FIXME: use dom insertion by row instead (and call pagination cutoff function)
         updateTable(shared_data);
         $('#'+target_id).focus();
     }
@@ -220,6 +265,7 @@ function addKeyStrokes(shared_data) {
         var target_id = box.getAttribute('id');
         var row = box.parentNode.parentNode.getAttribute('row') * 1 + 1;
         shared_data['authors'].splice(row, 0, ['**new author**']);
+        // FIXME: use dom insertion by row instead (and call pagination cutoff function)
         updateTable(shared_data);
         $('#'+target_id).focus();
     }
@@ -230,12 +276,13 @@ function addKeyStrokes(shared_data) {
      * @param {Array} shared_data The global state object. */
     function moveByAuthor(direction, box) {
         var starting = box.parentNode.parentNode.getAttribute('row') * 1;
-        // If this is an author box the following lines don't matter.
-        // If it's an affil box, then these lines make it so hotkey
-        //    navigation away from a field makes it update the display.
-        $(box).autocomplete({ disabled: true }); 
-        $(box).change();
-        $(box).autocomplete({ disabled: false });
+        $(box).blur();
+        if ($(box).hasClass('affil_box')) {
+            // these lines make it so hotkey navigation away from a field makes it update the display.
+            $(box).autocomplete({ disabled: true }); 
+            $(box).change();
+            $(box).autocomplete({ disabled: false });
+        }
         if (direction == 'up') {
             if (starting == min_row) return;
             $('#author_'+(starting - 1)).focus();
@@ -249,11 +296,16 @@ function addKeyStrokes(shared_data) {
      * Move to the next affiliations box.
      *
      * @param {String} direction 'up' or 'down'
-     * @param {Array} shared_data The global state object. */
+     * @param {Array} box The input element from which we're moving. */
     function moveByAffils(direction, box) {
         var starting = box.parentNode.parentNode.getAttribute('row') * 1;
         $(box).blur();  // removes classes added by having focus
-        $(box).change();
+        if ($(box).hasClass('affil_box')) {
+            // these lines make it so hotkey navigation away from a field makes it update the display.
+            $(box).autocomplete({ disabled: true }); 
+            $(box).change();
+            $(box).autocomplete({ disabled: false });
+        }
         if (direction == 'up') {
             if (starting == min_row) return;
             $('#affils_'+(starting - 1)).focus();
@@ -264,16 +316,21 @@ function addKeyStrokes(shared_data) {
         return;
     }
 
-    $('input').bind('keydown', 'alt+ctrl+x', function(event) {cutRowAndUpdateTable(this, shared_data); return false;} );
-    $('input').bind('keydown', 'alt+ctrl+c', function(event) {copyRowAndUpdateTable(this, shared_data); return false;} );
-    $('input').bind('keydown', 'alt+ctrl+v', function(event) {pasteBelowAndUpdateTable(this, shared_data); return false;} );
-    $('input').bind('keydown', 'alt+ctrl+i', function(event) {insertEmptyBelow(this, shared_data); return false;} );
-    $('.author_box').bind('keydown', 'alt+down',  function(event) {moveByAuthor('down', this); return false;});
-    $('.affil_box').bind( 'keydown', 'alt+down',  function(event) {moveByAffils('down', this); return false;});
-    $('.author_box').bind('keydown', 'alt+up',    function(event) {moveByAuthor('up',   this); return false;});
-    $('.affil_box').bind( 'keydown', 'alt+up',    function(event) {moveByAffils('up',   this); return false;});
-    $('.affil_box').bind( 'keydown', 'tab',       function(event) {moveByAuthor('down', this); return false;});
-    $('.author_box').bind('keydown', 'shift+tab', function(event) {moveByAffils('up', this); return false;});
+    $(tg).each(function (idx, element) {
+    $(element).bind('keydown', 'alt+ctrl+x', function(event) {cutRowAndUpdateTable(this, shared_data); return false;} );
+    $(element).bind('keydown', 'alt+ctrl+c', function(event) {copyRowAndUpdateTable(this, shared_data); return false;} );
+    $(element).bind('keydown', 'alt+ctrl+v', function(event) {pasteBelowAndUpdateTable(this, shared_data); return false;} );
+    $(element).bind('keydown', 'alt+ctrl+i', function(event) {insertEmptyBelow(this, shared_data); return false;} );
+    if ($(element).hasClass('author_box')) {
+        $(element).bind('keydown', 'alt+ctrl+down',  function(event) {moveByAuthor('down', this); return false;});
+        $(element).bind('keydown', 'alt+ctrl+up',    function(event) {moveByAuthor('up',   this); return false;});
+        $(element).bind('keydown', 'shift+tab', function(event) {moveByAffils('up', this); return false;});
+    } else if ($(element).hasClass('affil_box')) { 
+        $(element).bind( 'keydown', 'alt+ctrl+down',  function(event) {moveByAffils('down', this); return false;});
+        $(element).bind( 'keydown', 'alt+ctrl+up',    function(event) {moveByAffils('up',   this); return false;});
+        $(element).bind( 'keydown', 'tab',       function(event) {moveByAuthor('down', this); return false;});
+    }
+    });
 }
 
 /**
@@ -284,7 +341,7 @@ function addKeyStrokes(shared_data) {
  * 
  * @param {Array} shared_data
  */
-function addAutocompletes(shared_data) {
+function addHandler_autocompleteAffiliations(tg, shared_data) {
     function ultimate(s) {
         /* gets the last bit of text in semicolon-separated list */
         return jQuery.trim(s.slice(s.lastIndexOf(';')+1));
@@ -302,7 +359,7 @@ function addAutocompletes(shared_data) {
         return false;
     }
     /* FIXME: Use ID selector, not class selector ? */
-    $(".affil_box").bind( "keydown", function( event) {
+    $(tg).bind( "keydown", function( event) {
                         // don't navigate away from the field on tab when selecting an item
                         if ( event.keyCode === $.ui.keyCode.TAB && $(this).data("autocomplete").menu.active) {
                             event.preventDefault();
@@ -323,7 +380,7 @@ function addAutocompletes(shared_data) {
                        search: function() {
                            // custom minLength that knows to only use last item after semicolon
                            var term = ultimate(this.value);
-                           if (term.length < 3) {
+                           if (term.length < 4) {
                                return false;
                            }
                        },
@@ -375,7 +432,7 @@ function generateTableHeader(inst_list) {
 /**
  * Dynamically create the table cells necessary to hold up to shared_data.paging.rows of data
  */
-function generateTableBody(shared_data) {
+function generateTableBody(tg, shared_data) {
     var offset = shared_data['paging'].offset*1;       // caution: numbering starts at 0
     var maxrows = shared_data['paging'].rows*1;
     var authors = shared_data['authors'];
@@ -386,11 +443,20 @@ function generateTableBody(shared_data) {
         stop_at = authors.length;
     }
 
-    var computed_body = '';
+    $(tg).html('');
     for (var row = offset; row < stop_at; row++) {
-        computed_body += generateTableRow(row, authors[row], shared_data['affiliations']);
+        var computed_body = '\n<tr id="table_row_'+row+'" class="row row'+row+'" row="'+row+'">';
+        computed_body += generateRowContents(row, authors[row], shared_data['affiliations']);
+        computed_body += '</tr>\n';
+        $(tg).append(computed_body);
+        var rowselector = '.row'+row;
+        addHandler_currentRowHilight(rowselector + ' input[type="text"]');
+        addHandler_scrubAndSynchToAuthors(rowselector + ' .author_box', shared_data);
+        addHandler_semicolonSepBoxToAffiliations(rowselector + ' .affil_box', shared_data);
+        addHandler_keystrokesForInputBoxes(rowselector + ' input[type="text"]', shared_data);
+        addHandler_autocompleteAffiliations(rowselector + ' .affil_box', shared_data); 
+        addHandler_checkBoxesChangeState(rowselector + ' input[type=checkbox]', shared_data);
     }
-    return computed_body;
 }
 
 /**
@@ -401,11 +467,11 @@ function generateTableBody(shared_data) {
  * @param {Array} institutions The list of represented affiliations
  * @return {String} The HTML to be emitted to the browser
  */
-function generateTableRow(row, auth_affils, institutions) {
+function generateRowContents(row, auth_affils, institutions) {
 
     var str = '';
     // preamble
-    str += '\n<tr id="table_row_'+row+'" class="row row'+row+'" row="'+row+'"><td class="rownum"><span class="rownuminner">'+ (row+1) +'</span></td>';
+    str += '<td class="rownum"><span class="rownuminner">'+ (row+1) +'</span></td>';
         
     // author name
     str += '<td class="author_box_td"><input type="text" class="author_box" id="author_'+row+'" name="autho'+row+'" value="'+auth_affils[0]+'"';
@@ -435,11 +501,15 @@ function generateTableRow(row, auth_affils, institutions) {
         for (var place = 1; place < auth_affils.length; place++) {
             if (auth_affils[place] == inst_name) {
                 str += ' checked';
+                if (!shared_data['affilcounts'][col]) {
+                    shared_data['affilcounts'][col] = 1;
+                } else {
+                    shared_data['affilcounts'][col] += 1;
+                }
             }
         }
         str += ' /></td>';
     }
-    str += '</tr>\n';
     
     return str;
 }
@@ -484,21 +554,23 @@ function checkBoxHandler_changeState(event, thisBox, shared_data) {
         var auth_affils = shared_data['authors'][row];
         var affils_idx = $.inArray(institution, cdr(auth_affils)) + 1;
         box.checked = state
-        if (box.checked) {
-          // we want it
-          if (! affils_idx) {
-              // if it's not here, add it
-              auth_affils.push(institution);
-              $('#affils_'+row).val(filter_ArrayToSemicolonString(cdr(auth_affils)));
-          } 
-        } else {
-          // we don't want it
-          if (affils_idx) {
-              // it's here, though, so remove it
-              auth_affils.splice(affils_idx, 1);
-              $('#affils_'+row).val(filter_ArrayToSemicolonString(cdr(auth_affils)));
-          } 
-        }
+            if (box.checked) {
+                // we want it
+                if (! affils_idx) {
+                    // if it's not here, add it
+                    auth_affils.push(institution);
+                    $('#affils_'+row).val(filter_ArrayToSemicolonString(cdr(auth_affils)));
+                    shared_data['affilcounts'][col] += 1;
+                } 
+            } else {
+                // we don't want it
+                if (affils_idx) {
+                    // it's here, though, so remove it
+                    auth_affils.splice(affils_idx, 1);
+                    $('#affils_'+row).val(filter_ArrayToSemicolonString(cdr(auth_affils)));
+                    shared_data['affilcounts'][col] -= 1;
+                } 
+            }
     }
 
     // FIXME: when iterating to do a shiftClick, skip folded columns
@@ -518,67 +590,89 @@ function checkBoxHandler_changeState(event, thisBox, shared_data) {
                 set_box(box, lastBox.checked);
             });
         }
-
         lastBox = false;
     }
     else {                             // unshifted (ie, normal) click
         lastBox = thisBox;
         set_box(thisBox, thisBox.checked);
     }
-
+    // if checkboxing has made any affiliation count go to zero, redraw 
+    if (jQuery.inArray(0, shared_data['affilcounts']) > -1) updateTable(shared_data); 
 }
 
 /**
- * Adds blur handlers to text input boxes so checkbox state gets toggled correctly
- *
- * @param {Object} shared_data The global state object which the handlers mutate
+ * add a class on focus, remove it on blur
  */
-function addTextBoxHandlers(shared_data) {
-    var size = shared_data.authors.length;
-    function inner(ii) {
-        $('#author_'+ii).change( function() { addAuthBoxHandlers_changeHandler(shared_data, ii, this.value) } );
-        $('#affils_'+ii).change( function() { addAffilBoxHandlers_changeHandler(shared_data, ii, this.value) } );
-    };
-    for (var i = 0; i < size; i++) {
-        inner(i);
-    };
+function addHandler_currentRowHilight(tg) {
     // make every text entry box hilight its row
-    $('input[type="text"]').focus(function() { $(this.parentNode.parentNode).addClass('current_row') });
-    $('input[type="text"]').blur(function() { $(this.parentNode.parentNode).removeClass('current_row') });
+    $(tg).focus(function() { $(this.parentNode.parentNode).addClass('current_row') });
+    $(tg).blur(function() { $(this.parentNode.parentNode).removeClass('current_row') });
 }
 
 /**
  * Scrub user input in the author box, then sync it to shared_data and redraw.
  */
-function addAuthBoxHandlers_changeHandler(shared_data, row, value) {
-  shared_data['authors'][row][0] = filter_escapeHTML(value);
+function addHandler_scrubAndSynchToAuthors(tg, shared_data) {
+    $(tg).change(function() { 
+        var row = this.parentNode.parentNode.getAttribute('row') * 1;
+        shared_data['authors'][row][0] = filter_escapeHTML(this.value);
+    });
 }
 
 /**
  * Sync the affiliations box to shared_data, then sync shared_data to the checkboxes
  */
-function addAffilBoxHandlers_changeHandler(shared_data, row, value) {
-  var myname = shared_data['authors'][row][0];
-  var newRow = filter_SemicolonStringToArray(value);
-  for (var i = 0; i < newRow.length; i++) {
-      var item = newRow[i];
-      var item_as_colno = parseInt(item);
-      if ((item_as_colno == item-0) &&                             // it is:  small int w/ no junk chars
-          (item_as_colno > 0) &&                                   // it has: value 1 or more
-          (item_as_colno <= shared_data['affiliations'].length)) { // it has: value <= max + 1
-          /* column number given */
-          newRow[i] = shared_data['affiliations'][item-1];
-      } else {                                                     // it is: a normal affiliation
-          /* unseen, meaningful values get added as new columns 
-             FIXME: unseen meaningful values should fire an institution addition RT Ticket */
-          if ((jQuery.inArray(item, shared_data['affiliations']) == -1) && (item != '')) {
-            shared_data['affiliations'].push(item);
+function addHandler_semicolonSepBoxToAffiliations(tg, shared_data) {
+  $(tg).change(function() {
+      var row = this.parentNode.parentNode.getAttribute('row') * 1;
+      var oldRow = shared_data.authors[row];
+      var newRow = filter_SemicolonStringToArray(this.value);
+      var myname = oldRow[0];
+      var addColumn = false;
+      // filter newRow: check for integers to substitute or new affiliations to add on
+      for (var i = 0; i < newRow.length; i++) {
+          var item = newRow[i];
+          var item_as_colno = parseInt(item);
+          if ((item_as_colno == item-0) &&                             // it is:  small int w/ no junk chars
+              (item_as_colno > 0) &&                                   // it has: value 1 or more
+              (item_as_colno <= shared_data['affiliations'].length)) { // it has: value <= max + 1
+              /* column number given */
+              newRow[i] = shared_data['affiliations'][item-1];
+              shared_data['affilcounts'][item-1] += 1; 
+          } else {                                                     // it is: an affiliation name
+              /* unseen, meaningful values get added as new columns 
+                 FIXME: unseen meaningful values should fire an institution addition RT Ticket */
+              if ((jQuery.inArray(item, shared_data['affiliations']) == -1) && (item != '')) {
+                shared_data['affiliations'].push(item);
+                shared_data['affilcounts'].push(1);
+                addColumn = true;
+              }
           }
       }
-  }
-  newRow.unshift(myname);
-  shared_data['authors'][row] = newRow;
-  updateTable(shared_data);
+      newRow.unshift(myname);
+      shared_data['authors'][row] = newRow;
+      if (addColumn) { 
+          updateTable(shared_data); // XXX: we should be able to add columns directly
+      } else { 
+          // XXX: package these together and make them part of row generation
+          var rowselector = '.row'+row;
+          var lastrowselector = '.row'+(row -1);
+          // subtract off the old row's affiliation counts, since we are about to make a new one
+          for (var i = 0; i < shared_data.affiliations.length; i++) {
+              if (oldRow.indexOf(shared_data.affiliations[i]) != -1) shared_data.affilcounts[i]--;
+              if (shared_data.affilcounts[i] == 0) addColumn = true;
+          }
+          if (addColumn) return updateTable(shared_data);
+          $('tr[row='+row+']').html(generateRowContents(row, shared_data.authors[row], shared_data['affiliations']));
+          addHandler_currentRowHilight(rowselector + ' input[type="text"]');
+          addHandler_scrubAndSynchToAuthors(rowselector + ' .author_box', shared_data);
+          addHandler_semicolonSepBoxToAffiliations(rowselector + ' .affil_box', shared_data);
+          addHandler_keystrokesForInputBoxes(rowselector + ' input[type="text"]', shared_data);
+          addHandler_autocompleteAffiliations(rowselector + ' .affil_box', shared_data);
+          addHandler_checkBoxesChangeState(rowselector + ' input[type=checkbox]', shared_data);
+      }
+    });
+    return false;
 }
 
 /** 
