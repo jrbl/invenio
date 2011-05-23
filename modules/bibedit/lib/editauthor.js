@@ -5,6 +5,10 @@
 // FIXME: take advantage of jQuery 1.4+; use focusOut instead of blur where it makes sense (etc)
 
 /** 
+ * This data structure is the heart of author special mode.  It is used as a 
+ * blackboard, as a display buffer, and to represent much of the state of the
+ * display
+ * 
  * NB: Initialization values for debug purposes only.
  */
 shared_data = {
@@ -15,6 +19,38 @@ shared_data = {
   'folded':       [],             // which columns are currently hidden
   'row_cut':      [],             // the row recently removed from the data set with 'cut'
   'headline':     {},             // recid, paper title
+  'deepcopy':     function() {
+      /* deepcopy: Return a deep copy of shared_data rather than a reference. 
+       */
+      d = {};
+      d.authors = [ ];
+      for (var i = 0; i < this.authors.length; i++) {
+          d.authors.push([]);
+          for (var j = 0; j < this.authors[i].length; j++) {
+              d.authors[i].push(this.authors[i][j]);
+          }
+      }
+      d.affiliations = [];
+      for (var i = 0; i < this.affiliations.length; i++) {
+          d.affiliations.push(this.affiliations[i]);
+      }
+      d.paging = {};
+      d.paging.offset = this.paging.offset;
+      d.paging.rows   = this.paging.rows;
+      d.paging.pages  = this.paging.pages;
+      d.folded = [];
+      for (var i = 0; i < this.folded.length; i++) {
+          d.folded.push(this.folded[i]);
+      }
+      d.row_cut = [];
+      for (var i = 0; i < this.row_cut.length; i++) {
+          d.row_cut.push(this.row_cut[i]);
+      }
+      d.deepcopy     = this.deepcopy;
+      // this.headline uncopied; only needed during initial page setup.
+      return d;
+  },
+  'undoQueue': [],
 };
 
 /** 
@@ -29,7 +65,7 @@ $(document).ready(
     data.paging.pages = Math.ceil(data.authors.length / data.paging.rows);
 
     // startup behaviors
-    $('<link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.11/themes/redmond/jquery-ui.css" />').appendTo("head");
+    $('<link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.11/themes/redmond/jquery-ui.css" />').appendTo("head"); // XXX
     $.ajax({ url: "/img/editauthor.css", success: function(results) {
         $("<style></style>").appendTo("head").html(results);
     }}); 
@@ -37,9 +73,6 @@ $(document).ready(
 
     // keep enter key from submitting the page form
     $(window).keydown(function(event){ if(event.keyCode == 13) { event.preventDefault(); return false; } });
-
-    // set popup title
-    $('#asm_form').attr('title', data.headline.recid + ': ' + data.headline.title);
 
     // add the pagination widget (only displays if it's needed)
     updatePaginationControls(data);
@@ -60,6 +93,8 @@ $(document).ready(
  * @param {Array} shared_data The dictionary of shared state
  */
 function updateTable(shared_data) {
+    //var undo_shared_data = shared_data.deepcopy(); // XXX: too slow? Does it matter next to the DOM size?
+
     shared_data['affiliations'] = shared_data['affiliations'].filter(function(x, dummy_idx, dummy_arr) { return x != ''; });
     shared_data['affiliations'].sort();
 
@@ -251,7 +286,7 @@ function addKeyStrokes(shared_data) {
      * Move to the next affiliations box.
      *
      * @param {String} direction 'up' or 'down'
-     * @param {Array} shared_data The global state object. */
+     * @param {Array} box The input element from which we're moving. */
     function moveByAffils(direction, box) {
         var starting = box.parentNode.parentNode.getAttribute('row') * 1;
         $(box).blur();  // removes classes added by having focus
