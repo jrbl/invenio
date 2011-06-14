@@ -333,58 +333,34 @@ def get_kbd_values(kbname, searchwith=""):
     @param kbname:     name of the knowledge base
     @param searchwith: a term to search with
     """
-    import search_engine
 
-    #first check that the kb in question is dynamic
+    from invenio import search_engine  # if elsewhere, causes circular import
+    reclist = [] # default return object
     kbid = bibknowledge_dblayer.get_kb_id(kbname)
     if not kbid:
-        return []
-    kbtype = bibknowledge_dblayer.get_kb_type(kbid)
-    if not kbtype:
-        return []
-    if kbtype != 'd':
-        return []
-    #get the configuration so that we see what the field is
+        raise ValueError, "get_kbd_values got kbid %s, but no kb of that id found" % kbid
+    if bibknowledge_dblayer.get_kb_type(kbid)!= 'd':
+        raise TypeError, "get_kbd_values called on non-dynamic KB"
     confdict =  bibknowledge_dblayer.get_kb_dyn_config(kbid)
     if not confdict:
-        return []
+        raise TypeError, "get_kbd_values: %s not configured" % kbname
     if not confdict.has_key('field'):
-        return []
+        raise ValueError, "get_kbd_values: %s improperly configured" % kbname
     field = confdict['field']
     expression = confdict['expression']
-    collection = ""
-    if confdict.has_key('collection'):
-        collection = confdict['collection']
-    reclist = [] #return this
+    collection = confdict.get('collection', '');
     if searchwith and expression:
         if (expression.count('%') > 0):
             expression = expression.replace("%", searchwith)
-            reclist = search_engine.perform_request_search(p=expression,
-                                                           cc=collection)
         else:
-            #no %.. just make a combination
             expression = expression + " and "+searchwith
-            reclist = search_engine.perform_request_search(p=expression,
-                                                       cc=collection)
-    else: #either no expr or no searchwith.. but never mind about searchwith
-        if expression: #in this case: only expression
+        reclist = search_engine.perform_request_search(p=expression, cc=collection)
+    else: 
+        if expression: # expression, no searchwith
             reclist = search_engine.perform_request_search(p=expression, cc=collection)
-        else:
-            #make a fake expression so that only records that have this field
-            #will be returned
-            fake_exp = "/.*/"
-            if searchwith:
-                fake_exp = searchwith
-            reclist = search_engine.perform_request_search(f=field, p=fake_exp, cc=collection)
-    if reclist:
-        fieldvaluelist = search_engine.get_most_popular_field_values(reclist,
-                                                                     field)
-        val_list = []
-        for f in fieldvaluelist:
-            (val, dummy) = f
-            val_list.append(val)
-        return val_list
-    return [] #in case nothing worked
+        else:          # searchwith, no expression
+            reclist = search_engine.perform_request_search(f=field, p=searchwith, cc=collection)
+    return [x[0] for x in search_engine.get_most_popular_field_values(reclist, field)]
 
 
 def get_kbd_values_json(kbname, searchwith=""):

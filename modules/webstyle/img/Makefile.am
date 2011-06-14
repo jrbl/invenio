@@ -18,6 +18,7 @@
 imgdir=$(localstatedir)/www/img
 
 img_DATA = add-small.png \
+           add-small-spacer.png \
            add.png \
            answer_bad.gif \
            arrow_down.gif \

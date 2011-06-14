@@ -33,7 +33,7 @@ class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
         f = wash_urlargd(form, {
                 'recID':   (int, -1),
                 'offset':  (int, 0),
-                'perPage': (int, 100),
+                'perPage': (int, 30),
                 })
 
         if f['recID'] != -1:
