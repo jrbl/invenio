@@ -14,9 +14,13 @@ class Template:
                            # FIXME we should be using a locally cached version of jquery-1.4.4... shouldn't we?
                            #'http://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js',
                            # FIXME we should be using locally cached version of jquery-ui libs... shouldn't we?
-                           'https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.11/jquery-ui.min.js',
+                           #'https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.11/jquery-ui.min.js',
+                           # we include this in the Makefile.am at root, but maybe that wasn't a good idea?
+                           'jquery-ui.min.js', 
                            # FIXME we should be using locally cached version of jquery hotkeys... but this version!
-                           'https://github.com/jeresig/jquery.hotkeys/raw/master/jquery.hotkeys.js',
+                           #'https://github.com/jeresig/jquery.hotkeys/raw/master/jquery.hotkeys.js',
+                           # we include this in the root Makefile.am too, but it's also not clear if it's a good idea
+                           'jquery.hotkeys.js',
                            'editauthor.js'
                           ]
 
@@ -39,7 +43,7 @@ class Template:
                            "the records to work with.", tagas='FIXME_index')
         return ostr
 
-    def record(self, record_id, author_list, affiliations, offset=0, per_page=32, title='', valid_affils = []):
+    def record(self, record_id, author_list, affiliations, offset=0, per_page=30, title='', valid_affils = []):
         """Template for individual record display/edit"""
         return """%(script_parts)s
 <script type="text/javascript">
@@ -52,14 +56,8 @@ class Template:
 <div id="asm_form" title="Please wait while loading...">
     <form method="post" action="%(site_URL)s/editauthors/process">
         <div id="paging_navigation" style="display: none;"></div>
+        <div id="NonTableHeaders"></div>
         <table id="asm_uitable" bgcolor="#ff2200">     <!-- Red means a javascript parse error -->
-            <thead id="TableHeaders">
-                <td>
-                If you can read this message, then something went wrong during
-                document load.  The most likely explanation is that your site
-                hasn't installed the necessary jQuery plugins.
-                </td>
-            </thead>
             <tbody id="TableContents">
             </tbody>
         </table>

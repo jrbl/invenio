@@ -158,6 +158,7 @@ install-jquery-plugins: install-jquery-plugins
 	wget http://jquery-ui.googlecode.com/svn/tags/1.8.10/ui/minified/jquery.ui.resizable.min.js && \
 	wget http://jquery-ui.googlecode.com/svn/tags/1.8.10/ui/minified/jquery.ui.core.min.js && \
 	wget http://jquery-ui.googlecode.com/svn/tags/1.8.10/ui/minified/jquery.ui.autocomplete.min.js && \
+	wget http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.11/jquery-ui.min.js && \
 	wget http://www.appelsiini.net/download/jquery.jeditable.mini.js && \
 	wget http://github.com/malsup/form/raw/master/jquery.form.js --no-check-certificate && \
 	wget http://jquery-multifile-plugin.googlecode.com/svn/trunk/jquery.MultiFile.pack.js && \
@@ -181,6 +182,7 @@ install-jquery-plugins: install-jquery-plugins
 	unzip jquery.autogrow-1.2.2.zip jquery.autogrow.js && \
 	rm jquery.autogrow-1.2.2.zip && \
 	wget --no-check-certificate https://github.com/douglascrockford/JSON-js/raw/master/json2.js && \
+	wget --no-check-certificate https://github.com/jeresig/jquery.hotkeys/raw/master/jquery.hotkeys.js && \
 	wget http://jquery-ui.googlecode.com/svn/tags/1.7.3/ui/minified/ui.datepicker.min.js && \
 	wget -O jquery.hotkeys.min.js http://js-hotkeys.googlecode.com/files/jquery.hotkeys-0.7.8-packed.js && \
 	wget http://plugins.jquery.com/files/jquery.treeview_3.zip && \
