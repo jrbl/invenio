@@ -28,6 +28,7 @@ __revision__ = "$Id$"
 
 from invenio.config import CFG_INSPIRE_SITE
 from invenio.bibrank_citation_searcher import get_cited_by_list
+from invenio.listutils import get_mode, get_median, get_mean
 import search_engine
 import invenio.template
 websearch_templates = invenio.template.load('websearch')
@@ -83,19 +84,34 @@ def summarize_records(recids, of, ln, searchpattern="", searchfield="", req=None
         d_recid_citers = {}
         d_total_cites = {}
         d_avg_cites = {}
+        d_median_cites = {}
+        d_mode_cites = {}
         d_recid_citecount_l = {}
         for coll, colldef in CFG_CITESUMMARY_COLLECTIONS:
             d_total_cites[coll] = 0
             d_avg_cites[coll] = 0
+            d_median_cites[coll] = 0
+            d_mode_cites[coll] = 0
             d_recid_citecount_l[coll] = []
             d_recid_citers[coll] =  get_cited_by_list(d_recids[coll])
+            citation_count_list = []
             for recid, lciters in d_recid_citers[coll]:
                 if lciters:
+                    citation_count_list.append(len(lciters))
                     d_total_cites[coll] += len(lciters)
                     d_recid_citecount_l[coll].append((recid, len(lciters)))
+                else:
+                    citation_count_list.append(0)
             if d_total_cites[coll] != 0:
-                d_avg_cites[coll] = d_total_cites[coll] * 1.0 / d_total_recs[coll]
-        overview = websearch_templates.tmpl_citesummary_overview(d_total_cites, d_avg_cites, CFG_CITESUMMARY_COLLECTIONS, ln)
+                d_avg_cites[coll] = get_mean(citation_count_list)
+                d_median_cites[coll] = get_median(citation_count_list)
+                d_mode_cites[coll] = get_mode(citation_count_list)
+        overview = websearch_templates.tmpl_citesummary_overview(d_total_cites,
+                                                                 d_avg_cites,
+                                                                 d_median_cites,
+                                                                 d_mode_cites,
+                                                                 CFG_CITESUMMARY_COLLECTIONS,
+                                                                 ln)
 
         if not req:
             html.append(overview)

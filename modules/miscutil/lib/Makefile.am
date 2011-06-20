@@ -47,6 +47,8 @@ pylib_DATA = __init__.py \
              w3c_validator.py \
              intbitset_tests.py \
              inveniocfg.py \
+             listutils.py \
+             listutils_tests.py \
              shellutils.py \
              shellutils_tests.py \
              pluginutils.py \

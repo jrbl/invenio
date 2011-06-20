@@ -4403,13 +4403,12 @@ class Template:
                 link_url += quote(p)
             if colldef:
                 link_url += '%20AND%20' + quote(colldef)
-            link_url += '&amp;rm=citation';
             link_text = self.tmpl_nice_number(d_total_recs[coll], ln)
             out += '<td align="right"><a href="%s">%s</a></td>' % (link_url, link_text)
         out += '</tr>'
         return out
 
-    def tmpl_citesummary_overview(self, d_total_cites, d_avg_cites, l_colls, ln=CFG_SITE_LANG):
+    def tmpl_citesummary_overview(self, d_total_cites, d_avg_cites, d_median_cites, d_mode_cites, l_colls, ln=CFG_SITE_LANG):
         """HTML citesummary format, overview. A part of HCS format suite."""
         _ = gettext_set_language(ln)
         out = """<tr><td><strong>%(msg_cites)s</strong></td>""" % \
@@ -4421,6 +4420,16 @@ class Template:
                {'msg_avgcit': _("Average citations per paper:"), }
         for coll, colldef in l_colls:
             out += '<td align="right">%.1f</td>' % d_avg_cites[coll]
+        out += '</tr>'
+        out += """<tr><td><strong>%(msg_avgcit)s</strong></td>""" % \
+               {'msg_avgcit': _("Median citations per paper:"), }
+        for coll, colldef in l_colls:
+            out += '<td align="right">%d</td>' % d_median_cites[coll]
+        out += '</tr>'
+        out += """<tr><td><strong>%(msg_avgcit)s</strong></td>""" % \
+               {'msg_avgcit': _("Mode of citations per paper:"), }
+        for coll, colldef in l_colls:
+            out += '<td align="right">%d</td>' % d_mode_cites[coll]
         out += '</tr>'
         out += """<tr><td><strong>%(msg_breakdown)s</strong></td></tr>""" % \
                {'msg_breakdown': _("Breakdown of papers by citations:"), }
@@ -4447,7 +4456,6 @@ class Template:
                 link_url += quote('cited:0')
             else:
                 link_url += quote('cited:%i->%i' % (low, high))
-            link_url += '&amp;rm=citation';
             link_text = self.tmpl_nice_number(d_cites[coll], ln)
             out += '<td align="right"><a href="%s">%s</a></td>' % (link_url, link_text)
         out += '</tr>'
