@@ -560,7 +560,7 @@ function initStateFromHash(){
     case 'deleteRecord':
       cleanUp(true, '', null, true);
       $('.headline').text('Record Editor: Record #' + tmpRecID);
-      displayMessage(6);
+      displayMessage(10);
       updateStatus('ready');
         break;
     }

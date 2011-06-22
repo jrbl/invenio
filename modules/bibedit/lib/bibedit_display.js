@@ -789,7 +789,7 @@ function displayMessage(msgCode, keepContent, args){
       msg = 'Your modifications have now been submitted. ' +
   'They will be processed as soon as the task queue is empty.';
       break;
-    case 6:
+    case 10:
       msg = 'The record will be deleted as soon as the task queue is empty.';
       break;
     case 101:
