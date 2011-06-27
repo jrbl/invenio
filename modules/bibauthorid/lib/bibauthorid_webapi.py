@@ -98,7 +98,7 @@ def get_person_id_from_canonical_id(canonical_id):
     @rtype: int
     '''
     if not canonical_id or not isinstance(canonical_id, str):
-        return - 1
+        return -1
 
     pid = -1
 
@@ -183,7 +183,7 @@ def get_person_id_from_paper(bibref=None):
     @rtype: int
     '''
     if not is_valid_bibref(bibref):
-        return - 1
+        return -1
 
     person_id = -1
     db_data = tu.get_papers_status([(bibref,)])
@@ -365,8 +365,11 @@ def get_most_frequent_name_from_pid(person_id= -1):
     @return: returns the most frequent normalized name of a person
     @rtype: string
     '''
-    if (not person_id > -1) or (not isinstance(person_id, int)):
+    pid = wash_integer_id(person_id)
+
+    if (not pid > -1) or (not isinstance(pid, int)):
         return "'%s' doesn't look like a person ID!" % person_id
+    person_id = pid
 
     mf_name = ""
 
@@ -721,13 +724,13 @@ def log(userinfo, personid, action, tag, value, comment='', transactionid=0):
         try:
             personid = int(personid)
         except (ValueError, TypeError):
-            return - 1
+            return -1
 
     if not isinstance(transactionid, int):
         try:
             transactionid = int(transactionid)
         except (ValueError, TypeError):
-            return - 1
+            return -1
 
     return tu.insert_user_log(userinfo, personid, action, tag,
                        value, comment, transactionid)
@@ -927,6 +930,7 @@ def arxiv_login(req):
         return curren_pid[0][0]
 
     uinfo = collect_user_info(req)
+    uinfo['external_first_entry'] = True
 
     arxiv_p_ids = []
     name = ''
@@ -1244,6 +1248,48 @@ def create_request_ticket(userinfo, ticket):
         send_email(sender,
                    CFG_BIBAUTHORID_AUTHOR_TICKET_ADMIN_EMAIL,
                    subject="[Author] Change Request",
+                   content="\n".join(mailcontent))
+
+    return True
+
+def send_user_commit_notification_email(userinfo, ticket):
+    '''
+    Sends commit notification email to RT system
+    '''
+    # send eMail to RT
+    udata = []
+    mailcontent = []
+    m = mailcontent.append
+    m("A user committed a change through the web interface.")
+    m("User Information:")
+
+    for k, v in userinfo.iteritems():
+        if v:
+            m("    %s: %s" % (k, v))
+
+    m("\nChanges:\n")
+
+    for t in ticket:
+        m(" --- <start> --- \n")
+        for k, v in t.iteritems():
+            m("    %s: %s \n" % (str(k), str(v)))
+            if k == 'bibref':
+                try:
+                    br = int(v.split(',')[1])
+                    m("        Title: %s\n" % search_engine.get_fieldvalues(br, "245__a"))
+                except (TypeError, ValueError, IndexError):
+                    pass
+        m(" --- <end> --- \n")
+
+    if ticket and mailcontent:
+        sender = CFG_BIBAUTHORID_AUTHOR_TICKET_ADMIN_EMAIL
+
+        if bconfig.TICKET_SENDING_FROM_USER_EMAIL and userinfo['email']:
+            sender = userinfo['email']
+
+        send_email(sender,
+                   CFG_BIBAUTHORID_AUTHOR_TICKET_ADMIN_EMAIL,
+                   subject="[Author] Changes performed. NO ACTION NEEDED.",
                    content="\n".join(mailcontent))
 
     return True
