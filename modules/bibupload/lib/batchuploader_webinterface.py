@@ -33,7 +33,7 @@ from invenio.webpage import page
 from invenio.batchuploader_engine import metadata_upload, cli_upload, \
      get_user_metadata_uploads, get_user_document_uploads, document_upload, \
      get_daemon_doc_files, get_daemon_meta_files, cli_allocate_record, \
-     user_authorization
+     user_authorization, perform_upload_check
 
 try:
     import invenio.template
@@ -46,7 +46,7 @@ class WebInterfaceBatchUploaderPages(WebInterfaceDirectory):
     """Defines the set of /batchuploader pages."""
 
     _exports = ['', 'metadata', 'robotupload', 'metasubmit', 'history',
-                'documents', 'docsubmit', 'daemon', 'allocaterecord']
+                'documents', 'docsubmit', 'daemon', 'allocaterecord', 'confirm']
 
     def index(self, req, form):
         """ The function called by default
@@ -168,7 +168,8 @@ class WebInterfaceBatchUploaderPages(WebInterfaceDirectory):
         """ Function called after submitting the metadata upload form.
             Checks if input fields are correct before uploading.
         """
-        argd = wash_urlargd(form, {'filetype': (str, None),
+        argd = wash_urlargd(form, {'metafile': (str, None),
+                                   'filetype': (str, None),
                                    'mode': (str, None),
                                    'submit_date': (str, None),
                                    'submit_time': (str, None),
@@ -177,6 +178,11 @@ class WebInterfaceBatchUploaderPages(WebInterfaceDirectory):
                                    'strong_tags': (str, None)})
         _ = gettext_set_language(argd['ln'])
 
+        # Check if the page is directly accessed
+        if argd['metafile']  == None:
+            redirect_to_url(req, "%s/batchuploader/metadata"
+            % (CFG_SITE_URL))
+        
         not_authorized = user_authorization(req, argd['ln'])
         if not_authorized:
             return not_authorized
@@ -219,6 +225,49 @@ class WebInterfaceBatchUploaderPages(WebInterfaceDirectory):
                         req = req,
                         language = argd['ln'],
                         navmenuid = "batchuploader")
+
+    def confirm(self, req, form):
+        """ Function called after submitting the metadata upload form.
+            Shows a summary of actions to be performed and possible errors
+        """
+        argd = wash_urlargd(form, {'metafile': (Field, None),
+                                   'filetype': (str, None),
+                                   'mode': (str, None),
+                                   'submit_date': (str, None),
+                                   'submit_time': (str, None),
+                                   'filename': (str, None),
+                                   'priority': (str, None)})
+        _ = gettext_set_language(argd['ln'])
+
+        # Check if the page is directly accessed or no file selected
+        if not argd['metafile'].value:
+            redirect_to_url(req, "%s/batchuploader/metadata"
+            % (CFG_SITE_URL))
+
+        date = argd['submit_date'] not in ['yyyy-mm-dd', ''] \
+                and argd['submit_date'] or ''
+        time = argd['submit_time'] not in ['hh:mm:ss', ''] \
+                and argd['submit_time'] or ''
+
+        errors_upload = perform_upload_check(argd['metafile'].value, argd['mode'])
+
+        body = batchuploader_templates.tmpl_display_confirm_page(argd['ln'],
+                argd['metafile'], argd['filetype'], argd['mode'], date,
+                time, argd['filename'], argd['priority'], errors_upload)
+
+        uid = getUid(req)
+        navtrail = '''<a class="navtrail" href="%s/batchuploader/metadata">%s</a>''' % \
+                    (CFG_SITE_URL, _("Metadata batch upload"))
+        title = 'Confirm your actions'
+        return page(title = title,
+                    body = body,
+                    metaheaderadd = batchuploader_templates.tmpl_styles(),
+                    uid = uid,
+                    navtrail = navtrail,
+                    lastupdated = __lastupdated__,
+                    req = req,
+                    language = argd['ln'],
+                    navmenuid = "batchuploader")
 
     def history(self, req, form):
         """Display upload history of the current user"""

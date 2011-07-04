@@ -44,6 +44,9 @@ from invenio.bibtask import task_low_level_submission
 from invenio.messages import gettext_set_language
 from invenio.textmarc2xmlmarc import transform_file
 from invenio.shellutils import run_shell_command
+from invenio.bibupload import xml_marc_to_records, bibupload
+
+import invenio.bibupload as bibupload_module
 
 
 try:
@@ -166,10 +169,8 @@ def metadata_upload(req, metafile=None, filetype=None, mode=None, exec_date=None
 
     error_codes = {'not_authorized': 1, 'invalid_marc': 2}
     # write temporary file:
-    if filetype == 'marcxml':
-        metafile = metafile.value
-    else:
-        metafile = _transform_input_to_marcxml(file_input=metafile.value)
+    if filetype != 'marcxml':
+        metafile = _transform_input_to_marcxml(file_input=metafile)
 
     user_info = collect_user_info(req)
     tempfile.tempdir = CFG_TMPSHAREDDIR
@@ -439,6 +440,31 @@ def user_authorization(req, ln):
                           (cgi.escape(user_info['nickname'])))
         return page_not_authorized(req=req, referer=referer,
                                    text=error_msg, navmenuid="batchuploader")
+
+def perform_upload_check(xml_record, mode):
+    """ Performs a upload simulation with the given record and mode
+    @return: string describing errors
+    @rtype: string
+    """
+    error_cache = []
+    def my_writer(msg, stream=sys.stdout, verbose=1):
+        if verbose == 1:
+            if 'DONE' not in msg:
+                error_cache.append(msg.strip())
+
+    recs = xml_marc_to_records(xml_record)
+    orig_writer = bibupload_module.write_message
+    bibupload_module.write_message = my_writer
+    try:
+        for record in recs:
+            if record:
+                bibupload(record, opt_mode=mode[2:], pretend=True)
+    finally:
+        bibupload_module.write_message = orig_writer
+
+
+    return '\n'.join(error_cache)
+
 
 def _get_client_ip(req):
     """Return client IP address from req object."""

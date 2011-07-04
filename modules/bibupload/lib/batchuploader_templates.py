@@ -22,10 +22,13 @@
 __revision__ = "$Id$"
 
 import cgi
+from invenio.bibrankadminlib import addadminbox
+from invenio.bibrankadminlib import tupletotable
+from invenio.config import CFG_SITE_LANG
+from invenio.config import CFG_SITE_URL
 from invenio.dbquery import run_sql
-from invenio.config import CFG_SITE_URL, CFG_SITE_LANG
 from invenio.messages import gettext_set_language
-from invenio.bibrankadminlib import addadminbox, tupletotable
+
 
 class Template:
     """Invenio Template class for creating Web Upload interface"""
@@ -46,13 +49,34 @@ class Template:
             font-size: 0.9em;
         }
 
+        .clean_ok{
+            border:solid 1px #349534;
+            background:#C9FFCA;
+            color:#008000;
+            font-size:14px;
+            font-weight:bold;
+            padding:4px;
+            text-align:center;
+            width: 650px;
+        }
+
+        .clean_error{
+            border:solid 1px #CC0000;
+            background:#F7CBCA;
+            color:#CC0000;
+            font-size:14px;
+            font-weight:bold;
+            padding:4px;
+            text-align:center;
+            width: 650px;
+        }
+
         #content {width:750px; font:90.1% arial, sans-serif;}
 
-        #uploadform {margin:0 0 1em 0}
+        .uploadform {margin:0 0 1em 0}
 
-
-        #uploadform div {margin:0.5em 0}
-        #uploadform fieldset {border:1px solid #657; padding:0.8em 1em; margin:2em 10px}
+        .uploadform div {margin:0.5em 0}
+        .uploadform fieldset {border:1px solid #657; padding:0.8em 1em; margin:2em 10px}
 
         #docuploadform {margin:0 0 1em 0}
 
@@ -89,6 +113,10 @@ class Template:
         fieldset label {
             float: left;
             width: 150px;
+        }
+
+        span.highlight {
+            background-color: #FFFF00;
         }
         </style>
 
@@ -132,7 +160,7 @@ class Template:
             });
         </script>
         """
-        body_content += """<form id="uploadform" method="post" action="%(site_url)s/batchuploader/metasubmit" enctype="multipart/form-data">""" \
+        body_content += """<form class="uploadform" method="post" action="%(site_url)s/batchuploader/confirm" enctype="multipart/form-data">""" \
                                        % {'site_url': CFG_SITE_URL}
         body_content += """
 <div id="content">
@@ -438,6 +466,71 @@ class Template:
                         {'x_fmt_open': '<span class="mandatory_field">', 'x_fmt_close': '</span>'}
                }
         return body_content
+
+    def tmpl_display_confirm_page(self, ln=CFG_SITE_LANG,
+                metafile=None, filetype=None, mode=None, submit_date=None,
+                submit_time=None, file_name=None, priority=None, errors_upload=''):
+        """ Display a confirmation page before uploading metadata
+        """
+        _ = gettext_set_language(ln)
+        
+        priority_map = {'1' : 'Normal', '2': 'High'}
+        display_schedule = (submit_date != '')
+        schedule_msg = """%(text_confirm6)s <span class="highlight">%(submit_date)s</span> at <span class="highlight">%(submit_time)s</span>
+                            <br/><br/>""" % {'text_confirm6': _('The job is scheduled to run on'),
+                                             'submit_date': submit_date,
+                                             'submit_time': submit_time}
+        errors_textarea = """%(text_error1)s <br />
+                             <textarea style="background-color:#F6CECE" rows="20" cols="80"> %(error_msgs)s </textarea>
+                             <br /><br />
+                          """ % {'text_error1': '<div class="clean_error">Some errors have been found during the upload simulation</div>',
+                                 'error_msgs': errors_upload}
+
+        body_content = """<form class="uploadform" method="post" action="%(site_url)s/batchuploader/metasubmit">""" \
+                                       % {'site_url': CFG_SITE_URL}
+        body_content += """
+                        <div id="content">
+                        <input type="hidden" name="filetype" value=%(filetype)s>
+                        <input type="hidden" name="mode" value=%(mode)s>
+                        <input type="hidden" name="submit_date" value=%(submit_date)s>
+                        <input type="hidden" name="submit_time" value=%(submit_time)s>
+                        <input type="hidden" name="filename" value=%(filename)s>
+                        <input type="hidden" name="priority" value=%(priority)s>
+                        <div> %(errors_textarea)s %(text_confirm1)s <span class="highlight">%(filetype)s</span> %(text_confirm2)s <span class="highlight">%(filename)s</span> %(text_confirm3)s: <br /><br />
+                            <textarea style="background-color: lightyellow" name="metafile" rows="20" cols="80">%(filecontent)s</textarea>
+                            <br /><br />
+                            %(text_confirm4)s <span class="highlight">%(priority)s</span> %(text_confirm5)s <span class="highlight">%(mode)s</span>.
+                            <br/><br/>
+                            %(schedule_msg)s
+                            %(text_confirm7)s (<span class="highlight">%(num_rec)s</span> %(text_confirm8)s)
+                            <table>
+                            <tr>
+                                <td><input type="submit" value="Confirm" class="adminbutton" %(confirm_disabled)s></td>
+                                <td><input type="button" value="Cancel" class="adminbutton" onclick="window.location.href = './'"></td>
+                            </tr>
+                            </table>
+                        </div>
+                        """ % {'text_confirm1': _('You are about to submit a'),
+                               'text_confirm2': _('file with name'),
+                               'text_confirm3': _('and content'),
+                               'text_confirm4': _('This file will be uploaded with priority'),
+                               'text_confirm5': _('and in mode'),
+                               'text_confirm7': _('Do you want to submit the changes?'),
+                               'text_confirm8': _('record(s) will be affected'),
+                               'schedule_msg' : display_schedule and schedule_msg or '',
+                               'filetype': filetype,
+                               'filename': file_name,
+                               'filecontent': metafile.value,
+                               'priority': priority_map[priority],
+                               'mode': mode,
+                               'num_rec': metafile.value.count('<record>'),
+                               'submit_date': submit_date,
+                               'submit_time': submit_time,
+                               'errors_textarea': errors_upload and errors_textarea or '<div class="clean_ok">No errors were found during the upload simulation</div><br/>',
+                               'confirm_disabled': errors_upload and 'DISABLED style="background:grey;"' or ''}
+        body_content += """</div></form> """
+        return body_content
+
 
     def tmpl_display_web_docupload_result(self, ln=CFG_SITE_LANG, errors=None, info=None):
         """ Display results from the document upload """
