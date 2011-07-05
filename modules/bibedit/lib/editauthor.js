@@ -523,7 +523,7 @@ function generateRowContents(row, auth_affils, institutions) {
     str += '<td class="rownum bodyrow"><span class="rownuminner">'+ (row+1) +'</span></td>';
 
     // author name
-    str += '<td class="author_box_td"><input type="text" class="author_box" id="author_'+my_id+'" name="autho'+my_id+'" value="'+auth_affils[0]+'"';
+    str += '<td class="author_box_td"><input type="text" class="author_box" id="author_'+my_id+'" name="autho'+row+'" value="'+auth_affils[0]+'"';
     if (row === 0) {
         str += ' title="100a: first author"';
     } else {
@@ -532,7 +532,7 @@ function generateRowContents(row, auth_affils, institutions) {
     str += '></td>'
 
         // affiliations
-        str += '<td class=affil_box_td row='+row+'><input type="text" class="affil_box" id="affils_'+my_id+'" name="insts'+my_id+'" value="';
+        str += '<td class=affil_box_td row='+row+'><input type="text" class="affil_box" id="affils_'+my_id+'" name="insts'+row+'" value="';
     str += filter_ArrayToSemicolonString(auth_affils.slice(1)) + '"';
     if (row == 0) {
         str += ' title="100u: first author\'s affiliations"';
