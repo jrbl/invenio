@@ -117,7 +117,9 @@ class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
         new_doc += "    <subfield code=\"a\">"
         new_doc += "%s</subfield>\n" % form_data['autho0']
         for sub in form_data['insts0'].split(';'):
-            new_doc += "    <subfield code=\"u\">%s</subfield>\n" % sub
+            sub = sub.strip()
+            if sub != '':
+                new_doc += "    <subfield code=\"u\">%s</subfield>\n" % sub
         new_doc += "  </datafield>\n"
         for i in range(1, form_length):
             new_doc += "  <datafield tag=\"700\" ind1=\" \" ind2=\" \">\n"
