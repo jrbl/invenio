@@ -31,7 +31,7 @@ from invenio.webinterface_handler import create_handler
 from invenio.errorlib import register_exception
 from invenio.webinterface_handler import WebInterfaceDirectory
 from invenio import webinterface_handler_config as apache
-from invenio.config import CFG_DEVEL_SITE, CFG_OPENAIRE_SITE
+from invenio.config import CFG_DEVEL_SITE, CFG_INSPIRE_SITE, CFG_OPENAIRE_SITE
 
 class WebInterfaceDumbPages(WebInterfaceDirectory):
     """This class implements a dumb interface to use as a fallback in case of
@@ -220,6 +220,13 @@ if CFG_OPENAIRE_SITE:
 else:
     openaire_exports = []
 
+if CFG_INSPIRE_SITE:
+    try:
+        from invenio.inspireproject_webinterface import WebInterfaceInspirePages
+    except:
+        register_exception(alert_admin=True, subject='EMERGENCY')
+        WebInterfaceInspirePages = WebInterfaceDumbPages
+
 if CFG_DEVEL_SITE:
     try:
         from invenio.httptest_webinterface import WebInterfaceHTTPTestPages
@@ -258,6 +265,7 @@ class WebInterfaceInvenio(WebInterfaceSearchInterfacePages):
         'kb',
         'batchuploader',
         'person',
+        'inspire',
         'bibsword'
         ] + test_exports + openaire_exports
 
@@ -290,6 +298,8 @@ class WebInterfaceInvenio(WebInterfaceSearchInterfacePages):
     batchuploader = WebInterfaceBatchUploaderPages()
     bibsword = WebInterfaceSword()
     person = WebInterfaceBibAuthorIDPages()
+    if CFG_INSPIRE_SITE:
+        inspire = WebInterfaceInspirePages()
 
 # This creates the 'handler' function, which will be invoked directly
 # by mod_python.
