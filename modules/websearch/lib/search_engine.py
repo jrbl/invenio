@@ -5096,7 +5096,7 @@ def perform_request_search(req=None, cc=CFG_SITE_NAME, c=None, p="", f="", rg=CF
                         recIDs = results_final_for_all_colls_rank_records_output[0]
                 return recIDs
             elif of.startswith("h"):
-                if of not in ['hcs']:
+                if of not in ['hcs', 'hcv', 'htcv', 'tlcv']:
                     # added the hosted_colls_potential_results_p parameter to help print out the overview more accurately
                     req.write(print_results_overview(colls_to_search, results_final_nb_total, results_final_nb, cpu_time, ln, ec, hosted_colls_potential_results_p=hosted_colls_potential_results_p))
                     selected_external_collections_infos = print_external_results_overview(req, cc, [p, p1, p2, p3], f, ec, verbose, ln)
@@ -5104,7 +5104,7 @@ def perform_request_search(req=None, cc=CFG_SITE_NAME, c=None, p="", f="", rg=CF
             if of.startswith("x"):
                 req.write("<!-- Search-Engine-Total-Number-Of-Results: %s -->\n" % results_final_nb_total)
             # print records:
-            if of in ['hcs']:
+            if of == 'hcs':       # 'xm', above, must catch this tree's 'else'
                 # feed the current search to be summarized:
                 from invenio.search_engine_summarizer import summarize_records
                 search_p = p
@@ -5125,6 +5125,9 @@ def perform_request_search(req=None, cc=CFG_SITE_NAME, c=None, p="", f="", rg=CF
                         search_p += fi + pi + op_d[oi]
                     search_f = ''
                 summarize_records(results_final_for_all_selected_colls, 'hcs', ln, search_p, search_f, req)
+            elif of in ['hcv', 'htcv', 'tlcv'] and CFG_INSPIRE_SITE:
+                from invenio.search_engine_cvifier import cvify_records
+                cvify_records(results_final_for_all_selected_colls, of, ln, req)
             else:
                 if len(colls_to_search)>1:
                     cpu_time = -1 # we do not want to have search time printed on each collection
