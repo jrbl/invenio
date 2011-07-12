@@ -25,14 +25,15 @@ pylib_DATA = \
 	websearch_web_tests.py \
 	search_engine.py \
 	search_engine_config.py \
-	search_engine_tests.py \
-	search_engine_utils.py \
+	search_engine_cvifier.py \
 	search_engine_query_parser.py \
 	search_engine_query_parser_tests.py \
+	search_engine_summarizer.py \
+	search_engine_tests.py \
+	search_engine_utils.py \
 	websearch_webcoll.py \
 	websearchadmin_regression_tests.py \
 	websearch_external_collections.py \
-	search_engine_summarizer.py \
 	websearch_external_collections_config.py \
 	websearch_external_collections_getter.py \
 	websearch_external_collections_getter_tests.py \
