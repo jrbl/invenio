@@ -29,7 +29,6 @@ __revision__ = "$Id$"
 import cgi
 import cStringIO
 import copy
-import string
 import os
 import re
 import time
@@ -650,7 +649,7 @@ def get_index_id_from_field(field):
 def get_words_from_pattern(pattern):
     "Returns list of whitespace-separated words from pattern."
     words = {}
-    for word in string.split(pattern):
+    for word in pattern.split():
         if not words.has_key(word):
             words[word] = 1
     return words.keys()
@@ -721,7 +720,7 @@ def create_basic_search_units(req, p, f, m=None, of='hb'):
         elif f and p[0] == "/" and p[-1] == "/":
             ## B0ter - does 'p' start and end by a slash, and is 'f' defined? => doing regexp search
             opfts.append(['+', p[1:-1], f, 'r'])
-        elif f and string.find(p, ',') >= 0:
+        elif f and p.find(',') >= 0:
             ## B1 - does 'p' contain comma, and is 'f' defined? => doing ACC search
             opfts.append(['+', p, f, 'a'])
         elif f and str(f[0:2]).isdigit():
@@ -731,18 +730,18 @@ def create_basic_search_units(req, p, f, m=None, of='hb'):
             ## B3 - doing WRD search, but maybe ACC too
             # search units are separated by spaces unless the space is within single or double quotes
             # so, let us replace temporarily any space within quotes by '__SPACE__'
-            p = re_pattern_single_quotes.sub(lambda x: "'"+string.replace(x.group(1), ' ', '__SPACE__')+"'", p)
-            p = re_pattern_double_quotes.sub(lambda x: "\""+string.replace(x.group(1), ' ', '__SPACE__')+"\"", p)
-            p = re_pattern_regexp_quotes.sub(lambda x: "/"+string.replace(x.group(1), ' ', '__SPACE__')+"/", p)
+            p = re_pattern_single_quotes.sub(lambda x: "'"+x.group(1).replace(' ', '__SPACE__')+"'", p)
+            p = re_pattern_double_quotes.sub(lambda x: "\""+x.group(1).replace(' ', '__SPACE__')+"\"", p)
+            p = re_pattern_regexp_quotes.sub(lambda x: "/"+x.group(1).replace(' ', '__SPACE__')+"/", p)
             # and spaces after colon as well:
-            p = re_pattern_spaces_after_colon.sub(lambda x: string.replace(x.group(1), ' ', '__SPACE__'), p)
+            p = re_pattern_spaces_after_colon.sub(lambda x: x.group(1).replace(' ', '__SPACE__'), p)
             # wash argument:
             p = re_equal.sub(":", p)
             p = re_logical_and.sub(" ", p)
             p = re_logical_or.sub(" |", p)
             p = re_logical_not.sub(" -", p)
             p = re_operators.sub(r' \1', p)
-            for pi in string.split(p): # iterate through separated units (or items, as "pi" stands for "p item")
+            for pi in p.split():
                 pi = re_pattern_space.sub(" ", pi) # replace back '__SPACE__' by ' '
                 # firstly, determine set operator
                 if pi[0] == '+' or pi[0] == '-' or pi[0] == '|':
@@ -752,8 +751,8 @@ def create_basic_search_units(req, p, f, m=None, of='hb'):
                     # okay, there is no operator, so let us decide what to do by default
                     oi = '+' # by default we are doing set intersection...
                 # secondly, determine search pattern and field:
-                if string.find(pi, ":") > 0:
-                    fi, pi = string.split(pi, ":", 1)
+                if pi.find(":") > 0:
+                    fi, pi = pi.split(":", 1)
                     fi = wash_field(fi)
                     # test whether fi is a real index code or a MARC-tag defined code:
                     if fi in get_fieldcodes() or '00' <= fi[:2] <= '99':
@@ -770,10 +769,10 @@ def create_basic_search_units(req, p, f, m=None, of='hb'):
                 if re_quotes.match(pi):
                     # B3a - quotes are found => do ACC search (phrase search)
                     if pi[0] == '"' and pi[-1] == '"':
-                        pi = string.replace(pi, '"', '') # remove quote signs
+                        pi = pi.replace('"', '') # remove quote signs
                         opfts.append([oi, pi, fi, 'a'])
                     elif pi[0] == "'" and pi[-1] == "'":
-                        pi = string.replace(pi, "'", "") # remove quote signs
+                        pi = pi.replace("'", "") # remove quote signs
                         opfts.append([oi, "%" + pi + "%", fi, 'a'])
                     else: # unbalanced quotes, so fall back to WRD query:
                         opfts.append([oi, pi, fi, 'w'])
@@ -1605,9 +1604,9 @@ def wash_pattern(p):
     # add leading/trailing whitespace for the two following wildcard-sanity checking regexps:
     p = " " + p + " "
     # replace spaces within quotes by __SPACE__ temporarily:
-    p = re_pattern_single_quotes.sub(lambda x: "'"+string.replace(x.group(1), ' ', '__SPACE__')+"'", p)
-    p = re_pattern_double_quotes.sub(lambda x: "\""+string.replace(x.group(1), ' ', '__SPACE__')+"\"", p)
-    p = re_pattern_regexp_quotes.sub(lambda x: "/"+string.replace(x.group(1), ' ', '__SPACE__')+"/", p)
+    p = re_pattern_single_quotes.sub(lambda x: "'"+x.group(1).replace(' ', '__SPACE__')+"'", p)
+    p = re_pattern_double_quotes.sub(lambda x: "\""+x.group(1).replace(' ', '__SPACE__')+"\"", p)
+    p = re_pattern_regexp_quotes.sub(lambda x: "/"+x.group(1).replace(' ', '__SPACE__')+"/", p)
     # get rid of unquoted wildcards after spaces:
     p = re_pattern_wildcards_after_spaces.sub("\\1", p)
     # get rid of extremely short words (1-3 letters with wildcards):
@@ -1617,7 +1616,7 @@ def wash_pattern(p):
     # replace special terms:
     p = re_pattern_today.sub(time.strftime("%Y-%m-%d", time.localtime()), p)
     # remove unnecessary whitespace:
-    p = string.strip(p)
+    p = p.strip()
     # remove potentially wrong UTF-8 characters:
     p = wash_for_utf8(p)
     return p
@@ -1796,8 +1795,8 @@ def browse_pattern(req, colls, p, f, rg, ln=CFG_SITE_LANG):
     ## okay, "real browse" follows:
     ## FIXME: the maths in the get_nearest_terms_in_bibxxx is just a test
 
-    if not f and string.find(p, ":") > 0: # does 'p' contain ':'?
-        f, p = string.split(p, ":", 1)
+    if not f and p.find(":") > 0: # does 'p' contain ':'?
+        f, p = p.split(":", 1)
 
     ## do we search in words indexes?
     if not f:
@@ -2072,6 +2071,7 @@ def search_pattern(req=None, p=None, f=None, m=None, ap=0, of="id", verbose=0, l
         print_warning(req, "Search stage 3: execution took %.2f seconds." % (t2 - t1))
     return hitset_in_any_collection
 
+SPIRES_SYNTAX_CONVERTER = SpiresToInvenioSyntaxConverter()
 def search_pattern_parenthesised(req=None, p=None, f=None, m=None, ap=0, of="id", verbose=0, ln=CFG_SITE_LANG, display_nearest_terms_box=True, wl=0):
     """Search for complex pattern 'p' containing parenthesis within field 'f' according to
        matching type 'm'.  Return hitset of recIDs.
@@ -2079,13 +2079,12 @@ def search_pattern_parenthesised(req=None, p=None, f=None, m=None, ap=0, of="id"
        For more details on the parameters see 'search_pattern'
     """
     _ = gettext_set_language(ln)
-    spires_syntax_converter = SpiresToInvenioSyntaxConverter()
     spires_syntax_query = False
 
     # if the pattern uses SPIRES search syntax, convert it to Invenio syntax
-    if spires_syntax_converter.is_applicable(p):
+    if SPIRES_SYNTAX_CONVERTER.is_applicable(p):
         spires_syntax_query = True
-        p = spires_syntax_converter.convert_query(p)
+        p = SPIRES_SYNTAX_CONVERTER.convert_query(p)
 
     # sanity check: do not call parenthesised parser for search terms
     # like U(1):
@@ -2237,8 +2236,8 @@ def search_unit_in_bibwords(word, f, m=None, decompress=zlib.decompress, wl=0):
             return HitSet() # word index f does not exist
 
     # wash 'word' argument and run query:
-    word = string.replace(word, '*', '%') # we now use '*' as the truncation character
-    words = string.split(word, "->", 1) # check for span query
+    word = word.replace('*', '%') # we now use '*' as the truncation character
+    words = word.split("->", 1) # check for span query
     if len(words) == 2:
         word0 = re_word.sub('', words[0])
         word1 = re_word.sub('', words[1])
@@ -2261,7 +2260,7 @@ def search_unit_in_bibwords(word, f, m=None, decompress=zlib.decompress, wl=0):
         if stemming_language:
             word = lower_index_term(word)
             word = stem(word, stemming_language)
-        if string.find(word, '%') >= 0: # do we have wildcard in the word?
+        if word.find('%') >= 0: # do we have wildcard in the word?
             if f == 'journal':
                 # FIXME: quick hack for the journal index
                 # FIXME: we can run a sanity check here for all indexes
@@ -2313,14 +2312,14 @@ def search_unit_in_idxphrases(p, f, type, wl=0):
         query_params = (p,)
         use_query_limit = True
     else:
-        p = string.replace(p, '*', '%') # we now use '*' as the truncation character
-        ps = string.split(p, "->", 1) # check for span query:
+        p = p.replace('*', '%') # we now use '*' as the truncation character
+        ps = p.split("->", 1) # check for span query:
         if len(ps) == 2 and not (ps[0].endswith(' ') or ps[1].startswith(' ')):
             query_addons = "BETWEEN %s AND %s"
             query_params = (ps[0], ps[1])
             use_query_limit = True
         else:
-            if string.find(p, '%') > -1:
+            if p.find('%') > -1:
                 query_addons = "LIKE %s"
                 query_params = (p,)
                 use_query_limit = True
@@ -2373,20 +2372,20 @@ def search_unit_in_bibxxx(p, f, type, wl=0):
     query_addons = "" # will hold additional SQL code for the query
     query_params = () # will hold parameters for the query (their number may vary depending on TYPE argument)
     # wash arguments:
-    f = string.replace(f, '*', '%') # replace truncation char '*' in field definition
+    f = f.replace('*', '%') # replace truncation char '*' in field definition
     if type == 'r':
         query_addons = "REGEXP %s"
         query_params = (p,)
         use_query_limit = True
     else:
-        p = string.replace(p, '*', '%') # we now use '*' as the truncation character
-        ps = string.split(p, "->", 1) # check for span query:
+        p = p.replace('*', '%') # we now use '*' as the truncation character
+        ps = p.split("->", 1) # check for span query:
         if len(ps) == 2 and not (ps[0].endswith(' ') or ps[1].startswith(' ')):
             query_addons = "BETWEEN %s AND %s"
             query_params = (ps[0], ps[1])
             use_query_limit = True
         else:
-            if string.find(p, '%') > -1:
+            if p.find('%') > -1:
                 query_addons = "LIKE %s"
                 query_params = (p,)
                 use_query_limit = True
@@ -2565,7 +2564,7 @@ def intersect_results_with_collrecs(req, hitset_in_any_collection, colls, ap=0, 
             if of.startswith("h") and display_nearest_terms_box:
                 url = websearch_templates.build_search_url(req.argd, cc=CFG_SITE_NAME, c=[])
                 print_warning(req, _("No match found in collection %(x_collection)s. Other public collections gave %(x_url_open)s%(x_nb_hits)d hits%(x_url_close)s.") %\
-                              {'x_collection': '<em>' + string.join([get_coll_i18nname(coll, ln, False) for coll in colls], ', ') + '</em>',
+                              {'x_collection': '<em>' + ', '.join([get_coll_i18nname(coll, ln, False) for coll in colls]) + '</em>',
                                'x_url_open': '<a class="nearestterms" href="%s">' % (url),
                                'x_nb_hits': len(results_in_Home),
                                'x_url_close': '</a>'})
@@ -2737,21 +2736,23 @@ def create_nearest_terms_box(urlargd, p, f, t='w', n=5, ln=CFG_SITE_LANG, intro_
                     # p was stripped of accents, to do the same:
                     argd_px = strip_accents(argd_px)
                 if f == argd[fx] or f == "anyfield" or f == "":
-                    if string.find(argd_px, p) > -1:
-                        argd[px] = string.replace(argd_px, p, term)
+                    if argd_px.find(p) > -1:
+                        argd[px] = argd_px.replace(p, term)
                         break
                 else:
-                    if string.find(argd_px, f+':'+p) > -1:
-                        if string.find(term.strip(), ' ') > -1:
+                    if argd_px.find(f+':'+p) > -1:
+                        if term.strip().find(' ') > -1:
                             term = '"' + term + '"'
-                        argd[px] = string.replace(argd_px, f+':'+p, f+':'+term)
+                        argd[px] = argd_px.replace(f+':'+p, f+':'+term)
                         break
-                    elif string.find(argd_px, f+':"'+p+'"') > -1:
-                        argd[px] = string.replace(argd_px, f+':"'+p+'"', f+':"'+term+'"')
+                    elif argd_px.find(f+':"'+p+'"') > -1:
+                        argd[px] = argd_px.replace(f+':"'+p+'"', f+':"'+term+'"')
                         break
-                    elif string.find(argd_px, f+':\''+p+'\'') > -1:
-                        argd[px] = string.replace(argd_px, f+':\''+p+'\'', f+':\''+term+'\'')
+                    elif argd_px.find(f+':\''+p+'\'') > -1:
+                        argd[px] = argd_px.replace(f+':\''+p+'\'', f+':\''+term+'\'')
                         break
+                    elif SPIRES_SYNTAX_CONVERTER.is_applicable(argd_px):
+                        argd[px] = SPIRES_SYNTAX_CONVERTER.rework_query_for_nearest_terms(argd_px, p, term, f + ":")
 
         terminfo.append((term, hits, argd))
 
@@ -2835,8 +2836,8 @@ def get_nearest_terms_in_bibxxx(p, f, n_below, n_above):
        of collection.
        Return list of [phrase1, phrase2, ... , phrase_n]."""
     ## determine browse field:
-    if not f and string.find(p, ":") > 0: # does 'p' contain ':'?
-        f, p = string.split(p, ":", 1)
+    if not f and p.find(":") > 0: # does 'p' contain ':'?
+        f, p = p.split(":", 1)
 
     # FIXME: quick hack for the journal index
     if f == 'journal':
@@ -2899,8 +2900,8 @@ def get_nearest_terms_in_bibxxx(p, f, n_below, n_above):
     # words right; this of course won't be needed when we shall have
     # one ACC table only for given field):
     phrases_out = browsed_phrases.keys()
-    phrases_out.sort(lambda x, y: cmp(string.lower(strip_accents(x)),
-                                      string.lower(strip_accents(y))))
+    phrases_out.sort(lambda x, y: cmp(strip_accents(x).lower(),
+                                      strip_accents(y).lower()))
     # find position of self:
     try:
         idx_p = phrases_out.index(p)
@@ -2984,8 +2985,8 @@ def get_nbhits_in_idxphrases(word, f):
 def get_nbhits_in_bibxxx(p, f):
     """Return number of hits for word 'word' inside words index for field 'f'."""
     ## determine browse field:
-    if not f and string.find(p, ":") > 0: # does 'p' contain ':'?
-        f, p = string.split(p, ":", 1)
+    if not f and p.find(":") > 0: # does 'p' contain ':'?
+        f, p = p.split(":", 1)
 
     # FIXME: quick hack for the journal index
     if f == 'journal':
@@ -3162,7 +3163,7 @@ def get_fieldvalues_alephseq_like(recID, tags_in, can_see_hidden=False):
     if len(tags_in) == 1 and len(tags_in[0]) == 6:
         ## case A: one concrete subfield asked, so print its value if found
         ##         (use with care: can mislead if field has multiple occurrences)
-        out += string.join(get_fieldvalues(recID, tags_in[0]),"\n")
+        out += "\n".join(get_fieldvalues(recID, tags_in[0]))
     else:
         ## case B: print our "text MARC" format; works safely all the time
         # find out which tags to output:
@@ -3480,7 +3481,7 @@ def sort_records(req, recIDs, sort_field='', sort_order='d', sort_pattern='', ve
             print_warning(req, _("Sorry, sorting is allowed on sets of up to %d records only. Using default sort order.") % CFG_WEBSEARCH_NB_RECORDS_TO_SORT, "Warning")
         return recIDs
 
-    sort_fields = string.split(sort_field, ",")
+    sort_fields = sort_field.split(",")
     recIDs_dict = {}
     recIDs_out = []
 
@@ -3530,10 +3531,10 @@ def sort_records(req, recIDs, sort_field='', sort_order='d', sort_pattern='', ve
                         val = v
                         break
                 if not bingo: # sort_pattern not present, so add other vals after spaces
-                    val = sort_pattern + "          " + string.join(vals)
+                    val = sort_pattern + "          " + ' '.join(vals)
             else:
                 # no sort pattern defined, so join them all together
-                val = string.join(vals)
+                val = ' '.join(vals)
             val = strip_accents(val.lower()) # sort values regardless of accents and case
             if recIDs_dict.has_key(val):
                 recIDs_dict[val].append(recID)
@@ -4727,7 +4728,7 @@ def perform_request_search(req=None, cc=CFG_SITE_NAME, c=None, p="", f="", rg=CF
             # record well exists, so find similar ones to it
             t1 = os.times()[4]
             results_similar_recIDs, results_similar_relevances, results_similar_relevances_prologue, results_similar_relevances_epilogue, results_similar_comments = \
-                                    rank_records(rm, 0, get_collection_reclist(cc), string.split(p), verbose)
+                                    rank_records(rm, 0, get_collection_reclist(cc), p.split(), verbose)
             if results_similar_recIDs:
                 t2 = os.times()[4]
                 cpu_time = t2 - t1
@@ -5097,8 +5098,8 @@ def perform_request_search(req=None, cc=CFG_SITE_NAME, c=None, p="", f="", rg=CF
                     recIDs = sort_records(req, recIDs, sf, so, sp, verbose, of)
                 elif rm: # do we have to rank?
                     results_final_for_all_colls_rank_records_output = rank_records(rm, 0, results_final_for_all_selected_colls,
-                                                                                   string.split(p) + string.split(p1) +
-                                                                                   string.split(p2) + string.split(p3), verbose)
+                                                                                   p.split() + p1.split() +
+                                                                                   p2.split() + p3.split(), verbose)
                     if results_final_for_all_colls_rank_records_output[0]:
                         recIDs = results_final_for_all_colls_rank_records_output[0]
                 return recIDs
@@ -5154,8 +5155,8 @@ def perform_request_search(req=None, cc=CFG_SITE_NAME, c=None, p="", f="", rg=CF
                         elif rm: # do we have to rank?
                             results_final_recIDs_ranked, results_final_relevances, results_final_relevances_prologue, results_final_relevances_epilogue, results_final_comments = \
                                                          rank_records(rm, 0, results_final[coll],
-                                                                      string.split(p) + string.split(p1) +
-                                                                      string.split(p2) + string.split(p3), verbose)
+                                                                      p.split() + p1.split() +
+                                                                      p2.split() + p3.split(), verbose)
                             if of.startswith("h"):
                                 print_warning(req, results_final_comments)
                             if results_final_recIDs_ranked:
@@ -5362,7 +5363,7 @@ def perform_request_log(req, date=""):
     req.write("<html>")
     req.write("<h1>Search Log</h1>")
     if date: # case A: display stats for a day
-        yyyymmdd = string.atoi(date)
+        yyyymmdd = int(date)
         req.write("<p><big><strong>Date: %d</strong></big><p>" % yyyymmdd)
         req.write("""<table border="1">""")
         req.write("<tr><td><strong>%s</strong></td><td><strong>%s</strong></td><td><strong>%s</strong></td><td><strong>%s</strong></td><td><strong>%s</strong></td><td><strong>%s</strong></td></tr>" % ("No.", "Time", "Pattern", "Field", "Collection", "Number of Hits"))
@@ -5374,7 +5375,7 @@ def perform_request_log(req, date=""):
         i = 0
         for line in lines:
             try:
-                datetime, dummy_aas, p, f, c, nbhits = string.split(line,"#")
+                datetime, dummy_aas, p, f, c, nbhits = line.split("#")
                 i += 1
                 req.write("<tr><td align=\"right\">#%d</td><td>%s:%s:%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>" \
                           % (i, datetime[8:10], datetime[10:12], datetime[12:], p, f, c, nbhits))

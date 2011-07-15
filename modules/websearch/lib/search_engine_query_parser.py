@@ -636,6 +636,18 @@ class SpiresToInvenioSyntaxConverter:
         self._month_name_to_month_number = {}
         self._init_months()
         self._compile_regular_expressions()
+        self._create_invenio_to_spires_keywords_map()
+
+    def _create_invenio_to_spires_keywords_map(self):
+        """Generates a reverse mapping from _SPIRES_TO_INVENIO_KEYWORDS_MATCHINGS which
+           is a dictionary mapping each invenio index to a list of all SPIRES keywords
+           which map to it."""
+        self._INVENIO_TO_SPIRES_KEYWORDS_MATCHINGS = {}
+        for spires_keyword, invenio_keyword in self._SPIRES_TO_INVENIO_KEYWORDS_MATCHINGS.iteritems():
+            if not invenio_keyword in self._INVENIO_TO_SPIRES_KEYWORDS_MATCHINGS:
+                self._INVENIO_TO_SPIRES_KEYWORDS_MATCHINGS[invenio_keyword] = [spires_keyword]
+            else:
+                self._INVENIO_TO_SPIRES_KEYWORDS_MATCHINGS[invenio_keyword].append(spires_keyword)
 
     def _compile_regular_expressions(self):
         """Compiles some of the regular expressions that are used in the class
@@ -730,6 +742,29 @@ class SpiresToInvenioSyntaxConverter:
             if self._SPIRES_TO_INVENIO_KEYWORDS_MATCHINGS.has_key(word):
                 return True
         return False
+
+    def rework_query_for_nearest_terms(self, query, old_term, new_term, new_term_field):
+        """Takes a query, a term to replace an old term with, and an index and replaces
+           the new term with the old term for searching in that index."""
+
+        if " " in new_term:
+            new_term = '"%s"' % new_term
+
+        if new_term_field in self._INVENIO_TO_SPIRES_KEYWORDS_MATCHINGS:
+            for spires_possibility in self._INVENIO_TO_SPIRES_KEYWORDS_MATCHINGS[new_term_field]:
+                if spires_possibility in query.split():
+                    query = re.sub(r'''(?ix)
+                            \b%(spires_possibility)s       # the SPIRES term we just found in the string
+                            \s+
+                            (%(old_term)s)
+                            (?=\ and\ |\ or\ |\ not\ |$)    # it will be followed by something like this
+                            ''' % {'spires_possibility' : spires_possibility,
+                                   'old_term' : old_term.replace(' ', '\ '), },  # we have to replace this since we have
+                                                                                 # a verbose regex
+                            '%s %s' % (spires_possibility, new_term),
+                            query)
+
+        return query
 
     def convert_query(self, query):
         """Convert SPIRES syntax queries to Invenio syntax.

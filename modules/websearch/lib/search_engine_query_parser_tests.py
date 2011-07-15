@@ -908,10 +908,21 @@ class TestSpiresToInvenioSyntaxConverter(unittest.TestCase):
 
     def test_spires_syntax_detected_invenio(self):
         """SPIRES search syntax - test detection Not SPIRES"""
-        # trac #261
         converter = search_engine_query_parser.SpiresToInvenioSyntaxConverter()
         inv_search = converter.is_applicable("t:p a:c")
         self.assertEqual(inv_search, False)
+
+    def test_spires_suggest_simple(self):
+        """SPIRES search suggest - suggest ellis for ellisz"""
+        converter = search_engine_query_parser.SpiresToInvenioSyntaxConverter()
+        corrected_query = converter.rework_query_for_nearest_terms("find a ellisz", "ellisz", "ellis", "author:")
+        self.assertEqual(corrected_query, "find a ellis")
+
+    def test_spires_suggest_with_space(self):
+        """SPIRES search suggest - suggest ellis, j for ellisz, j"""
+        converter = search_engine_query_parser.SpiresToInvenioSyntaxConverter()
+        corrected_query = converter.rework_query_for_nearest_terms("find au ellisz, j", "ellisz, j", "ellis, j", "author:")
+        self.assertEqual(corrected_query, 'find au "ellis, j"')
 
     def test_spires_keyword_distribution_before_conjunctions(self):
         """SPIRES search syntax - test find journal phys.lett. 0903 024"""
