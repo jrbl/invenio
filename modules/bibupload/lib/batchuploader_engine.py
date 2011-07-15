@@ -28,8 +28,6 @@ import sys
 import time
 import tempfile
 import cgi
-import re
-import calendar
 
 from invenio.dbquery import run_sql, Error
 from invenio.access_control_engine import acc_authorize_action
@@ -426,39 +424,6 @@ def get_daemon_meta_files():
         except OSError:
             pass
     return files
-
-def check_date(date):
-    """ Check if date is correct
-        @return:
-            0 - Default or correct date
-            3 - Incorrect format
-            4 - Date does not exist
-    """
-    if not date or date == "yyyy-mm-dd":
-        return 0
-    correct_format = re.match("2[01]\d\d-[01]?\d-[0-3]?\d", date)
-    if not correct_format:
-        return 3
-    #separate year, month, day
-    date = correct_format.group(0).split("-")
-    try:
-        calendar.weekday(int(date[0]), int(date[1]), int(date[2]))
-    except ValueError:
-        return 4
-    return 0
-
-def check_time(time):
-    """ Check if time is correct
-        @return:
-            0 - Default or correct time
-            1 - Incorrect format
-    """
-    if not time or time == "hh:mm:ss":
-        return 0
-    correct_format = re.match("[0-2]\d:[0-5]\d:[0-5]\d", time)
-    if not correct_format:
-        return 1
-    return 0
 
 def user_authorization(req, ln):
     """ Check user authorization to visit page """

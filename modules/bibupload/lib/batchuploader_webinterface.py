@@ -33,7 +33,7 @@ from invenio.webpage import page
 from invenio.batchuploader_engine import metadata_upload, cli_upload, \
      get_user_metadata_uploads, get_user_document_uploads, document_upload, \
      get_daemon_doc_files, get_daemon_meta_files, cli_allocate_record, \
-     check_date, check_time, user_authorization
+     user_authorization
 
 try:
     import invenio.template
@@ -45,7 +45,8 @@ except:
 class WebInterfaceBatchUploaderPages(WebInterfaceDirectory):
     """Defines the set of /batchuploader pages."""
 
-    _exports = ['', 'metadata', 'robotupload', 'metasubmit', 'history', 'documents', 'docsubmit', 'daemon', 'allocaterecord']
+    _exports = ['', 'metadata', 'robotupload', 'metasubmit', 'history',
+                'documents', 'docsubmit', 'daemon', 'allocaterecord']
 
     def index(self, req, form):
         """ The function called by default
@@ -65,10 +66,11 @@ class WebInterfaceBatchUploaderPages(WebInterfaceDirectory):
         if not_authorized:
             return not_authorized
         uid = getUid(req)
-        body = batchuploader_templates.tmpl_display_menu(argd['ln'], ref="metadata")
+        body = batchuploader_templates.tmpl_display_menu(argd['ln'],
+                                                         ref="metadata")
         body += batchuploader_templates.tmpl_display_web_metaupload_form(argd['ln'],
-                argd['error'], argd['filetype'], argd['mode'], argd['submit_date'],
-                argd['submit_time'])
+                argd['error'], argd['filetype'], argd['mode'],
+                argd['submit_date'], argd['submit_time'])
 
         title = _("Metadata batch upload")
         return page(title = title,
@@ -90,7 +92,8 @@ class WebInterfaceBatchUploaderPages(WebInterfaceDirectory):
         if not_authorized:
             return not_authorized
         uid = getUid(req)
-        body = batchuploader_templates.tmpl_display_menu(argd['ln'], ref="documents")
+        body = batchuploader_templates.tmpl_display_menu(argd['ln'],
+                                                         ref="documents")
         body += batchuploader_templates.tmpl_display_web_docupload_form(argd['ln'])
 
         title = _("Document batch upload")
@@ -118,32 +121,15 @@ class WebInterfaceBatchUploaderPages(WebInterfaceDirectory):
         not_authorized = user_authorization(req, argd['ln'])
         if not_authorized:
             return not_authorized
-        #Check if input fields are correct, if not, redirect to upload form
-        correct_date = check_date(argd['submit_date'])
-        correct_time = check_time(argd['submit_time'])
-        if correct_time != 0:
-            redirect_to_url(req,
-            "%s/batchuploader/documents?error=1&mode=%s&docfolder=%s&matching=%s&submit_date=%s"
-            % (CFG_SITE_SECURE_URL, argd['mode'], argd['docfolder'], argd['matching'], argd['submit_date']))
-        if correct_date != 0:
-            redirect_to_url(req,
-            "%s/batchuploader/documents?error=%s&mode=%s&docfolder=%s&matching=%s&submit_time=%s"
-            % (CFG_SITE_SECURE_URL, correct_date, argd['mode'], argd['docfolder'], argd['matching'], argd['submit_time']))
 
         date = argd['submit_date'] not in ['yyyy-mm-dd', ''] \
                                 and argd['submit_date'] or ''
         time = argd['submit_time'] not in ['hh:mm:ss', ''] \
                                 and argd['submit_time'] or ''
 
-        if date != '' and time == '':
-            redirect_to_url(req, "%s/batchuploader/documents?error=1&mode=%s&docfolder=%s&matching=%s&submit_date=%s"
-                            % (CFG_SITE_SECURE_URL, argd['mode'], argd['docfolder'], argd['matching'], argd['submit_date']))
-        elif date == '' and time != '':
-            redirect_to_url(req, "%s/batchuploader/documents?error=4&mode=%s&docfolder=%s&matching=%s&submit_time=%s"
-                            % (CFG_SITE_SECURE_URL, argd['mode'], argd['docfolder'], argd['matching'], argd['submit_time']))
-
         errors, info = document_upload(req, argd['docfolder'], argd['matching'],
-                                       argd['mode'], date, time, argd['ln'], argd['priority'])
+                                       argd['mode'], date, time, argd['ln'],
+                                       argd['priority'])
 
         body = batchuploader_templates.tmpl_display_menu(argd['ln'])
         uid = getUid(req)
@@ -194,39 +180,18 @@ class WebInterfaceBatchUploaderPages(WebInterfaceDirectory):
         not_authorized = user_authorization(req, argd['ln'])
         if not_authorized:
             return not_authorized
-        #Check if input fields are correct, if not, redirect to upload form
-        correct_date = check_date(argd['submit_date'])
-        correct_time = check_time(argd['submit_time'])
-        if correct_time != 0:
-            redirect_to_url(req,
-            "%s/batchuploader/metadata?error=1&filetype=%s&mode=%s&submit_date=%s"
-            % (CFG_SITE_SECURE_URL, argd['filetype'], argd['mode'], argd['submit_date']))
-        if not form.get('metafile', None) or not form.get('metafile', None).value: # Empty file
-            redirect_to_url(req,
-            "%s/batchuploader/metadata?error=2&filetype=%s&mode=%s&submit_date=%s&submit_time=%s"
-            % (CFG_SITE_SECURE_URL, argd['filetype'], argd['mode'], argd['submit_date'],
-            argd['submit_time']))
-        if correct_date != 0:
-            redirect_to_url(req,
-            "%s/batchuploader/metadata?error=%s&filetype=%s&mode=%s&submit_time=%s"
-            % (CFG_SITE_SECURE_URL, correct_date, argd['filetype'], argd['mode'], argd['submit_time']))
 
         date = argd['submit_date'] not in ['yyyy-mm-dd', ''] \
                 and argd['submit_date'] or ''
         time = argd['submit_time'] not in ['hh:mm:ss', ''] \
                 and argd['submit_time'] or ''
 
-        if date != '' and time == '':
-            redirect_to_url(req, "%s/batchuploader/metadata?error=1&filetype=%s&mode=%s&submit_date=%s"
-            % (CFG_SITE_SECURE_URL, argd['filetype'], argd['mode'], argd['submit_date']))
-        elif date == '' and time != '':
-            redirect_to_url(req, "%s/batchuploader/metadata?error=4&filetype=%s&mode=%s&submit_time=%s"
-            % (CFG_SITE_SECURE_URL, argd['filetype'], argd['mode'], argd['submit_time']))
-
         ignore_strong_tags = argd['strong_tags'] == 'replace'
-        # Function where bibupload queues the file
+
+        #Function where bibupload queues the file
         auth_code, auth_message = metadata_upload(req,
-                                  form.get('metafile', None), argd['filetype'], argd['mode'].split()[0],
+                                  argd['metafile'], argd['filetype'],
+                                  argd['mode'].split()[0],
                                   date, time, argd['filename'], argd['ln'],
                                   argd['priority'],
                                   ignore_strong_tags=ignore_strong_tags)
@@ -267,8 +232,11 @@ class WebInterfaceBatchUploaderPages(WebInterfaceDirectory):
         uploaded_doc_files = get_user_document_uploads(req)
 
         uid = getUid(req)
-        body = batchuploader_templates.tmpl_display_menu(argd['ln'], ref="history")
-        body += batchuploader_templates.tmpl_upload_history(argd['ln'], uploaded_meta_files, uploaded_doc_files)
+        body = batchuploader_templates.tmpl_display_menu(argd['ln'],
+                                                         ref="history")
+        body += batchuploader_templates.tmpl_upload_history(argd['ln'],
+                                                            uploaded_meta_files,
+                                                            uploaded_doc_files)
         title = _("Upload history")
         return page(title = title,
                     body = body,
@@ -291,8 +259,10 @@ class WebInterfaceBatchUploaderPages(WebInterfaceDirectory):
         metadata = get_daemon_meta_files()
 
         uid = getUid(req)
-        body = batchuploader_templates.tmpl_display_menu(argd['ln'], ref="daemon")
-        body += batchuploader_templates.tmpl_daemon_content(argd['ln'], docs, metadata)
+        body = batchuploader_templates.tmpl_display_menu(argd['ln'],
+                                                         ref="daemon")
+        body += batchuploader_templates.tmpl_daemon_content(argd['ln'], docs,
+                                                            metadata)
         title = _("Batch Uploader: Daemon monitor")
         return page(title = title,
                     body = body,

@@ -25,6 +25,11 @@ pylib_DATA = bibupload_config.py \
              batchuploader_templates.py \
              batchuploader.py
 
-EXTRA_DIST = $(pylib_DATA)
+jsdir=$(localstatedir)/www/js
+
+js_DATA = batchuploader.js
+
+EXTRA_DIST = $(pylib_DATA) \
+             $(js_DATA)
 
 CLEANFILES = *~ *.tmp *.pyc

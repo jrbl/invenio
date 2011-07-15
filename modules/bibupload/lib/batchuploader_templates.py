@@ -59,6 +59,8 @@ class Template:
         #docuploadform div {margin:0.5em 0}
         #docuploadform fieldset {border:1px solid #657; padding:0.8em 1em; margin:2em 10px}
 
+        #error_div {color: red; font-style: bold; }
+
         div.ui-datepicker{
             font-size:12px;
         }
@@ -84,6 +86,10 @@ class Template:
             border-style: none;
         }
 
+        fieldset label {
+            float: left;
+            width: 150px;
+        }
         </style>
 
         """
@@ -103,6 +109,7 @@ class Template:
             }
         </script>
         <script type="text/javascript" src="%(site_url)s/js/jquery-ui.min.js"></script>
+        <script type="text/javascript" src="%(site_url)s/js/batchuploader.js"></script>
         """ % {'site_url':CFG_SITE_URL}
 
         return styles
@@ -124,12 +131,6 @@ class Template:
                 $("#datepicker").datepicker({dateFormat: 'yy-mm-dd'});
             });
         </script>
-        <style type="text/css">
-        fieldset label {
-            float: left;
-            width: 150px;
-        }
-        </style>
         """
         body_content += """<form id="uploadform" method="post" action="%(site_url)s/batchuploader/metasubmit" enctype="multipart/form-data">""" \
                                        % {'site_url': CFG_SITE_URL}
@@ -210,7 +211,7 @@ class Template:
         %(txt_upload_later)s&nbsp;&nbsp;&nbsp; <span class="italics">%(txt_date)s:</span>
     <input type="text" id="datepicker" name="submit_date" value=%(submit_date)s onBlur="defText(this)" onFocus="clearText(this)" style="width:100px" >
     &nbsp;&nbsp;<span class="italics">%(txt_time)s:</span>
-    <input type="text" name="submit_time" value=%(submit_time)s onBlur="defText(this)" onFocus="clearText(this)" style="width:100px" >
+    <input type="text" name="submit_time" id="submit_time" value=%(submit_time)s onBlur="defText(this)" onFocus="clearText(this)" style="width:100px" >
     <span class="italics">%(txt_example)s: 2009-12-20 19:22:18</span>
     </div>
     <div><i>%(txt_mandatory)s</i></div>
@@ -394,6 +395,7 @@ class Template:
         body_content += """
         <div id="content">
         <fieldset>
+        <div id="error_div"></div>
         <div><span class="mandatory_field""> * </span> %(txt1)s:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="text" name="docfolder" size="30" />
         <span class="italics">%(txt2)s: /afs/cern.ch/user/j/user/public/foo/</span></div>
         <div><span class="mandatory_field""> * </span> %(txt3)s:
@@ -414,7 +416,7 @@ class Template:
         <div>%(txt5)s&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="italics">%(txt6)s:</span>
         <input type="text" id="datepicker" name="submit_date" value=%(submit_date)s onBlur="defText(this)" onFocus="clearText(this)" style="width:100px" >
         &nbsp;&nbsp;<span class="italics">%(txt7)s:</span>
-        <input type="text" name="submit_time" value=%(submit_time)s onBlur="defText(this)" onFocus="clearText(this)" style="width:100px" >
+        <input type="text" name="submit_time" id="submit_time" value=%(submit_time)s onBlur="defText(this)" onFocus="clearText(this)" style="width:100px" >
         <span class="italics">%(txt8)s: 2009-12-20 19:22:18</span>
         <br/>
         <div><i>%(txt9)s</i></div>
