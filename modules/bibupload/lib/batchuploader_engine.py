@@ -428,18 +428,13 @@ def get_daemon_meta_files():
 
 def user_authorization(req, ln):
     """ Check user authorization to visit page """
-    _ = gettext_set_language(ln)
-    user_info = collect_user_info(req)
     auth_code, auth_message = acc_authorize_action(req, 'runbatchuploader')
     if auth_code != 0:
         referer = '/batchuploader/'
-        if user_info['email'] == 'guest':
-            error_msg = _("Guests are not authorized to run batchuploader")
-        else:
-            error_msg = _("The user '%s' is not authorized to run batchuploader" % \
-                          (cgi.escape(user_info['nickname'])))
         return page_not_authorized(req=req, referer=referer,
-                                   text=error_msg, navmenuid="batchuploader")
+                                   text=auth_message, navmenuid="batchuploader")
+    else:
+        return None
 
 def perform_upload_check(xml_record, mode):
     """ Performs a upload simulation with the given record and mode
