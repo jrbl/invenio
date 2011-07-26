@@ -922,6 +922,7 @@ def arxiv_login(req):
 
     session_bareinit(req)
     session = get_session(req)
+    pinfo = session['personinfo']
     ticket = session['personinfo']['ticket']
 
     uid = getUid(req)
@@ -930,7 +931,8 @@ def arxiv_login(req):
         return curren_pid[0][0]
 
     uinfo = collect_user_info(req)
-    uinfo['external_first_entry'] = True
+    pinfo['external_first_entry'] = True
+    session.save()
 
     arxiv_p_ids = []
     name = ''
@@ -1283,13 +1285,9 @@ def send_user_commit_notification_email(userinfo, ticket):
 
     if ticket and mailcontent:
         sender = CFG_BIBAUTHORID_AUTHOR_TICKET_ADMIN_EMAIL
-
-        if bconfig.TICKET_SENDING_FROM_USER_EMAIL and userinfo['email']:
-            sender = userinfo['email']
-
         send_email(sender,
                    CFG_BIBAUTHORID_AUTHOR_TICKET_ADMIN_EMAIL,
-                   subject="[Author] Changes performed. NO ACTION NEEDED.",
+                   subject="[Author] NO ACTIONS NEEDED. Changes performed by SSO user.",
                    content="\n".join(mailcontent))
 
     return True
