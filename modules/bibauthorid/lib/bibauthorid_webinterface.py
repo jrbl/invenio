@@ -1167,10 +1167,9 @@ class WebInterfaceBibAuthorIDPages(WebInterfaceDirectory):
 
             session.save()
 
-            uinfo = collect_user_info(req)
-            if 'external_first_entry' in uinfo and uinfo['external_first_entry']:
-                del(uinfo["external_first_entry"])
-                uinfo['external_first_entry_skip_review'] = True
+            if 'external_first_entry' in pinfo and pinfo['external_first_entry']:
+                del(pinfo["external_first_entry"])
+                pinfo['external_first_entry_skip_review'] = True
                 session.save()
                 return "" # don't bother the user the first time
 
@@ -1264,9 +1263,8 @@ class WebInterfaceBibAuthorIDPages(WebInterfaceDirectory):
                                  "warning_denied"]]:
             skip_checkout_page = False
 
-        uinfo = collect_user_info(req)
-        if 'external_first_entry_skip_review' in uinfo and uinfo['external_first_entry_skip_review']:
-                del(uinfo["external_first_entry_skip_review"])
+        if 'external_first_entry_skip_review' in pinfo and pinfo['external_first_entry_skip_review']:
+                del(pinfo["external_first_entry_skip_review"])
                 skip_checkout_page = True
                 session.save()
 
