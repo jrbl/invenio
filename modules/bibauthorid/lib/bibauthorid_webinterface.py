@@ -1389,10 +1389,11 @@ class WebInterfaceBibAuthorIDPages(WebInterfaceDirectory):
                                                     userinfo['uid-ip'], str(userinfo))
                 ok_tickets.append(t)
                 ticket.remove(t)
-            else:
-                webapi.create_request_ticket(userinfo, ticket)
 
-        if CFG_INSPIRE_SITE:
+        if ticket:
+            webapi.create_request_ticket(userinfo, ticket)
+
+        if CFG_INSPIRE_SITE and ok_tickets:
             webapi.send_user_commit_notification_email(userinfo, ok_tickets)
 
         for t in ticket:
