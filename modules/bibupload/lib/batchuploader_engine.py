@@ -477,9 +477,7 @@ def perform_upload_check(xml_record, mode):
     finally:
         bibupload_module.write_message = orig_writer
 
-
     return '\n'.join(error_cache)
-
 
 def _get_client_ip(req):
     """Return client IP address from req object."""
