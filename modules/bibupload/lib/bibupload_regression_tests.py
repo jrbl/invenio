@@ -3312,6 +3312,7 @@ allow any</subfield>
          </datafield>
         </record>
         """ % { 'siteurl': CFG_SITE_URL, 'CFG_SITE_RECORD': CFG_SITE_RECORD}
+
         testrec_expected_hm = """
         001__ 123456789
         003__ SzGeCERN
@@ -3323,6 +3324,7 @@ allow any</subfield>
             % {'siteurl': CFG_SITE_URL, 'CFG_SITE_RECORD': CFG_SITE_RECORD}
         testrec_expected_url2 = "%(siteurl)s/%(CFG_SITE_RECORD)s/123456789/files/site_logo.png" \
             % {'siteurl': CFG_SITE_URL, 'CFG_SITE_RECORD': CFG_SITE_RECORD}
+
         # insert test record:
         recs = bibupload.xml_marc_to_records(test_to_upload)
         err, recid = bibupload.bibupload(recs[0], opt_mode='insert')
