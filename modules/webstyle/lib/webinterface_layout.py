@@ -270,7 +270,7 @@ class WebInterfaceInvenio(WebInterfaceSearchInterfacePages):
         'kb',
         'batchuploader',
         'inspire',
-        'person'
+        'person',
         'bibsword',
         ] + test_exports + openaire_exports
 
