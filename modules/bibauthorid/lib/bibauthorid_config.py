@@ -236,7 +236,7 @@ LOGGER.addHandler(DEFAULT_HANDLER)
 LOGGER.setLevel(LOG_LEVEL)
 
 ## force skip ui arxiv stub page (specific fore inspire)
-BIBAUTHORID_UI_SKIP_ARXIV_STUB_PAGE = True
+BIBAUTHORID_UI_SKIP_ARXIV_STUB_PAGE = False
 BIBAUTHORID_CFG_INSPIRE_LOGIN = 'https://arxiv.org/inspire_login'
 
 if not LOGGERS:
