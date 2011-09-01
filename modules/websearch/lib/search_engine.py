@@ -2174,7 +2174,7 @@ def search_pattern_parenthesised(req=None, p=None, f=None, m=None, ap=0, of="id"
         return search_pattern(req, p, f, m, ap, of, verbose, ln, display_nearest_terms_box=display_nearest_terms_box, wl=wl)
 
 
-def search_unit(p, f=None, m=None, wl=0):
+def search_unit(p, f=None, m=None, wl=0, synonyms=True):
     """Search for basic search unit defined by pattern 'p' and field
        'f' and matching type 'm'.  Return hitset of recIDs.
 
@@ -2193,6 +2193,9 @@ def search_unit(p, f=None, m=None, wl=0):
        In case you want to call this function with no limit for the
        wildcard queries, wl should be 0.
 
+       If synonyms is set to False, then synonym checking will be disabled,
+       regardless of the values stored in CFG_WEBSEARCH_SYNONYM_KBRS.
+
        This function is suitable as a low-level API.
     """
 
@@ -2203,12 +2206,13 @@ def search_unit(p, f=None, m=None, wl=0):
 
     ## eventually look up runtime synonyms:
     hitset_synonyms = intbitset()
-    if CFG_WEBSEARCH_SYNONYM_KBRS.has_key(f):
-        for p_synonym in get_synonym_terms(p,
-                             CFG_WEBSEARCH_SYNONYM_KBRS[f][0],
-                             CFG_WEBSEARCH_SYNONYM_KBRS[f][1]):
-            if p_synonym != p:
-                hitset_synonyms |= search_unit(p_synonym, f, m, wl)
+    if synonyms:
+        if CFG_WEBSEARCH_SYNONYM_KBRS.has_key(f):
+            for p_synonym in get_synonym_terms(p,
+                                 CFG_WEBSEARCH_SYNONYM_KBRS[f][0],
+                                 CFG_WEBSEARCH_SYNONYM_KBRS[f][1]):
+                if p_synonym != p:
+                    hitset_synonyms |= search_unit(p_synonym, f, m, wl, synonyms=False)
 
     ## look up hits:
     if CFG_SOLR_URL and f == 'fulltext':
