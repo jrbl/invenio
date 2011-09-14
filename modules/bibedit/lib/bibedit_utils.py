@@ -604,39 +604,25 @@ def _record_in_files_p(recid, filenames):
     if rec_sysno_tag:
         rec_sysno = rec_sysno_tag[0]
 
+    re_match_001 = re.compile('<controlfield tag="001">%s</controlfield>' % (recid))
+    re_match_oaiid = re.compile('<datafield tag="%s" ind1=" " ind2=" ">(\s*<subfield code="a">\s*|\s*<subfield code="9">\s*.*\s*</subfield>\s*<subfield code="a">\s*)%s' % (OAIID_TAG[0:3],rec_oaiid))
+    re_match_sysno = re.compile('<datafield tag="%s" ind1=" " ind2=" ">(\s*<subfield code="a">\s*|\s*<subfield code="9">\s*.*\s*</subfield>\s*<subfield code="a">\s*)%s' % (SYSNO_TAG[0:3],rec_sysno))
+
     # For each record in each file, compare ids and abort if match is found
     for filename in filenames:
         try:
-            file_ = open(filename)
-            records = create_records(file_.read(), 0, 0)
-            for i in range(0, len(records)):
-                record, all_good = records[i][:2]
-                if record and all_good:
-                    if _record_has_id_p(record, recid, rec_oaiid, rec_sysno):
-                        return True
-            file_.close()
+            file_content = open(filename).read()
+            if re_match_001.search(file_content):
+                return True
+            if rec_oaiid_tag:
+                if re_match_oaiid.search(file_content):
+                    return True
+            if rec_sysno_tag:
+                if re_match_sysno.search(file_content):
+                    return True
         except IOError:
             continue
     return False
-
-def _record_has_id_p(record, recid, rec_oaiid, rec_sysno):
-    """Check if record matches any of the given IDs."""
-    if record_has_field(record, '001'):
-        if (record_get_field_value(record, '001', '%', '%')
-            == str(recid)):
-            return True
-    if record_has_field(record, OAIID_TAG[0:3]):
-        if (record_get_field_value(
-                record, OAIID_TAG[0:3], OAIID_TAG[3],
-                OAIID_TAG[4], OAIID_TAG[5]) == rec_oaiid):
-            return True
-    if record_has_field(record, SYSNO_TAG[0:3]):
-        if (record_get_field_value(
-                record, SYSNO_TAG[0:3], SYSNO_TAG[3],
-                SYSNO_TAG[4], SYSNO_TAG[5]) == rec_sysno):
-            return True
-    return False
-
 
 def can_record_have_physical_copies(recid):
     """Determine if the record can have physical copies
