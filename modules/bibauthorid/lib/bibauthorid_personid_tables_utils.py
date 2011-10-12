@@ -3156,10 +3156,11 @@ def personid_fast_assign_papers(paperslist=None):
     for p in process_list:
         p.join()
 
-
-
-
-
+def delete_cached_author_page(personid):
+    '''
+    Deletes from the author page cache the page concerning one person
+    '''
+    run_sql("delete from aidCACHE where object_name='authorpage_cache' and object_key=%s", (str(personid),))
 
 
 

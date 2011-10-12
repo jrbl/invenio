@@ -1386,6 +1386,8 @@ def execute_action(action, pid, bibref, uid, userinfo='', comment=''):
         tu.reset_papers_flag([pid], [[bibref]])
     else:
         return False
+
+    tu.delete_cached_author_page(pid)
     return True
 
 
