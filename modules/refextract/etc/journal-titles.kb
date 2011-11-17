@@ -274,6 +274,7 @@ REVUE DE L ECTRICITE ET DE L ELECTRONIQUE---Rev. Electr. Electron.
 PROC 16TH INT COSMIC RAY CONF KYOTO JAPAN---Proc. 16th ICRC
 NUCLEAR PHYSICS B PROCEEDINGS SUPPLEMENTS---Nucl. Phys. B, Proc. Suppl.
 NTM INT J HIST ETHICS NAT SCI TECHNOL MED---NTM Int. J. Hist. Ethics Nat. Sci. Technol. Med.
+SITZUNGSBER PREUSS AKAD WISS PHYS MATH KL---Sitzungsber.Preuss.Akad.Wiss.Berlin (Math.Phys.)
 JOURNAL OF THE OPTICAL SOCIETY OF AMERICA---J. Opt. Soc. Am.
 JOURNAL OF ANALYTICAL ATOMIC SPECTROMETRY---J. Anal. At. Spectrom.
 INTERNATIONAL JOURNAL OF MODERN PHYSICS E---Int. J. Mod. Phys. E
@@ -568,6 +569,7 @@ PROC 21ST ICRC ADELAIDE AUSTRALIA---Proc. 21st ICRC
 POLYMER DEGRADATION AND STABILITY---Polym. Degrad. Stab.
 PLASMA PHYS AND CONTROLLED FUSION---Plasma Phys. Control. Fusion
 PIS MA FIZ ELEM CHASTITS AT YADRA---Pis'ma Fiz. Elem. Chastits At. Yadra
+MATERIALS SCIENCE AND ENGINEERING---Mat.Sci.Eng.
 PHYSICS AND CHEMISTRY OF MINERALS---Phys. Chem. Miner.
 PHYSICAL REVIEW C NUCLEAR PHYSICS---Phys. Rev. C
 NUCLEAR INSTRUMENTS AND METHODS B---Nucl. Instrum. Methods Phys. Res., B
@@ -6143,7 +6145,7 @@ ANNALS MATH---Ann. Math.
 ANN STATIST---Ann. Stat.
 ANN PHYSICS---Ann. Phys.
 ANN PHYS US---Ann. Phys.
-ANN PHYS NY---Ann. Phys. (San Diego)
+ANN PHYS NY---Ann. Phys. (New York)
 ANN PHYS FR---Ann. Phys. (Les Ulis)
 ANN PHY N Y---Ann. Phys. (San Diego)
 ANN OF PHYS---Ann. Phys.
@@ -7283,6 +7285,7 @@ ZHETF---Zh. Eksp. Teor. Fiz.
 ZETFP---Zh. Eksp. Teor. Fiz. Pis'ma v Red.
 TRAMS---Trans. Am. Math. Soc.
 SIGMA---SIGMA, Symmetry Integrability Geom. Methods Appl.
+JINST---JINST
 SCIEN---Science
 SCI J---Sci. J.
 QJRAS---Quart. J. Roy. Astron. Soc.
@@ -7524,7 +7527,6 @@ PPN---Phys. Part. Nucl.
 PLB---Phys. Lett. B
 PLA---Phys. Lett. A
 PHE---Physica E
-PHD---Physica D
 PHC---Physica C
 PHB---Physica B
 PHA---Physica A

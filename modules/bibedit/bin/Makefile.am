@@ -15,14 +15,12 @@
 ## along with Invenio; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-bin_SCRIPTS = refextract \
-              xmlmarclint \
+bin_SCRIPTS = xmlmarclint \
               xmlmarc2textmarc \
               textmarc2xmlmarc \
               bibedit
 
-EXTRA_DIST = refextract.in \
-             xmlmarclint.in \
+EXTRA_DIST = xmlmarclint.in \
              xmlmarc2textmarc.in \
              textmarc2xmlmarc.in \
              bibedit.in

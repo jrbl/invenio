@@ -15,17 +15,18 @@
 ## along with Invenio; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-etcdir = $(sysconfdir)/bibedit/
-etc_DATA = MARC21slim.dtd
+pylibdir = $(libdir)/python/invenio
 
-rectmpldir = $(etcdir)/record_templates/
-rectmpl_DATA = poem.xml
+pylib_DATA = authorextract_api.py \
+             authorextract_engine.py \
+             authorextract_cli.py \
+             authorextract_daemon.py \
+             authorextract_re.py \
+             authorextract_find.py \
+             authorextract_xml.py \
+             authorextract_config.py \
+             authorextract_text.py
 
-fldtmpldir = $(etcdir)/field_templates/
-fldtmpl_DATA = firstauthor.xml
+EXTRA_DIST = $(pylib_DATA)
 
-EXTRA_DIST = $(etc_DATA) \
-             $(rectmpl_DATA) \
-             $(fldtmpl_DATA)
-
-CLEANFILES = *~ *.tmp
+CLEANFILES = *~ *.tmp *.pyc

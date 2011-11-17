@@ -606,7 +606,6 @@ AC_CONFIG_FILES([config.nice  \
      modules/bibedit/Makefile \
      modules/bibedit/bin/Makefile \
      modules/bibedit/bin/bibedit \
-     modules/bibedit/bin/refextract \
      modules/bibedit/bin/xmlmarc2textmarc \
      modules/bibedit/bin/textmarc2xmlmarc \
      modules/bibedit/bin/xmlmarclint \
@@ -856,6 +855,27 @@ AC_CONFIG_FILES([config.nice  \
      modules/websubmit/lib/functions/Makefile \
      modules/websubmit/web/Makefile \
      modules/websubmit/web/admin/Makefile \
+     modules/refextract/Makefile \
+     modules/refextract/bin/Makefile \
+     modules/refextract/doc/Makefile \
+     modules/refextract/lib/Makefile \
+     modules/refextract/etc/Makefile \
+     modules/refextract/doc/admin/Makefile \
+     modules/refextract/doc/hacking/Makefile \
+     modules/docextract/Makefile \
+     modules/docextract/bin/Makefile \
+     modules/docextract/doc/Makefile \
+     modules/docextract/lib/Makefile \
+     modules/docextract/etc/Makefile \
+     modules/docextract/doc/admin/Makefile \
+     modules/docextract/doc/hacking/Makefile \
+     modules/authorextract/Makefile \
+     modules/authorextract/bin/Makefile \
+     modules/authorextract/doc/Makefile \
+     modules/authorextract/lib/Makefile \
+     modules/authorextract/etc/Makefile \
+     modules/authorextract/doc/admin/Makefile \
+     modules/authorextract/doc/hacking/Makefile \
      ])
 
 ## Finally, write output files:

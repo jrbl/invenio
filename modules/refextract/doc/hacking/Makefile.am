@@ -1,5 +1,5 @@
 ## This file is part of Invenio.
-## Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 CERN.
+## Copyright (C) 2004, 2008, 2010, 2011 CERN.
 ##
 ## Invenio is free software; you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
@@ -15,17 +15,11 @@
 ## along with Invenio; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-etcdir = $(sysconfdir)/bibedit/
-etc_DATA = MARC21slim.dtd
+webdoclibdir = $(libdir)/webdoc/invenio/hacking
 
-rectmpldir = $(etcdir)/record_templates/
-rectmpl_DATA = poem.xml
+webdoclib_DATA = \
+	refextract-internals.webdoc
 
-fldtmpldir = $(etcdir)/field_templates/
-fldtmpl_DATA = firstauthor.xml
-
-EXTRA_DIST = $(etc_DATA) \
-             $(rectmpl_DATA) \
-             $(fldtmpl_DATA)
+EXTRA_DIST = $(webdoclib_DATA)
 
 CLEANFILES = *~ *.tmp

@@ -15,17 +15,9 @@
 ## along with Invenio; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-etcdir = $(sysconfdir)/bibedit/
-etc_DATA = MARC21slim.dtd
+etcdir = $(sysconfdir)/docextract/
+etc_DATA = 
 
-rectmpldir = $(etcdir)/record_templates/
-rectmpl_DATA = poem.xml
-
-fldtmpldir = $(etcdir)/field_templates/
-fldtmpl_DATA = firstauthor.xml
-
-EXTRA_DIST = $(etc_DATA) \
-             $(rectmpl_DATA) \
-             $(fldtmpl_DATA)
+EXTRA_DIST = $(etc_DATA)
 
 CLEANFILES = *~ *.tmp
