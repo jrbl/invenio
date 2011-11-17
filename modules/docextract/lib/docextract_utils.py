@@ -1,5 +1,7 @@
+# -*- coding: utf-8 -*-
+##
 ## This file is part of Invenio.
-## Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 CERN.
+## Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011 CERN.
 ##
 ## Invenio is free software; you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
@@ -15,6 +17,27 @@
 ## along with Invenio; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-SUBDIRS = bibauthorid bibcatalog bibcheck bibcirculation bibclassify bibconvert bibedit bibencode bibexport bibharvest bibknowledge bibmatch bibmerge bibsched bibsort bibsword bibindex bibrank bibupload bibformat elmsubmit miscutil webstyle websession webhelp webbasket webalert websearch websubmit webaccess webmessage webstat webcomment webjournal docextract
+VERBOSITY = None
 
-CLEANFILES = *~
+import sys
+
+from invenio.bibtask import write_message as bibtask_write_message
+
+
+def setup_loggers(verbosity):
+    global VERBOSITY
+
+    if verbosity > 8:
+        print 'Setting up loggers: verbosity=%s' % verbosity
+
+    VERBOSITY = verbosity
+
+
+def write_message(msg, stream=sys.stdout, verbose=1):
+    """Write message and flush output stream (may be sys.stdout or sys.stderr).
+    Useful for debugging stuff."""
+
+    if VERBOSITY is None:
+        return bibtask_write_message(msg, stream ,verbose)
+    elif msg and VERBOSITY >= verbose:
+        print >>stream, msg

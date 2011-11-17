@@ -1,8 +1,12 @@
 %%%%% $Id$ %%%%%
+
+
 ##ArXiv new format##
 <syymms9999v9>
 <syymms9999>
 ARXIV           ---arXiv
+
+
 #####LANL#####
 <s/syymm999>
 <syymm999>
@@ -22,7 +26,7 @@ CHEM PH		---chem-ph
 CMP LG		---cmp-lg
 COMP GAS	---comp-gas
 COND MAT	---cond-mat
-CS		---cs
+CS	        ---cs
 CS AI		---cs.AI
 CS AR		---cs.AR
 CS CC		---cs.CC
@@ -69,7 +73,7 @@ HEPPH		---hep-ph
 HEP TH		---hep-th
 ARXIVHEP TH	---hep-th
 HEPTH		---hep-th
-HEPTHE          ---hep-th
+HEPTHE      ---hep-th
 LC OM		---lc-om
 MATH		---math
 MATH AG		---math.AG
@@ -127,13 +131,17 @@ SOLV INT	---solv-int
 
 #####FermiLab#####
 < 9999>
+< 999>
 < yy 999 [AET ]>
 < yyyy 999 [AET ]>
+< yyyy 99>
 
 FERMILAB CONF	---FERMILAB-Conf
-FERMILAB FN	---FERMILAB-FN
+FERMILAB FN	    ---FERMILAB-FN
 FERMILAB PUB	---FERMILAB-Pub
-FERMILAB TM	---FERMILAB-TM
+FERMILAB TM	    ---FERMILAB-TM
+FERMILAB DESIGN ---FERMILAB-Design
+FERMILAB THESIS ---FERMILAB-Thesis
 
 
 #####CERN#####
@@ -143,6 +151,7 @@ FERMILAB TM	---FERMILAB-TM
 ALEPH                  ---ALEPH
 ALICE                  ---ALICE
 ALICE INT              ---ALICE-INT
+ALICE NOTE             ---ALICE-INT
 ATL CAL                ---ATL-CAL
 ATL COM                ---ATL-COM
 ATL COM DAQ            ---ATL-COM-DAQ
@@ -150,6 +159,7 @@ ATL COM MUON           ---ATL-COM-MUON
 ATL COM PHYS           ---ATL-COM-PHYS
 ATL COM TILECAL        ---ATL-COM-TILECAL
 ATL CONF               ---ATL-CONF
+ATLAS CONF             ---ATL-CONF
 ATL DAQ                ---ATL-DAQ
 ATL DAQ CONF           ---ATL-DAQ-CONF
 ATL GEN                ---ATL-GEN
@@ -158,6 +168,7 @@ ATL LARG               ---ATL-LARG
 ATL MUON               ---ATL-MUON
 ATL PHYS               ---ATL-PHYS
 ATL PHYS PUB           ---ATL-PHYS-PUB
+ATL PHYS INT           ---ATL-PHYS-INT
 ATL TECH               ---ATL-TECH
 ATL TILECAL            ---ATL-TILECAL
 CERN AB                ---CERN-AB
@@ -190,27 +201,51 @@ CERN DD                ---CERN-DD
 CERN DELPHI            ---CERN-DELPHI
 CERN ECP               ---CERN-ECP
 CERN EF                ---CERN-EF
-CERN EP		---CERN-EP
-CERN EST	---CERN-EST
-CERN ETT	---CERN-ETT
-CERN IT		---CERN-IT
+CERN ECP               ---CERN-EP
+CERN EST               ---CERN-EST
+CERN ETT               ---CERN-ETT
+CERN IT                ---CERN-IT
 CERN LHCB              ---CERN-LHCB
-CERN LHCC	---CERN-LHCC
-CERN LHC	---CERN-LHC
-CERN LHC PROJECT REPORT	---CERN-LHC-Project-Report
-CERN OPEN	---CERN-OPEN
-CERN PPE	---CERN-PPE
-CERN PS		---CERN-PS
-CERN SL		---CERN-SL
-CERN SPSC	---CERN-SPSC
-CERN ST		---CERN-ST
-CERN TH		---CERN-TH
-CERN THESIS	---CERN-THESIS
-CERN TIS	---CERN-TIS
+CERN LHCC              ---CERN-LHCC
+CERN LHC               ---CERN-LHC
+CERN LHC PHO           ---CERN-LHC-PHO
+CERN LHC PROJECT REPORT---CERN-LHC-Project-Report
+CERN OPEN              ---CERN-OPEN
+CERN PPE               ---CERN-PPE
+CERN PS                ---CERN-PS
+CERN SL                ---CERN-SL
+CERN SPSC              ---CERN-SPSC
+CERN ST                ---CERN-ST
+CERN TH                ---CERN-TH
+CERN THESIS            ---CERN-THESIS
+CERN TIS               ---CERN-TIS
 CMS CR                 ---CMS-CR
 CMS NOTE               ---CMS-NOTE
 LHCB                   ---LHCB
 SN ATLAS               ---SN-ATLAS
+PAS SUSY               ---CMS-PAS-SUS
+
+
+#####CERN MORE####
+< yyyy 999>
+< yyyy 99>
+< yyyy 9>
+< yy 99>
+< yy 9>
+CERN/LHCB       ---CERN-LHCB
+CERN/LHCC       ---CERN-LHCC
+CERN/PHESS      ---CERN-PHESS
+
+
+#####LHC#####
+< 999>
+< 9999>
+
+CERN CLIC NOTE          ---CERN-CLIC-Note
+LHC PROJECT NOTE        ---LHC-Project-Note
+CERN LHC PROJECT REPORT ---CERN-LHC-Project-Report
+LHC PROJECT REPORT      ---CERN-LHC-Project-Report
+CLIC NOTE               ---CERN-CLIC-Note
 
 
 #####KEK#####
@@ -218,11 +253,11 @@ SN ATLAS               ---SN-ATLAS
 < yy 999>
 < yyyy 999>
 
-KEK CP		---KEK-CP
-KEK INT		---KEK-Internal
-KEK INTERNAL	---KEK-Internal
-KEK PREPRINT	---KEK-Preprint
-KEK TH		---KEK-TH
+KEK CP        ---KEK-CP
+KEK INT       ---KEK-Internal
+KEK INTERNAL  ---KEK-Internal
+KEK PREPRINT  ---KEK-Preprint
+KEK TH	      ---KEK-TH
 
 
 #####DESY#####

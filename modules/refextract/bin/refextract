@@ -1,4 +1,4 @@
-#!@PYTHON@
+#!/usr/bin/env python
 ## -*- mode: python; coding: utf-8; -*-
 ##
 ## This file is part of Invenio.
@@ -46,13 +46,21 @@
     standalone mode by providing a physical fulltext file using
     [-f, --fulltext].
 """
-try:
-    from invenio.refextract_cli import main
-except ImportError, err:
-    import sys
-    sys.stderr.write("Error: %s" % err)
-    sys.stderr.flush()
-    sys.exit(1)
+import sys
+
+from invenio.refextract_cli import main as cli_main
+from invenio.refextract_cli import get_cli_options
+from invenio.refextract_engine import begin_extraction
+from invenio.refextract_daemon import main as daemon_main
+
 
 if __name__ == '__main__':
-    main()
+    try:
+        (options, args) = get_cli_options()
+        if options.fulltext:
+            cli_main(options, args, begin_extraction)
+        else:
+            daemon_main()
+    except KeyboardInterrupt:
+        # Exit cleanly
+        print 'Interrupted'
