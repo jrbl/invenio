@@ -172,13 +172,13 @@ def interface(req,
     txt = []
     noPage = []
     # Preliminary tasks
-    # check that the user is logged in
-    if not uid_email or uid_email == "guest":
-        return warningMsg(websubmit_templates.tmpl_warning_message(
-                           ln = ln,
-                           msg = _("Sorry, you must log in to perform this action.")
-                         ), req, ln)
-        # warningMsg("""<center><font color="red"></font></center>""",req, ln)
+    if not access:
+        # In some cases we want to take the users directly to the submit-form.
+        # This fix makes this possible - as it generates the required access
+        # parameter if it is not present.
+        pid = os.getpid()
+        now = time.time()
+        access = "%i_%s" % (now, pid)
     # check we have minimum fields
     if not doctype or not act or not access:
         ## We don't have all the necessary information to go ahead
@@ -790,13 +790,6 @@ def endaction(req,
     uid = getUid(req)
     uid_email = get_email(uid)
     # Preliminary tasks
-    # check that the user is logged in
-    if uid_email == "" or uid_email == "guest":
-        return warningMsg(websubmit_templates.tmpl_warning_message(
-                           ln = ln,
-                           msg = _("Sorry, you must log in to perform this action.")
-                         ), req, ln)
-
     ## check we have minimum fields
     if not doctype or not act or not access:
         ## We don't have all the necessary information to go ahead

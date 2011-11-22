@@ -1314,15 +1314,12 @@ class WebInterfaceSubmitPages(WebInterfaceDirectory):
                    mode):
 
             uid = getUid(req)
-            if isGuestUser(uid):
-                return redirect_to_url(req, "%s/youraccount/login%s" % (
-                    CFG_SITE_SECURE_URL,
-                        make_canonical_urlargd({
-                    'referer' : CFG_SITE_SECURE_URL + req.unparsed_uri, 'ln' : args['ln']}, {})), norobot=True)
 
-            if uid == -1 or CFG_ACCESS_CONTROL_LEVEL_SITE >= 1:
+            (auth_code, auth_message) = acc_authorize_action(uid, 'submit')
+            if auth_code > 0 or CFG_ACCESS_CONTROL_LEVEL_SITE >= 1:
                 return page_not_authorized(req, "../submit",
-                                           navmenuid='submit')
+                                           navmenuid='submit',
+                                           text=auth_message)
             if CFG_CERN_SITE:
                 ## HACK BEGIN: this is a hack for CMS and ATLAS draft
                 from invenio.webuser import collect_user_info

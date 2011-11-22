@@ -264,10 +264,6 @@ class Template:
               var checked = 0;
               function tester() {
               """
-        if (guest):
-            out += "alert(\"%(please_login_js)s\");return false;\n" % {
-                     'please_login_js' : _("Please log in first.") + '\\n' + _("Use the top-right menu to log in.")
-                   }
 
         out += """
                     if (checked == 0) {
@@ -2375,7 +2371,7 @@ class Template:
                    }
             if auth_code == 0:
                 out += "<br />" + _("As a referee for this document, you may click this button to approve or reject it") + ":<br />" +\
-                       """<input class="adminbutton" type="submit" name="approval" value="%(approve)s" onclick="window.location='approve.py?%(access)s&amp;ln=%(ln)s';return false;" />""" % {
+                       """<input class="adminbutton" type="submit" name="approval" value="%(approve)s" onclick="window.location='approve.py?access=%(access)s&amp;ln=%(ln)s';return false;" />""" % {
                          'approve' : _("Approve/Reject"),
                          'access' : access,
                          'ln' : ln
