@@ -41,10 +41,13 @@ from invenio.refextract_re import \
     re_correct_numeration_2nd_try_ptn3, \
     re_correct_numeration_2nd_try_ptn4, \
     re_correct_numeration_2nd_try_ptn5, \
+    re_correct_numeration_2nd_try_ptn6, \
     re_numeration_nucphys_vol_page_yr, \
     re_numeration_vol_subvol_nucphys_yr_page, \
     re_numeration_nucphys_vol_yr_page, \
     re_multiple_hyphens, \
+    re_numeration_vol_page_yr, \
+    re_numeration_vol_yr_page, \
     re_numeration_vol_nucphys_series_yr_page, \
     re_numeration_vol_series_nucphys_page_yr, \
     re_numeration_vol_nucphys_series_page_yr, \
@@ -55,7 +58,10 @@ from invenio.refextract_re import \
     re_wash_volume_tag, \
     re_numeration_vol_nucphys_yr_subvol_page, \
     re_quoted, \
-    re_isbn
+    re_isbn, \
+    re_arxiv, \
+    re_new_arxiv, \
+    re_pos
 
 from invenio.authorextract_re import re_auth, \
                                      re_extra_auth, \
@@ -111,6 +117,18 @@ def tag_reference_line(line, kbs, record_titles_count):
     # Identify ISBN (for books)
     working_line1 = tag_isbn(working_line1)
 
+    # Identify arxiv reports
+    working_line1 = tag_arxiv(working_line1)
+
+    # Identify volume for POS journal
+    working_line1 = tag_pos_volume(working_line1)
+
+    # Identify journals with regular expression
+    # Some journals need to match exact regexps because they can
+    # conflict with other elements
+    # e.g. DAN is also a common first name
+    working_line1 = tag_journals_re(working_line1, kbs['journals_re'])
+
     # Remove identified tags
     working_line2 = strip_tags(working_line1)
 
@@ -130,7 +148,7 @@ def tag_reference_line(line, kbs, record_titles_count):
        identify_preprint_report_numbers(working_line2, kbs['reports'])
 
     # Identify and record coordinates of non-standard journal titles:
-    found_title_len, found_title_matchtext, working_line2, line_titles_count =\
+    found_title_len, found_title_matchtext, working_line2, line_titles_count = \
         identify_periodical_titles(working_line2, kbs['journals'])
 
     # Add the count of 'bad titles' found in this line to the total
@@ -312,7 +330,7 @@ def process_reference_line(working_line,
         # elsewhere in the xml conversion process
         # if not CLI_OPTS['inspire']:
         #    tagged_line = move_tagged_series_into_tagged_title(tagged_line)
-        tagged_line = wash_line(tagged_line)
+        #tagged_line = wash_line(tagged_line)
 
     # Before moving onto creating the XML string...
     # try to find any authors in the line
@@ -328,12 +346,73 @@ def wash_volume_tag(line):
 
 
 def tag_isbn(line):
+    """Tag books ISBN"""
     return re_isbn.sub(ur'<cds.ISBN>\g<code></cds.ISBN>', line)
 
 
 def tag_titles(line):
+    """Tag quoted titles
+    
+    We use titles for pretty display of references that we could not
+    associate we record.
+    We also use titles for recognising books.
+    """
     return re_quoted.sub(ur'<cds.QUOTED>\g<title></cds.QUOTED>', line)
 
+
+def tag_arxiv(line):
+    """Tag arxiv report numbers
+    
+    We handle arXiv in 2 ways:
+    * starting with arXiv:1022.1111
+    * this format exactly 9999.9999
+    We also format the output to the standard arxiv notation:
+    * arXiv:2007.12.1111
+    * arXiv:2007.12.1111v2
+    """
+    def tagger(match):
+        groups = match.groupdict()
+        if match.group('suffix'):
+            groups['suffix'] = ' ' + groups['suffix']
+        else:
+            groups['suffix'] = ''
+        return u'<cds.REPORTNUMBER>arXiv:%(year)s'\
+            u'%(month)s.%(num)s%(suffix)s' \
+            u'</cds.REPORTNUMBER>' % groups
+
+    line = re_arxiv.sub(tagger, line)
+    line = re_new_arxiv.sub(tagger, line)
+    return line
+
+
+def tag_pos_volume(line):
+    """Tag POS volume number
+    
+    POS is journal that has special volume numbers
+    e.g. PoS LAT2007 (2007) 369
+    """
+    def tagger(match):
+        groups = match.groupdict()
+        if match.group('year'):
+            groups['year'] = ' <cds.YR>%s</cds.YR>' % groups['year'].strip()
+        else:
+            groups['year'] = ''
+
+        return '<cds.TITLE>PoS</cds.TITLE>' \
+            ' <cds.VOL>%(volume)s</cds.VOL>' \
+            '%(year)s' \
+            ' <cds.PG>%(page)s</cds.PG>' % groups
+
+    for p in re_pos:
+        line = p.sub(tagger, line)
+
+    return line
+
+
+def tag_journals_re(line, kb_journals):
+    for pattern, journal in kb_journals:
+        line = pattern.sub(journal, line)
+    return line
 
 def re_identify_numeration(line):
     """Look for other numeration in line."""
@@ -344,6 +423,7 @@ def re_identify_numeration(line):
         re_correct_numeration_2nd_try_ptn3,
         re_correct_numeration_2nd_try_ptn4,
         re_correct_numeration_2nd_try_ptn5,
+        re_correct_numeration_2nd_try_ptn6,
     )
     for pattern, replacement in patterns:
         line = pattern.sub(replacement, line)
@@ -930,17 +1010,22 @@ def tag_numeration(line):
     """
     patterns = (
         re_strip_series_and_volume_labels,
+
+        # vol,page,year
+        re_numeration_vol_page_yr,
         re_numeration_vol_nucphys_page_yr,
         re_numeration_nucphys_vol_page_yr,
         # With sub volume
         re_numeration_vol_subvol_nucphys_yr_page,
         re_numeration_vol_nucphys_yr_subvol_page,
-        
+        # vol,year,page
+        re_numeration_vol_yr_page,
         re_numeration_nucphys_vol_yr_page,
-        #re_numeration_vol_series_nucphys_yr_page,
         re_numeration_vol_nucphys_series_yr_page,
+        # vol,page,year
         re_numeration_vol_series_nucphys_page_yr,
         re_numeration_vol_nucphys_series_page_yr,
+        # year,vol,page
         re_numeration_yr_vol_page,
     )
 
@@ -1093,6 +1178,9 @@ def identify_preprint_report_numbers(line, kb_reports):
     preprint_repnum_categs = preprint_repnum_standardised_categs.keys()
     preprint_repnum_categs.sort(_by_len)
 
+    # Handle CERN/LHCC/98-013
+    line = line.replace('/', ' ')
+
     # try to match preprint report numbers in the line:
     for categ in preprint_repnum_categs:
         # search for all instances of the current report
@@ -1110,6 +1198,7 @@ def identify_preprint_report_numbers(line, kb_reports):
             numeration_match = numeration_match.replace("/-", "/")
             numeration_match = numeration_match.replace("-/", "/")
             numeration_match = numeration_match.replace("-/-", "/")
+
             # replace the found preprint report number in the
             # string with underscores
             # (this will replace chars in the lower-cased line):
@@ -1201,9 +1290,11 @@ def identify_and_tag_URLs(line):
         endposn     = m_raw_url.end()         # end position of matched URL
         matchlen    = len(m_raw_url.group(0)) # total length of URL match
         matched_url = m_raw_url.group(1)
+
         if len(matched_url) > 0 and matched_url[-1] in (".", ","):
             # Strip the full-stop or comma from the end of the url:
             matched_url = matched_url[:-1]
+
         found_url_full_matchlen[startposn] = matchlen
         found_url_urlstring[startposn]     = matched_url
         found_url_urldescr[startposn]      = matched_url

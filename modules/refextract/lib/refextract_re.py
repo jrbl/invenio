@@ -18,12 +18,32 @@
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 import re
-import sys
 
-from invenio.refextract_config import \
-    CFG_REFEXTRACT_KB_COLLABORATIONS
+# Pattern for PoS journal
+re_pos_year = ur'\s*(?P<year>\s\(?(?:19|20)\d{2}\)?)?'
+# e.g. e.g. LAT2007
+re_pos_volume = ur'\s+(?P<volume>\w{1,10}(?:19|20)\d{2})\s*'
+re_pos_page = ur'\s+(?P<page>\d{1,4})'
+re_pos_title = ur'POS'
+re_pos_patterns = [
+    re_pos_title + re_pos_year + re_pos_volume + re_pos_page,
+    re_pos_title + re_pos_volume + re_pos_year + re_pos_page,
+    re_pos_title + re_pos_volume + re_pos_page + re_pos_year,
+]
+re_opts = re.VERBOSE | re.UNICODE | re.IGNORECASE
+re_pos = [re.compile(p, re_opts) for p in re_pos_patterns]
 
-from invenio.docextract_utils import write_message
+# Pattern for arxiv numbers
+re_arxiv = re.compile(ur""" # arxiv 9910-1234v9 [physics.ins-det]
+    ARXIV[\s:-]*(?P<year>\d{2})-?(?P<month>\d{2})
+    [\s.-]*(?P<num>\d{4})(?:[\s-]*V(?P<version>\d))?
+    \s*(?P<suffix>\[[A-Z.-]+\])? """, re.VERBOSE | re.UNICODE | re.IGNORECASE)
+
+re_new_arxiv = re.compile(ur""" # 9910.1234v9 [physics.ins-det]
+    (?<!ARXIV:)
+    (?P<year>\d{2})(?P<month>\d{2})
+    \.(?P<num>\d{4})(?:[\s-]*V(?P<version>\d))?
+    \s*(?P<suffix>\[[A-Z.-]+\])? """, re.VERBOSE | re.UNICODE | re.IGNORECASE)
 
 # Pattern to recognize quoted text:
 re_quoted = re.compile(ur'"(?P<title>[^"]+)"', re.UNICODE)
@@ -73,10 +93,12 @@ re_extract_char_class = (re.compile(ur' \[([^\]]+) \]', re.UNICODE), \
 ## Stand-alone URL (e.g. http://invenio-software.org/ )
 re_raw_url = \
  re.compile(ur"""\"?
-    ((https?|s?ftp):\/\/([\w\d\_\.\-])+(:\d{1,5})?
-    (\/\~([\w\d\_\.\-])+)?
-    (\/([\w\d\_\.\-\?\=])+)*
-    (\/([\w\d\_\-]+\.\w{1,6})?)?)
+    (
+        (https?|s?ftp):\/\/([\w\d\_\.\-])+(:\d{1,5})?
+        (\/\~([\w\d\_\.\-])+)?
+        (\/([\w\d\_\.\-\?\=\&])+)*
+        (\/([\w\d\_\-]+\.\w{1,6})?)?
+    )
     \"?""", re.UNICODE|re.I|re.VERBOSE)
 
 ## HTML marked-up URL (e.g. <a href="http://invenio-software.org/">
@@ -173,6 +195,9 @@ re_wash_volume_tag = (
         ur'<cds.VOL>\g<1>\g<2></cds.VOL>',
 )
 
+# Roman Numbers
+re_roman_numbers = ur"[DdCcLlXxVvIi]+"
+
 ## Sep
 re_sep = ur"\s*[,\s:]\s*"
 
@@ -186,16 +211,19 @@ re_volume_sub_number_opt = u'(?:' + re_sep + u'(?P<vol_sub>' + \
 
 ## Volume
 re_volume_prefix = ur"(?:[Vv]o?l?\.?|[Nn]o\.?)" ## Optional Vol./No.
-re_volume_id = ur"(?P<vol>(?:(?:[A-Za-z]\s?)?(?P<vol_num>\d+))|(?:(?:\w\s?)?\d+\s*\-\s*(?:\w\s?)?\d+))"
-re_volume_check = ur"(?<!(?:\/|\d))"
+re_volume_suffix = ur"(?:\s*\(\d-\d\))?"
+re_volume_num = ur"\d+|" + "(?P<roman>(?<!\w)" + re_roman_numbers + "(?!\w))"
+re_volume_id = ur"(?P<vol>(?:(?:[A-Za-z]\s?)?(?P<vol_num>%s))|(?:(?:\w\s?)?\d+\s*\-\s*(?:\w\s?)?\d+))" % re_volume_num
+re_volume_check = ur"(?<![\/\d])"
 re_volume = ur"\b" + u"(?:" + re_volume_prefix + u")?\s*" + re_volume_check + \
-    re_volume_id
+    re_volume_id + re_volume_suffix
 
 # Month
 re_short_month = ur"""(?:(?:
 [Jj]an|[Ff]eb|[Mm]ar|[Aa]pr|[Mm]ay|[Jj]un|
 [Jj]ul|[Aa]ug|[Ss]ep|[Oo]ct|[Nn]ov|[Dd]ec
 )\.?)"""
+
 re_month = ur"""(?:(?:
 [Jj]anuary|[Ff]ebruary|[Mm]arch|[Aa]pril|[Mm]ay|[Jj]une|
 [Jj]uly|[Aa]ugust|[Ss]eptember|[Oo]ctober|[Nn]ovember|[Dd]ecember
@@ -230,6 +258,10 @@ re_series = ur"(?P<series>[A-H])"
 ## Used for allowing 3(1991) without space
 re_look_ahead_parentesis = ur"(?=\()"
 re_sep_or_parentesis = u'(?:' + re_sep + u'|' + re_look_ahead_parentesis + ')'
+
+re_look_behind_parentesis = ur"(?<=\))"
+re_sep_or_after_parentesis = u'(?:' + \
+    re_sep + u'|' + re_look_behind_parentesis + ')'
 
 
 ## After having processed a line for titles, it may be possible to find more
@@ -271,6 +303,15 @@ re_correct_numeration_2nd_try_ptn4 = (re.compile(
                                       ur'<cds.PG>1</cds.PG>')
 
 re_correct_numeration_2nd_try_ptn5 = (re.compile(
+  re_title_tag + re_sep +       ## Recognised, tagged title
+  re_year + ur"\s*[.,\s:]\s*" + ## Year
+  re_volume + re_sep +          ## The volume
+  re_page,                      ## The page
+  re.UNICODE|re.VERBOSE), ur'\g<title_tag> : <cds.VOL>\g<vol></cds.VOL> ' \
+    ur'<cds.YR>(\g<year>)</cds.YR> <cds.PG>\g<page></cds.PG>')
+
+
+re_correct_numeration_2nd_try_ptn6 = (re.compile(
   re_title_tag + re_sep + re_volume, re.UNICODE|re.VERBOSE),
     ur'\g<title_tag> <cds.VOL>\g<vol></cds.VOL>')
 
@@ -286,26 +327,36 @@ re_strip_series_and_volume_labels = (re.compile(
 
 ## This pattern is not compiled, but rather included in
 ## the other numeration paterns:
-_sre_non_compiled_pattern_nucphysb_subtitle = \
-           ur'(?:[\(\[]\s*(?:[Ff][Ss]|[Pp][Mm])\s*\d{0,4}\s*[\)\]])?'
+re_nucphysb_subtitle = \
+    ur'(?:[\(\[]\s*(?:[Ff][Ss]|[Pp][Mm])\s*\d{0,4}\s*[\)\]])'
+re_nucphysb_subtitle_opt = \
+    u'(?:' + re_sep + re_nucphysb_subtitle + u')?'
 
 
 ## the 4 main numeration patterns:
 
 ## Pattern 1: <vol, page, year>
 
-## <v, [FS]?, p, y>
-re_numeration_vol_nucphys_page_yr = (re.compile(
+## <v, p, y>
+re_numeration_vol_page_yr = (re.compile(
   re_volume + re_volume_sub_number_opt + re_sep +
-  _sre_non_compiled_pattern_nucphysb_subtitle + re_sep +
   re_page + re_sep_or_parentesis +
   re_year, re.UNICODE|re.VERBOSE), ur' : <cds.VOL>\g<vol></cds.VOL> ' \
                                       ur'<cds.YR>(\g<year>)</cds.YR> ' \
                                       ur'<cds.PG>\g<page></cds.PG> ')
 
-## <[FS]?, v, p, y>
+## <v, [FS], p, y>
+re_numeration_vol_nucphys_page_yr = (re.compile(
+  re_volume + re_volume_sub_number_opt + re_sep +
+  re_nucphysb_subtitle + re_sep +
+  re_page + re_sep_or_parentesis +
+  re_year, re.UNICODE|re.VERBOSE), ur' : <cds.VOL>\g<vol></cds.VOL> ' \
+                                      ur'<cds.YR>(\g<year>)</cds.YR> ' \
+                                      ur'<cds.PG>\g<page></cds.PG> ')
+
+## <[FS], v, p, y>
 re_numeration_nucphys_vol_page_yr = (re.compile(
-  _sre_non_compiled_pattern_nucphysb_subtitle + re_sep +
+  re_nucphysb_subtitle + re_sep +
   re_volume + re_sep +
   re_page + re_sep_or_parentesis +
   re_year, re.UNICODE|re.VERBOSE), ur' : <cds.VOL>\g<vol></cds.VOL> ' \
@@ -314,19 +365,27 @@ re_numeration_nucphys_vol_page_yr = (re.compile(
 
 ## Pattern 2: <vol, year, page>
 
+## <v, y, p>
+re_numeration_vol_yr_page = (re.compile(
+  re_volume + re_sep_or_parentesis +
+  re_year + re_sep_or_after_parentesis +
+  re_page, re.UNICODE|re.VERBOSE), ur' : <cds.VOL>\g<vol></cds.VOL> ' \
+                                      ur'<cds.YR>(\g<year>)</cds.YR> ' \
+                                      ur'<cds.PG>\g<page></cds.PG> ')
+
 ## <v, sv, [FS]?, y, p>
 re_numeration_vol_subvol_nucphys_yr_page = (re.compile(
-  re_volume + re_volume_sub_number_opt + re_sep +
-  _sre_non_compiled_pattern_nucphysb_subtitle + re_sep_or_parentesis + \
-  re_year + re_sep +
+  re_volume + re_volume_sub_number_opt +
+  re_nucphysb_subtitle_opt + re_sep_or_parentesis +
+  re_year + re_sep_or_after_parentesis +
   re_page, re.UNICODE|re.VERBOSE), ur' : <cds.VOL>\g<vol></cds.VOL> ' \
                                       ur'<cds.YR>(\g<year>)</cds.YR> ' \
                                       ur'<cds.PG>\g<page></cds.PG> ')
 
 ## <v, [FS]?, y, sv, p>
 re_numeration_vol_nucphys_yr_subvol_page = (re.compile(
-  re_volume + re_sep +
-  _sre_non_compiled_pattern_nucphysb_subtitle + re_sep_or_parentesis + \
+  re_volume + re_nucphysb_subtitle_opt +
+  re_sep_or_parentesis +
   re_year + re_volume_sub_number_opt + re_sep +
   re_page, re.UNICODE|re.VERBOSE), ur' : <cds.VOL>\g<vol></cds.VOL> ' \
                                       ur'<cds.YR>(\g<year>)</cds.YR> ' \
@@ -334,9 +393,9 @@ re_numeration_vol_nucphys_yr_subvol_page = (re.compile(
 
 ## <[FS]?, v, y, p>
 re_numeration_nucphys_vol_yr_page = (re.compile(
-  _sre_non_compiled_pattern_nucphysb_subtitle + re_sep +
+  re_nucphysb_subtitle + re_sep +
   re_volume + re_sep_or_parentesis +        ## The volume (optional "vol"/"no")
-  re_year + re_sep +                       ## Year
+  re_year + re_sep_or_after_parentesis +    ## Year
   re_page, re.UNICODE|re.VERBOSE), ur' : <cds.VOL>\g<vol></cds.VOL> ' \
                                       ur'<cds.YR>(\g<year>)</cds.YR> ' \
                                       ur'<cds.PG>\g<page></cds.PG> ')
@@ -356,10 +415,9 @@ re_numeration_nucphys_vol_yr_page = (re.compile(
 
 ## <v, [FS]?, s, y, p
 re_numeration_vol_nucphys_series_yr_page = (re.compile(
-  re_volume + re_sep +
-  _sre_non_compiled_pattern_nucphysb_subtitle + re_sep +
+  re_volume + re_nucphysb_subtitle_opt + re_sep +
   re_series + re_sep_or_parentesis +
-  re_year + re_sep +
+  re_year + re_sep_or_after_parentesis +
   re_page, re.UNICODE|re.VERBOSE), ur' \g<series> : ' \
                                   ur'<cds.VOL>\g<vol></cds.VOL> ' \
                                   ur'<cds.YR>(\g<year>)</cds.YR> ' \
@@ -371,8 +429,7 @@ re_numeration_vol_nucphys_series_yr_page = (re.compile(
 ## <v, s, [FS]?, p, y>
 re_numeration_vol_series_nucphys_page_yr = (re.compile(
   re_volume + re_sep +
-  re_series + re_sep +
-  _sre_non_compiled_pattern_nucphysb_subtitle + re_sep +
+  re_series + re_nucphysb_subtitle_opt + re_sep +
   re_page + re_sep +
   re_year, re.UNICODE|re.VERBOSE), ur' \g<series> : ' \
                                       ur'<cds.VOL>\g<vol></cds.VOL> ' \
@@ -381,8 +438,7 @@ re_numeration_vol_series_nucphys_page_yr = (re.compile(
 
 ## <v, [FS]?, s, p, y>
 re_numeration_vol_nucphys_series_page_yr = (re.compile(
-    re_volume + re_sep +
-    _sre_non_compiled_pattern_nucphysb_subtitle + re_sep +
+    re_volume + re_nucphysb_subtitle_opt + re_sep +
     re_series + re_sep +
     re_page + re_sep +
     re_year, re.UNICODE|re.VERBOSE), ur' \g<series> : ' \
@@ -392,7 +448,7 @@ re_numeration_vol_nucphys_series_page_yr = (re.compile(
 
 ## Pattern 5: <year, vol, page>
 re_numeration_yr_vol_page = (re.compile(
-    re_year + re_sep +
+    re_year + re_sep_or_after_parentesis +
     re_volume + re_sep +
     re_page, re.UNICODE|re.VERBOSE), ur' : <cds.VOL>\g<vol></cds.VOL> ' \
                                       ur'<cds.YR>(\g<year>)</cds.YR> ' \
@@ -537,6 +593,7 @@ def get_post_reference_section_title_patterns():
         thead + _create_regex_pattern_add_optional_spaces_to_word_characters(u'appendix') + ttail,
         thead + _create_regex_pattern_add_optional_spaces_to_word_characters(u'appendices') + ttail,
         thead + _create_regex_pattern_add_optional_spaces_to_word_characters(u'acknowledgement') + ur's?' + ttail,
+        thead + _create_regex_pattern_add_optional_spaces_to_word_characters(u'acknowledgment') + ur's?' + ttail,
         thead + _create_regex_pattern_add_optional_spaces_to_word_characters(u'table') + ur'\w?s?\d?' + ttail,
         thead + _create_regex_pattern_add_optional_spaces_to_word_characters(u'figure') + ur's?' + ttail,
         thead + _create_regex_pattern_add_optional_spaces_to_word_characters(u'list of figure') + ur's?' + ttail,
@@ -544,6 +601,7 @@ def get_post_reference_section_title_patterns():
         thead + _create_regex_pattern_add_optional_spaces_to_word_characters(u'discussion') + ur's?' + ttail,
         thead + _create_regex_pattern_add_optional_spaces_to_word_characters(u'remercie') + ur's?' + ttail,
         thead + _create_regex_pattern_add_optional_spaces_to_word_characters(u'index') + ur's?' + ttail,
+        thead + _create_regex_pattern_add_optional_spaces_to_word_characters(u'summary') + ur's?' + ttail,
         # Figure nums
         ur'^\s*' + _create_regex_pattern_add_optional_spaces_to_word_characters(u'figure') + numatn,
         ur'^\s*' + _create_regex_pattern_add_optional_spaces_to_word_characters(u'fig') + ur'\.\s*' + numatn,
@@ -608,3 +666,5 @@ re_arxiv_notation = re.compile(ur"""
     """, re.VERBOSE)
 
 # et. al. before J. /// means J is a journal
+
+re_num = re.compile(ur'(\d+)')

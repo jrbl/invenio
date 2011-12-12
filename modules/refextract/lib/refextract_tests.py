@@ -18,7 +18,9 @@
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """
-The Refextract test suite.
+The Refextract unit test suite
+
+The tests will not modifiy the database.
 """
 
 import unittest
@@ -29,15 +31,7 @@ from invenio.testutils import make_test_suite, run_test_suite
 from invenio.docextract_utils import setup_loggers
 from invenio.refextract_tag import identify_ibids, tag_numeration
 from invenio import refextract_re
-from invenio.refextract_daemon import main as daemon_main
-from invenio.refextract_cli import main as cli_main
 from invenio.refextract_find import get_reference_section_beginning
-
-try:
-    from nose.plugins.skip import SkipTest
-except ImportError:
-    class SkipTest(Exception):
-        """Skip a test"""
 
 
 class ReTest(unittest.TestCase):
@@ -121,7 +115,8 @@ class FindSectionTest(unittest.TestCase):
             'marker_pattern': u'\\s*(?P<mark>\\[\\s*(?P<marknum>\\d+)\\s*?\\])',
             'start_line': 1,
             'title_string': 'References',
-            'title_marker_same_line': False
+            'title_marker_same_line': False,
+            'how_found_start': 1,
         })
 
     def test_no_section(self):
@@ -139,7 +134,8 @@ class FindSectionTest(unittest.TestCase):
             'marker_pattern': u'(?P<mark>(?P<left>\\[)\\s*(?P<marknum>\\d+)\\s*(?P<right>\\]))',
             'start_line': 1,
             'title_string': None,
-            'title_marker_same_line': False
+            'title_marker_same_line': False,
+            'how_found_start': 2,
         })
 
     def test_no_title_via_dots(self):
@@ -153,7 +149,8 @@ class FindSectionTest(unittest.TestCase):
             'marker_pattern': u'(?P<mark>(?P<left>)\\s*?(?P<marknum>\\d+)\\s*(?P<right>\\.))',
             'start_line': 1,
             'title_string': None,
-            'title_marker_same_line': False
+            'title_marker_same_line': False,
+            'how_found_start': 3,
         })
 
     def test_no_title_via_numbers(self):
@@ -167,7 +164,26 @@ class FindSectionTest(unittest.TestCase):
             'marker_pattern': u'(?P<mark>(?P<left>)\\s*(?P<marknum>\\d+)\\s*(?P<right>))',
             'start_line': 1,
             'title_string': None,
-            'title_marker_same_line': False
+            'title_marker_same_line': False,
+            'how_found_start': 4,
+        })
+
+    def test_no_title_via_numbers2(self):
+        sect = get_reference_section_beginning([
+            "Hello",
+            "1",
+            "Ref1",
+            "(3)",
+            "2",
+            "Ref2",
+        ])
+        self.assertEqual(sect, {
+            'marker': '1',
+            'marker_pattern': u'(?P<mark>(?P<left>)\\s*(?P<marknum>\\d+)\\s*(?P<right>))',
+            'start_line': 1,
+            'title_string': None,
+            'title_marker_same_line': False,
+            'how_found_start': 4,
         })
 
 

@@ -25,19 +25,10 @@ from invenio.docextract_utils import write_message
 from invenio.docextract_text import join_lines, \
                                     repair_broken_urls, \
                                     re_multiple_space, \
-                                    remove_page_boundary_lines, \
-                                    document_contains_text, \
-                                    get_page_break_positions, \
-                                    get_number_header_lines, \
-                                    get_number_footer_lines, \
-                                    strip_headers_footers_pagebreaks
+                                    remove_page_boundary_lines
 
-from invenio.refextract_find import find_reference_section, \
-    find_reference_section_no_title_via_brackets, \
-    find_reference_section_no_title_via_dots, \
-    find_reference_section_no_title_via_numbers, \
-    find_end_of_reference_section, \
-    get_reference_section_beginning
+from invenio.refextract_find import find_end_of_reference_section, \
+                                    get_reference_section_beginning
 
 
 def extract_references_from_fulltext(fulltext):
@@ -80,12 +71,13 @@ def extract_references_from_fulltext(fulltext):
                              "no end to refs!", verbose=2)
         else:
             # If the end of the reference section was found.. start extraction
-            refs = get_reference_lines(fulltext,
+            refs = get_reference_lines(fulltext, 
                                        ref_sect_start["start_line"],
                                        ref_sect_end,
                                        ref_sect_start["title_string"],
                                        ref_sect_start["marker_pattern"],
-                                       ref_sect_start["title_marker_same_line"])
+                                       ref_sect_start["title_marker_same_line"],
+                                       ref_sect_start["marker"])
 
     return (refs, status, how_found_start)
 
@@ -95,7 +87,8 @@ def get_reference_lines(docbody,
                         ref_sect_end_line,
                         ref_sect_title,
                         ref_line_marker_ptn,
-                        title_marker_same_line):
+                        title_marker_same_line,
+                        ref_line_marker):
     """After the reference section of a document has been identified, and the
        first and last lines of the reference section have been recorded, this
        function is called to take the reference lines out of the document body.
@@ -137,7 +130,8 @@ def get_reference_lines(docbody,
         ref_lines = docbody[start_idx:]
 
     ref_lines = strip_footer(ref_lines, ref_sect_title)
-    ref_lines = strip_pagination(ref_lines)
+    if not ref_line_marker.isdigit():
+        ref_lines = strip_pagination(ref_lines)
     # Now rebuild reference lines:
     # (Go through each raw reference line, and format them into a set
     # of properly ordered lines based on markers)
@@ -188,8 +182,6 @@ def rebuild_reference_lines(ref_sectn, ref_line_marker_ptn):
     rebuilt_references = []
     working_line = u''
 
-    len_ref_sectn = len(ref_sectn)
-
     strip_before = True
     if ref_line_marker_ptn is None or \
            type(ref_line_marker_ptn) not in (str, unicode):
@@ -214,14 +206,14 @@ def rebuild_reference_lines(ref_sectn, ref_line_marker_ptn):
     # Work backwards, starting from the last 'broken' reference line
     # Append each fixed reference line to rebuilt_references
     current_ref = None
-    for x in xrange(len_ref_sectn - 1, -1, -1):
+    for line in reversed(ref_sectn):
         if strip_before:
-            current_string = ref_sectn[x].strip()
+            current_string = line.strip()
             # Try to find the marker for the reference line
             m_ref_line_marker = p_ref_line_marker.match(current_string)
         else:
-            m_ref_line_marker = p_ref_line_marker.match(ref_sectn[x])
-            current_string = ref_sectn[x].strip()
+            m_ref_line_marker = p_ref_line_marker.match(line)
+            current_string = line.strip()
 
 
         if m_ref_line_marker and (not current_ref \

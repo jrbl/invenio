@@ -18,7 +18,10 @@
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 """
-The Refextract test suite.
+The Refextract regression tests suite
+
+The tests will not modifiy the database.
+They are intended to make sure there is no regression in references parsing.
 """
 
 import unittest
@@ -61,7 +64,7 @@ def reference_test(test, ref_line, parsed_reference, ignore_misc=True):
     out = parse_references([ref_line], inspire=test.inspire,
         kb_journals=test.kb_journals, kb_reports=test.kb_reports,
         kb_authors=test.kb_authors, kb_books=test.kb_books,
-        kb_conferences=test.kb_conferences)
+        kb_conferences=test.kb_conferences, kb_journals_re=test.kb_journals_re)
     compare_references(test, out, parsed_reference)
 
 
@@ -72,6 +75,7 @@ class RefextractInvenioTest(unittest.TestCase):
         setup_loggers(verbosity=1)
         self.maxDiff = 2000
         self.kb_journals = None
+        self.kb_journals_re = None
         self.kb_reports = None
         self.kb_authors = None
         self.kb_books = None
@@ -82,7 +86,7 @@ class RefextractInvenioTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[2]</subfield>
+      <subfield code="o">2</subfield>
       <subfield code="h">S. Weinberg, A Model of Leptons</subfield>
       <subfield code="s">Phys. Rev. Lett. 19 (1967) 1264</subfield>
    </datafield>
@@ -93,7 +97,7 @@ class RefextractInvenioTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[137]</subfield>
+      <subfield code="o">137</subfield>
       <subfield code="h">M. Papakyriacou, H. Mayer, C. Pypen, H. P. Jr., and S. Stanzl-Tschegg</subfield>
       <subfield code="s">Mat.Sci.Eng. A308 (2001) 143</subfield>
    </datafield>
@@ -105,7 +109,7 @@ class RefextractInvenioTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[138]</subfield>
+      <subfield code="o">138</subfield>
       <subfield code="h">Y.-B. Park, R. Mnig, and C. A. Volkert</subfield>
       <subfield code="s">Thin Solid Films 515 (2007) 3253</subfield>
    </datafield>
@@ -155,6 +159,10 @@ class RefextractTest(unittest.TestCase):
             "ACTA MATERIALIA---Acta Mater.",
             "REVIEWS OF MODERN PHYSICS---Rev.Mod.Phys.",
             "NUCL INSTRUM METHODS---Nucl.Instrum.Meth.",
+            "Z PHYS---Z.Phys.",
+        ]
+        self.kb_journals_re = [
+            "DAN---Dokl.Akad.Nauk Ser.Fiz.",
         ]
         self.kb_reports = [
             "#####CERN#####",
@@ -163,10 +171,6 @@ class RefextractTest(unittest.TestCase):
             "ATL CONF---ATL-CONF",
             "ATL PHYS INT---ATL-PHYS-INT",
             "ATLAS CONF---ATL-CONF",
-            "##ArXiv new format##",
-            "<syymms9999v9>",
-            "<syymms9999>",
-            "ARXIV---arXiv",
             "#####LANL#####",
             "<s/syymm999>",
             "<syymm999>",
@@ -189,7 +193,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[14]</subfield>
+      <subfield code="o">14</subfield>
       <subfield code="h">L. Randall and R. Sundrum</subfield>
       <subfield code="s">Phys.Rev.Lett.,B83,S08004</subfield>
    </datafield>
@@ -200,7 +204,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[1]</subfield>
+      <subfield code="o">1</subfield>
       <subfield code="u">http://cdsweb.cern.ch/</subfield>
       <subfield code="z">CERN Document Server</subfield>
       <subfield code="h">J. Maldacena</subfield>
@@ -208,7 +212,7 @@ class RefextractTest(unittest.TestCase):
       <subfield code="r">hep-th/9711200</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[1]</subfield>
+      <subfield code="o">1</subfield>
       <subfield code="u">http://cdsweb.cern.ch/</subfield>
       <subfield code="u">http://www.itp.ucsb.edu/online/susyc99/discussion/</subfield>
       <subfield code="h">L. Susskind</subfield>
@@ -216,7 +220,7 @@ class RefextractTest(unittest.TestCase):
       <subfield code="r">hep-th/9409089</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[1]</subfield>
+      <subfield code="o">1</subfield>
       <subfield code="u">http://uk.yahoo.com/</subfield>
       <subfield code="z">Yahoo!</subfield>
    </datafield>
@@ -227,12 +231,12 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[2]</subfield>
+      <subfield code="o">2</subfield>
       <subfield code="h">J. Maldacena</subfield>
       <subfield code="s">Adv.Theor.Math.Phys.,2,231</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[2]</subfield>
+      <subfield code="o">2</subfield>
       <subfield code="r">hep-th/9711200</subfield>
       <subfield code="u">http://cdsweb.cern.ch/</subfield>
    </datafield>
@@ -243,7 +247,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">3.</subfield>
+      <subfield code="o">3</subfield>
       <subfield code="t">pUML Initial Submission to OMG\u2019 s RFP for UML 2.0 Infrastructure</subfield>
       <subfield code="u">http://www.cs.york.ac.uk/puml/</subfield>
    </datafield>
@@ -254,14 +258,14 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[3]</subfield>
+      <subfield code="o">3</subfield>
       <subfield code="h">S. Gubser, I. Klebanov and A. Polyakov</subfield>
       <subfield code="s">Phys.Lett.,B428,105</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[3]</subfield>
+      <subfield code="o">3</subfield>
       <subfield code="r">hep-th/9802109</subfield>
-      <subfield code="u">http://cdsweb.cern.ch/search.py?AGE=hello-world</subfield>
+      <subfield code="u">http://cdsweb.cern.ch/search.py?AGE=hello-world&amp;ln=en</subfield>
    </datafield>
 </record>""")
 
@@ -270,7 +274,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[5]</subfield>
+      <subfield code="o">5</subfield>
       <subfield code="h">O. Aharony, S. Gubser, J. Maldacena, H. Ooguri and Y. Oz</subfield>
       <subfield code="r">hep-th/9905111</subfield>
    </datafield>
@@ -281,12 +285,12 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[4]</subfield>
+      <subfield code="o">4</subfield>
       <subfield code="h">E. Witten</subfield>
       <subfield code="s">Adv.Theor.Math.Phys.,2,253</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[4]</subfield>
+      <subfield code="o">4</subfield>
       <subfield code="r">hep-th/9802150</subfield>
    </datafield>
 </record>""")
@@ -296,12 +300,12 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[6]</subfield>
+      <subfield code="o">6</subfield>
       <subfield code="h">L. Susskind</subfield>
       <subfield code="s">J.Math.Phys.,36,6377</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[6]</subfield>
+      <subfield code="o">6</subfield>
       <subfield code="r">hep-th/9409089</subfield>
    </datafield>
 </record>""")
@@ -311,7 +315,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[7]</subfield>
+      <subfield code="o">7</subfield>
       <subfield code="h">L. Susskind and E. Witten</subfield>
       <subfield code="r">hep-th/9805114</subfield>
    </datafield>
@@ -322,12 +326,12 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[7]</subfield>
+      <subfield code="o">7</subfield>
       <subfield code="h">W. Fischler and L. Susskind</subfield>
       <subfield code="r">hep-th/9806039</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[7]</subfield>
+      <subfield code="o">7</subfield>
       <subfield code="h">N. Kaloper and A. Linde</subfield>
       <subfield code="s">Phys.Rev.,D60,105509</subfield>
       <subfield code="r">hep-th/9904120</subfield>
@@ -339,12 +343,12 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[9]</subfield>
+      <subfield code="o">9</subfield>
       <subfield code="h">R. Bousso</subfield>
       <subfield code="s">JHEP,9906,028</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[9]</subfield>
+      <subfield code="o">9</subfield>
       <subfield code="r">hep-th/9906022</subfield>
    </datafield>
 </record>""")
@@ -355,7 +359,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[10]</subfield>
+      <subfield code="o">10</subfield>
       <subfield code="h">R. Penrose and W. Rindler</subfield>
    </datafield>
 </record>""")
@@ -365,20 +369,20 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[11]</subfield>
+      <subfield code="o">11</subfield>
       <subfield code="h">R. Britto-Pacumio, A. Strominger and A. Volovich</subfield>
       <subfield code="s">JHEP,9911,013</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[11]</subfield>
+      <subfield code="o">11</subfield>
       <subfield code="r">hep-th/9905210</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[11]</subfield>
+      <subfield code="o">11</subfield>
       <subfield code="r">hep-th/9905211</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[11]</subfield>
+      <subfield code="o">11</subfield>
       <subfield code="r">hep-ph/9711200</subfield>
    </datafield>
 </record>""")
@@ -388,12 +392,12 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[12]</subfield>
+      <subfield code="o">12</subfield>
       <subfield code="h">V. Balasubramanian and P. Kraus</subfield>
       <subfield code="s">Commun.Math.Phys.,208,413</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[12]</subfield>
+      <subfield code="o">12</subfield>
       <subfield code="r">hep-th/9902121</subfield>
    </datafield>
 </record>""")
@@ -403,12 +407,12 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[13]</subfield>
+      <subfield code="o">13</subfield>
       <subfield code="h">V. Balasubramanian and P. Kraus</subfield>
       <subfield code="s">Phys.Rev.Lett.,83,3605</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[13]</subfield>
+      <subfield code="o">13</subfield>
       <subfield code="r">hep-th/9903190</subfield>
    </datafield>
 </record>""")
@@ -418,7 +422,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[14]</subfield>
+      <subfield code="o">14</subfield>
       <subfield code="h">P. Kraus, F. Larsen and R. Siebelink</subfield>
       <subfield code="r">hep-th/9906127</subfield>
    </datafield>
@@ -429,16 +433,16 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[15]</subfield>
+      <subfield code="o">15</subfield>
       <subfield code="h">L. Randall and R. Sundrum</subfield>
       <subfield code="s">Phys.Rev.Lett.,83,4690</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[15]</subfield>
+      <subfield code="o">15</subfield>
       <subfield code="r">hep-th/9906064</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[15]</subfield>
+      <subfield code="o">15</subfield>
       <subfield code="r">CERN-LHC-Project-Report-2006</subfield>
    </datafield>
 </record>""")
@@ -448,7 +452,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[16]</subfield>
+      <subfield code="o">16</subfield>
       <subfield code="h">S. Gubser</subfield>
       <subfield code="r">hep-th/9912001</subfield>
    </datafield>
@@ -459,17 +463,17 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[17]</subfield>
+      <subfield code="o">17</subfield>
       <subfield code="h">H. Verlinde</subfield>
       <subfield code="r">hep-th/9906182</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[17]</subfield>
+      <subfield code="o">17</subfield>
       <subfield code="h">H. Verlinde</subfield>
       <subfield code="r">hep-th/9912018</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[17]</subfield>
+      <subfield code="o">17</subfield>
       <subfield code="h">J. de Boer, E. Verlinde and H. Verlinde</subfield>
       <subfield code="r">hep-th/9912012</subfield>
    </datafield>
@@ -480,7 +484,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[18]</subfield>
+      <subfield code="o">18</subfield>
       <subfield code="h">E. Witten</subfield>
       <subfield code="t">New dimensions in field theory and string theory</subfield>
       <subfield code="u">http://www.itp.ucsb.edu/online/susyc99/discussion/</subfield>
@@ -492,7 +496,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[19]</subfield>
+      <subfield code="o">19</subfield>
       <subfield code="h">D. Page and C. Pope</subfield>
       <subfield code="s">Commun.Math.Phys.,127,529</subfield>
    </datafield>
@@ -503,7 +507,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[20]</subfield>
+      <subfield code="o">20</subfield>
       <subfield code="h">M. Duff, B. Nilsson and C. Pope</subfield>
    </datafield>
 </record>""")
@@ -513,7 +517,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[21]</subfield>
+      <subfield code="o">21</subfield>
       <subfield code="h">D. Page</subfield>
       <subfield code="s">Phys.Lett.,B79,235</subfield>
    </datafield>
@@ -524,13 +528,13 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[22]</subfield>
+      <subfield code="o">22</subfield>
       <subfield code="h">M. Cassidy and S. Hawking</subfield>
       <subfield code="s">Phys.Rev.,D57,2372</subfield>
       <subfield code="r">hep-th/9709066</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[22]</subfield>
+      <subfield code="o">22</subfield>
       <subfield code="h">S. Hawking</subfield>
       <subfield code="s">Phys.Rev.,D52,5681</subfield>
    </datafield>
@@ -541,7 +545,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[23]</subfield>
+      <subfield code="o">23</subfield>
       <subfield code="h">K. Skenderis and S. Solodukhin</subfield>
       <subfield code="r">hep-th/9910023</subfield>
    </datafield>
@@ -552,7 +556,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[24]</subfield>
+      <subfield code="o">24</subfield>
       <subfield code="h">M. Henningson and K. Skenderis</subfield>
       <subfield code="s">JHEP,9807,023</subfield>
       <subfield code="r">hep-th/9806087</subfield>
@@ -564,7 +568,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[25]</subfield>
+      <subfield code="o">25</subfield>
       <subfield code="h">C. Fefferman and C. Graham</subfield>
       <subfield code="t">Conformal Invariants</subfield>
    </datafield>
@@ -575,7 +579,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[27]</subfield>
+      <subfield code="o">27</subfield>
       <subfield code="h">E. Witten and S.-T. Yau</subfield>
       <subfield code="r">hep-th/9910245</subfield>
    </datafield>
@@ -586,12 +590,12 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[28]</subfield>
+      <subfield code="o">28</subfield>
       <subfield code="h">R. Emparan</subfield>
       <subfield code="s">JHEP,9906,036</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[28]</subfield>
+      <subfield code="o">28</subfield>
       <subfield code="r">hep-th/9906040</subfield>
    </datafield>
 </record>""")
@@ -601,13 +605,13 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[29]</subfield>
+      <subfield code="o">29</subfield>
       <subfield code="h">A. Chamblin, R. Emparan, C. Johnson and R. Myers</subfield>
       <subfield code="s">Phys.Rev.,D59,64010</subfield>
       <subfield code="r">hep-th/9808177</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[29]</subfield>
+      <subfield code="o">29</subfield>
       <subfield code="h">S. Hawking, C. Hunter and D. Page</subfield>
       <subfield code="s">Phys.Rev.,D59,44033</subfield>
       <subfield code="r">hep-th/9809035</subfield>
@@ -619,13 +623,13 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[30]</subfield>
+      <subfield code="o">30</subfield>
       <subfield code="h">S. Sethi and L. Susskind</subfield>
       <subfield code="s">Phys.Lett.,B400,265</subfield>
       <subfield code="r">hep-th/9702101</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[30]</subfield>
+      <subfield code="o">30</subfield>
       <subfield code="h">T. Banks and N. Seiberg</subfield>
       <subfield code="s">Nucl.Phys.,B497,41</subfield>
       <subfield code="r">hep-th/9702187</subfield>
@@ -637,12 +641,12 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[31]</subfield>
+      <subfield code="o">31</subfield>
       <subfield code="h">R. Emparan, C. Johnson and R. Myers</subfield>
       <subfield code="s">Phys.Rev.,D60,104001</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[31]</subfield>
+      <subfield code="o">31</subfield>
       <subfield code="r">hep-th/9903238</subfield>
    </datafield>
 </record>""")
@@ -652,12 +656,12 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[32]</subfield>
+      <subfield code="o">32</subfield>
       <subfield code="h">S. Hawking, C. Hunter and M. Taylor-Robinson</subfield>
       <subfield code="s">Phys.Rev.,D59,064005</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[32]</subfield>
+      <subfield code="o">32</subfield>
       <subfield code="r">hep-th/9811056</subfield>
    </datafield>
 </record>""")
@@ -667,12 +671,12 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[33]</subfield>
+      <subfield code="o">33</subfield>
       <subfield code="h">J. Dowker</subfield>
       <subfield code="s">Class.Quant.Grav.,16,1937</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[33]</subfield>
+      <subfield code="o">33</subfield>
       <subfield code="r">hep-th/9812202</subfield>
    </datafield>
 </record>""")
@@ -682,7 +686,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[34]</subfield>
+      <subfield code="o">34</subfield>
       <subfield code="h">J. Brown and J. York</subfield>
       <subfield code="s">Phys.Rev.,D47,1407</subfield>
    </datafield>
@@ -693,16 +697,16 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[35]</subfield>
+      <subfield code="o">35</subfield>
       <subfield code="h">D. Freedman, S. Mathur, A. Matsuis and L. Rastelli</subfield>
       <subfield code="s">Nucl.Phys.,B546,96</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[35]</subfield>
+      <subfield code="o">35</subfield>
       <subfield code="r">hep-th/9804058</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[35]</subfield>
+      <subfield code="o">35</subfield>
       <subfield code="s">Nucl.Phys.,A546,96</subfield>
       <subfield code="h">D. Freedman, S. Mathur, A. Matsuis and L. Rastelli</subfield>
    </datafield>
@@ -713,12 +717,12 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[36]</subfield>
+      <subfield code="o">36</subfield>
       <subfield code="h">D. Freedman, S. Mathur, A. Matsuis and L. Rastelli</subfield>
       <subfield code="s">Nucl.Phys.,B546,96</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[36]</subfield>
+      <subfield code="o">36</subfield>
       <subfield code="r">hep-th/9804058</subfield>
    </datafield>
 </record>""")
@@ -728,19 +732,19 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[37]</subfield>
+      <subfield code="o">37</subfield>
       <subfield code="r">hep-th/9804058</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[37]</subfield>
+      <subfield code="o">37</subfield>
       <subfield code="r">hep-th/0001567</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[37]</subfield>
+      <subfield code="o">37</subfield>
       <subfield code="r">hep-th/1212321</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[37]</subfield>
+      <subfield code="o">37</subfield>
       <subfield code="s">Nucl.Phys.,B546,96</subfield>
    </datafield>
 </record>""")
@@ -750,16 +754,16 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[38]</subfield>
+      <subfield code="o">38</subfield>
       <subfield code="h">R. Emparan, C. Johnson and R.. Myers</subfield>
       <subfield code="s">Phys.Rev.,D60,104001</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[38]</subfield>
+      <subfield code="o">38</subfield>
       <subfield code="r">hep-th/9903238</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[38]</subfield>
+      <subfield code="o">38</subfield>
       <subfield code="r">hep-ph/9912000</subfield>
    </datafield>
 </record>""")
@@ -769,7 +773,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[39]</subfield>
+      <subfield code="o">39</subfield>
       <subfield code="h">A. Ceresole, G. Dall Agata and R. D Auria</subfield>
       <subfield code="s">JHEP,9911,009</subfield>
       <subfield code="r">hep-th/9907216</subfield>
@@ -781,7 +785,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[40]</subfield>
+      <subfield code="o">40</subfield>
       <subfield code="h">D.P. Jatkar and S. Randjbar-Daemi</subfield>
       <subfield code="s">Phys.Lett.,B460,281</subfield>
       <subfield code="r">hep-th/9904187</subfield>
@@ -793,7 +797,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[41]</subfield>
+      <subfield code="o">41</subfield>
       <subfield code="h">G. DallAgata</subfield>
       <subfield code="s">Phys.Lett.,B460,79</subfield>
       <subfield code="r">hep-th/9904198</subfield>
@@ -805,7 +809,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[43]</subfield>
+      <subfield code="o">43</subfield>
       <subfield code="h">Becchi C., Blasi A., Bonneau G., Collina R., Delduc F.</subfield>
       <subfield code="s">Commun.Math.Phys.,120,121</subfield>
    </datafield>
@@ -816,7 +820,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[44]</subfield>
+      <subfield code="o">44</subfield>
       <subfield code="h">N. Nekrasov, A. Schwarz</subfield>
       <subfield code="s">Commun.Math.Phys.,198,689</subfield>
    </datafield>
@@ -827,7 +831,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[42]</subfield>
+      <subfield code="o">42</subfield>
       <subfield code="h">S.M. Donaldson</subfield>
       <subfield code="s">Commun.Math.Phys.,93,453</subfield>
    </datafield>
@@ -838,41 +842,41 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[45]</subfield>
+      <subfield code="o">45</subfield>
       <subfield code="h">H. J. Bhabha</subfield>
       <subfield code="s">Rev.Mod.Phys.,17,200</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[45]</subfield>
+      <subfield code="o">45</subfield>
       <subfield code="s">Rev.Mod.Phys.,21,451</subfield>
       <subfield code="h">H. J. Bhabha</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[45]</subfield>
+      <subfield code="o">45</subfield>
       <subfield code="h">S. Weinberg</subfield>
       <subfield code="s">Phys.Rev.,133,B1318</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[45]</subfield>
+      <subfield code="o">45</subfield>
       <subfield code="s">Phys.Rev.,134,882</subfield>
       <subfield code="h">S. Weinberg</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[45]</subfield>
+      <subfield code="o">45</subfield>
       <subfield code="h">D. L. Pursey</subfield>
       <subfield code="s">Ann.Phys.,32,157</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[45]</subfield>
+      <subfield code="o">45</subfield>
       <subfield code="h">W. K. Tung</subfield>
       <subfield code="s">Phys.Rev.Lett.,16,763</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[45]</subfield>
+      <subfield code="o">45</subfield>
       <subfield code="s">Phys.Rev.,156,1385</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[45]</subfield>
+      <subfield code="o">45</subfield>
       <subfield code="h">W. J. Hurley</subfield>
       <subfield code="s">Phys.Rev.Lett.,29,1475</subfield>
    </datafield>
@@ -883,12 +887,12 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[46]</subfield>
+      <subfield code="o">46</subfield>
       <subfield code="h">E. Schrodinger</subfield>
       <subfield code="s">Sitzungsber.Preuss.Akad.Wiss.Berlin (Math.Phys.),24,418</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[46]</subfield>
+      <subfield code="o">46</subfield>
       <subfield code="s">Sitzungsber.Preuss.Akad.Wiss.Berlin (Math.Phys.),3,1</subfield>
       <subfield code="h">E. Schrodinger</subfield>
    </datafield>
@@ -899,12 +903,12 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[47]</subfield>
+      <subfield code="o">47</subfield>
       <subfield code="h">P. A. M. Dirac</subfield>
       <subfield code="s">Proc.Roy.Soc.Lond.,A155,447</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[47]</subfield>
+      <subfield code="o">47</subfield>
       <subfield code="s">Proc.Roy.Soc.Lond.,D24,3333</subfield>
       <subfield code="h">P. A. M. Dirac</subfield>
    </datafield>
@@ -915,7 +919,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[48]</subfield>
+      <subfield code="o">48</subfield>
       <subfield code="h">O.O. Vaneeva, R.O. Popovych and C. Sophocleous</subfield>
       <subfield code="a">10.1007/s10440-008-9280-9</subfield>
       <subfield code="r">arXiv:0708.3457</subfield>
@@ -927,7 +931,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[49]</subfield>
+      <subfield code="o">49</subfield>
       <subfield code="h">M. I. Trofimov, N. De Filippis and E. A. Smolenskii</subfield>
       <subfield code="a">10.1007/s11172-006-0105-6</subfield>
    </datafield>
@@ -938,19 +942,19 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[50]</subfield>
+      <subfield code="o">50</subfield>
       <subfield code="h">M. Gell-Mann, P. Ramon ans R. Slansky</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[50]</subfield>
+      <subfield code="o">50</subfield>
       <subfield code="h">P. van Niewenhuizen and D. Freedman</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[50]</subfield>
+      <subfield code="o">50</subfield>
       <subfield code="h">T. Yanagida (O. Sawaga and A. Sugamoto (eds.))</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[50]</subfield>
+      <subfield code="o">50</subfield>
       <subfield code="h">R.N. Mohapatra and G. Senjanovic</subfield>
       <subfield code="s">Phys.Rev.Lett.,44,912</subfield>
    </datafield>
@@ -961,22 +965,22 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[51]</subfield>
+      <subfield code="o">51</subfield>
       <subfield code="h">L.S. Durkin and P. Langacker</subfield>
       <subfield code="s">Phys.Lett.,B166,436</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[51]</subfield>
+      <subfield code="o">51</subfield>
       <subfield code="h">Amaldi et al.</subfield>
       <subfield code="s">Phys.Rev.,D36,1385</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[51]</subfield>
+      <subfield code="o">51</subfield>
       <subfield code="h">(Hayward and Yellow et al. (eds.))</subfield>
       <subfield code="s">Phys.Lett.,B245,669</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[51]</subfield>
+      <subfield code="o">51</subfield>
       <subfield code="s">Nucl.Phys.,B342,15</subfield>
    </datafield>
 </record>""")
@@ -987,7 +991,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[53]</subfield>
+      <subfield code="o">53</subfield>
       <subfield code="h">Hush, D.R., R.Leighton, and B.G. Horne</subfield>
       <subfield code="t">Progress in supervised Neural Netw. What's new since Lippmann?</subfield>
    </datafield>
@@ -998,7 +1002,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[54]</subfield>
+      <subfield code="o">54</subfield>
       <subfield code="h">T.G. Rizzo</subfield>
       <subfield code="s">Phys.Rev.,D40,3035</subfield>
    </datafield>
@@ -1011,7 +1015,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[55]</subfield>
+      <subfield code="o">55</subfield>
       <subfield code="h">Hawking S., P. van Niewenhuizen, L.S. Durkin, D. Freeman</subfield>
    </datafield>
 </record>""")
@@ -1022,7 +1026,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[56]</subfield>
+      <subfield code="o">56</subfield>
       <subfield code="h">Hawking S., D. Freeman</subfield>
    </datafield>
 </record>""")
@@ -1033,7 +1037,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[57]</subfield>
+      <subfield code="o">57</subfield>
       <subfield code="h">Hawking S. and D. Freeman</subfield>
    </datafield>
 </record>""")
@@ -1044,7 +1048,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[1]</subfield>
+      <subfield code="o">1</subfield>
       <subfield code="h">Amaldi et al.</subfield>
       <subfield code="s">Phys.Rev.,D36,1385</subfield>
    </datafield>
@@ -1060,15 +1064,15 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[58]</subfield>
+      <subfield code="o">58</subfield>
       <subfield code="s">Nucl.Phys.,B342,15</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[58]</subfield>
+      <subfield code="o">58</subfield>
       <subfield code="s">Phys.Lett.,B261,146</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[58]</subfield>
+      <subfield code="o">58</subfield>
       <subfield code="s">Phys.Lett.,B263,459</subfield>
    </datafield>
 </record>""")
@@ -1079,7 +1083,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[60]</subfield>
+      <subfield code="o">60</subfield>
       <subfield code="h">(HERMES Collaboration) Airapetian A et al.</subfield>
       <subfield code="s">Phys.Rev.D,71,012003</subfield>
    </datafield>
@@ -1090,7 +1094,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[61]</subfield>
+      <subfield code="o">61</subfield>
       <subfield code="h">de Florian D, Sassot R and Stratmann M</subfield>
       <subfield code="s">Phys.Rev.D,75,114010</subfield>
    </datafield>
@@ -1101,7 +1105,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[64]</subfield>
+      <subfield code="o">64</subfield>
       <subfield code="h">Bourrely C, Soffer J and Buccella F</subfield>
       <subfield code="s">Eur.Phys.J.C,23,487</subfield>
    </datafield>
@@ -1112,7 +1116,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[63]</subfield>
+      <subfield code="o">63</subfield>
       <subfield code="h">Z. Guzik and R. Jacobsson</subfield>
    </datafield>
 </record>""")
@@ -1122,7 +1126,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[65]</subfield>
+      <subfield code="o">65</subfield>
       <subfield code="h">K. Huang</subfield>
       <subfield code="s">Am.J.Phys.,20,479</subfield>
    </datafield>
@@ -1135,7 +1139,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[62]</subfield>
+      <subfield code="o">62</subfield>
       <subfield code="h">Pate S. F., McKee D. W. and Papavassiliou V.</subfield>
       <subfield code="s">Phys.Rev.,C78,448</subfield>
    </datafield>
@@ -1148,7 +1152,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[62]</subfield>
+      <subfield code="o">62</subfield>
       <subfield code="h">Pate S., McKee D.</subfield>
       <subfield code="s">Phys.Rev.,C78,448</subfield>
    </datafield>
@@ -1161,7 +1165,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[62]</subfield>
+      <subfield code="o">62</subfield>
       <subfield code="h">Pate S F, McKee D W and Papavassiliou V</subfield>
       <subfield code="s">Phys.Rev.,C78,448</subfield>
    </datafield>
@@ -1174,7 +1178,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[62]</subfield>
+      <subfield code="o">62</subfield>
       <subfield code="h">Pate S, McKee D</subfield>
       <subfield code="s">Phys.Rev.,C78,448</subfield>
    </datafield>
@@ -1185,7 +1189,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[67]</subfield>
+      <subfield code="o">67</subfield>
       <subfield code="h">G. A. Perkins</subfield>
       <subfield code="s">Found.Phys.,6,237</subfield>
    </datafield>
@@ -1196,7 +1200,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[67]</subfield>
+      <subfield code="o">67</subfield>
       <subfield code="h">G. Perkins</subfield>
       <subfield code="s">Found.Phys.,6,237</subfield>
    </datafield>
@@ -1207,7 +1211,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[67]</subfield>
+      <subfield code="o">67</subfield>
       <subfield code="h">G A Perkins</subfield>
       <subfield code="s">Found.Phys.,6,237</subfield>
    </datafield>
@@ -1218,7 +1222,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[67]</subfield>
+      <subfield code="o">67</subfield>
       <subfield code="h">G Perkins</subfield>
       <subfield code="s">Found.Phys.,6,237</subfield>
    </datafield>
@@ -1229,17 +1233,17 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[68]</subfield>
+      <subfield code="o">68</subfield>
       <subfield code="h">A. O. Barut et al.</subfield>
       <subfield code="s">Phys.Rev.,D23,2454</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[68]</subfield>
+      <subfield code="o">68</subfield>
       <subfield code="s">Phys.Rev.,D24,3333</subfield>
       <subfield code="h">A. O. Barut et al.</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[68]</subfield>
+      <subfield code="o">68</subfield>
       <subfield code="s">Phys.Rev.,D31,1386</subfield>
       <subfield code="h">A. O. Barut et al.</subfield>
    </datafield>
@@ -1250,7 +1254,7 @@ class RefextractTest(unittest.TestCase):
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[69]</subfield>
+      <subfield code="o">69</subfield>
       <subfield code="s">Phys.Rev.Lett.,52,2009</subfield>
    </datafield>
 </record>""")
@@ -1262,12 +1266,12 @@ Rev. D 80 034030 1-25"""
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[17]</subfield>
+      <subfield code="o">17</subfield>
       <subfield code="h">de Florian D, Sassot R, Stratmann M and Vogelsang W</subfield>
       <subfield code="s">Phys.Rev.Lett.,101,072001</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[17]</subfield>
+      <subfield code="o">17</subfield>
       <subfield code="s">Phys.Rev.D,80,034030</subfield>
    </datafield>
 </record>""")
@@ -1277,7 +1281,7 @@ Rev. D 80 034030 1-25"""
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[130]</subfield>
+      <subfield code="o">130</subfield>
       <subfield code="h">A. Kuper, H. Letaw, L. Slifkin, E-Sonder, and C. T. Tomizuka</subfield>
       <subfield code="t">Self- diffusion in copper</subfield>
       <subfield code="s">Phys.Rev.,96,1224</subfield>
@@ -1289,7 +1293,7 @@ Rev. D 80 034030 1-25"""
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[1]</subfield>
+      <subfield code="o">1</subfield>
       <subfield code="h">(ATLAS Collaboration) G. Aad et al.</subfield>
       <subfield code="s">JINST,0803,S08003</subfield>
    </datafield>
@@ -1300,7 +1304,7 @@ Rev. D 80 034030 1-25"""
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[28]</subfield>
+      <subfield code="o">28</subfield>
       <subfield code="h">(Particle Data Group Collaboration) K. Nakamura et al.</subfield>
       <subfield code="s">J.Phys.,G37,075021</subfield>
    </datafield>
@@ -1311,7 +1315,7 @@ Rev. D 80 034030 1-25"""
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[8]</subfield>
+      <subfield code="o">8</subfield>
       <subfield code="h">S. Horvat, D. Khartchenko, O. Kortner, S. Kotov, H. Kroha, A. Manz, S. Mohrdieck-Mock, K. Nikolaev, R. Richter, W. Stiller, C. Valderanis, J. Dubbert, F. Rauscher, and A. Staude</subfield>
       <subfield code="s">IEEE Trans.Nucl.Sci.,53,562</subfield>
    </datafield>
@@ -1322,7 +1326,7 @@ Rev. D 80 034030 1-25"""
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[33]</subfield>
+      <subfield code="o">33</subfield>
       <subfield code="h">A. Moraes, C. Buttar, and I. Dawson</subfield>
       <subfield code="s">Eur.Phys.J.C,50,435</subfield>
    </datafield>
@@ -1333,7 +1337,7 @@ Rev. D 80 034030 1-25"""
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[7]</subfield>
+      <subfield code="o">7</subfield>
       <subfield code="h">L. Evans, (ed.) and P. Bryant, (ed.)</subfield>
       <subfield code="s">JINST,0803,S08001</subfield>
    </datafield>
@@ -1345,7 +1349,7 @@ Rev. D 80 034030 1-25"""
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[32]</subfield>
+      <subfield code="o">32</subfield>
       <subfield code="h">(The ATLAS Collaboration)</subfield>
       <subfield code="u">http://cdsweb.cern.ch/record/1266235/files/ATLAS-COM-CONF-2010-031.pdf</subfield>
       <subfield code="r">ATL-CONF-2010-031</subfield>
@@ -1358,7 +1362,7 @@ Rev. D 80 034030 1-25"""
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[19]</subfield>
+      <subfield code="o">19</subfield>
       <subfield code="h">(ATLAS Inner Detector software group Collaboration) T. Cornelissen, M. Elsing, I. Gavilenko, W. Liebig, E. Moyse, and A. Salzburger</subfield>
       <subfield code="s">J.Phys.,119,032014</subfield>
    </datafield>
@@ -1370,7 +1374,7 @@ Rev. D 80 034030 1-25"""
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[22]</subfield>
+      <subfield code="o">22</subfield>
       <subfield code="h">G. P. Salam and G. Soyez</subfield>
       <subfield code="s">JHEP,0705,086</subfield>
    </datafield>
@@ -1381,7 +1385,7 @@ Rev. D 80 034030 1-25"""
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[3]</subfield>
+      <subfield code="o">3</subfield>
       <subfield code="s">J.Phys.G,30,1</subfield>
    </datafield>
 </record>""")
@@ -1391,7 +1395,7 @@ Rev. D 80 034030 1-25"""
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[128]</subfield>
+      <subfield code="o">128</subfield>
       <subfield code="h">D. P. Pritzkau and R. H. Siemann</subfield>
       <subfield code="t">Experimental study of rf pulsed heat- ing on oxygen free electronic copper</subfield>
       <subfield code="s">Phys.Rev.ST Accel.Beams,5,1</subfield>
@@ -1403,7 +1407,7 @@ Rev. D 80 034030 1-25"""
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[91]</subfield>
+      <subfield code="o">91</subfield>
       <subfield code="h">S. Calatroni, H. Neupert, and M. Taborelli</subfield>
       <subfield code="t">Fatigue testing of materials by UV pulsed laser irradiation</subfield>
       <subfield code="r">CERN-CLIC-Note-615</subfield>
@@ -1415,7 +1419,7 @@ Rev. D 80 034030 1-25"""
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[5]</subfield>
+      <subfield code="o">5</subfield>
       <subfield code="h">H. Braun, R. Corsini, J. P. Delahaye, A. de Roeck, S. Dbert, A. Ferrari, G. Geschonke, A. Grudiev, C. Hauviller, B. Jeanneret, E. Jensen, T. Lefvre, Y. Papaphilippou, G. Riddone, L. Rinolfi, W. D. Schlatter, H. Schmickler, D. Schulte, I. Syratchev, M. Taborelli, F. Tecker, R. Toms, S. Weisz, and W. Wuensch</subfield>
       <subfield code="t">CLIC 2008 parameters</subfield>
       <subfield code="r">CERN-CLIC-Note-764</subfield>
@@ -1427,7 +1431,7 @@ Rev. D 80 034030 1-25"""
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[21]</subfield>
+      <subfield code="o">21</subfield>
       <subfield code="u">http://www.linearcollider.org/</subfield>
    </datafield>
 </record>""", ignore_misc=False)
@@ -1437,7 +1441,7 @@ Rev. D 80 034030 1-25"""
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[37]</subfield>
+      <subfield code="o">37</subfield>
       <subfield code="h">L. Lu, Y. Shen, X. Chen, L. Qian, and K. Lu</subfield>
       <subfield code="t">Ultrahigh strength and high electrical conductivity in copper</subfield>
       <subfield code="s">Science,304,422</subfield>
@@ -1449,7 +1453,7 @@ Rev. D 80 034030 1-25"""
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[28]</subfield>
+      <subfield code="o">28</subfield>
       <subfield code="h">(Particle Data Group Collaboration) K. Nakamura et al.</subfield>
       <subfield code="s">J.Phys.,G37,075021</subfield>
    </datafield>
@@ -1460,7 +1464,7 @@ Rev. D 80 034030 1-25"""
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[2]</subfield>
+      <subfield code="o">2</subfield>
       <subfield code="h">C. Rubbia</subfield>
       <subfield code="s">Rev.Mod.Phys.,57,699</subfield>
    </datafield>
@@ -1475,11 +1479,11 @@ Rev. D 80 034030 1-25"""
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[5]</subfield>
+      <subfield code="o">5</subfield>
       <subfield code="h">I. J. Aitchison and A. J. Hey</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[5]</subfield>
+      <subfield code="o">5</subfield>
       <subfield code="h">I Llc</subfield>
    </datafield>
 </record>""")
@@ -1489,7 +1493,7 @@ Rev. D 80 034030 1-25"""
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[48]</subfield>
+      <subfield code="o">48</subfield>
       <subfield code="h">D. Adams, S. Asai, D. Cavalli, M. D\xfchrssen, K. Edmonds, S. Elles, M. Fehling, U. Felzmann, L. Gladilin, L. Helary, M. Hohlfeld, S. Horvat, K. Jakobs, M. Kaneda, G. Kirsch, S. Kuehn, J. F. Marchand, C. Pizio, X. Portell, D. Rebuzzi, E. Schmidt, A. Shibata, I. Vivarelli, S. Winkelmann, and S. Yamamoto</subfield>
       <subfield code="r">ATL-PHYS-INT-2009-110</subfield>
    </datafield>
@@ -1500,7 +1504,7 @@ Rev. D 80 034030 1-25"""
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[7]</subfield>
+      <subfield code="o">7</subfield>
       <subfield code="h">Pod I., C. Jennings, et al.</subfield>
       <subfield code="s">Nucl.Phys.,B342,15</subfield>
    </datafield>
@@ -1511,7 +1515,7 @@ Rev. D 80 034030 1-25"""
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[24]</subfield>
+      <subfield code="o">24</subfield>
       <subfield code="h">R. Downing et al.</subfield>
       <subfield code="s">Nucl.Instrum.Meth.,A570,36</subfield>
    </datafield>
@@ -1522,22 +1526,22 @@ Rev. D 80 034030 1-25"""
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[43]</subfield>
+      <subfield code="o">43</subfield>
       <subfield code="h">L.S. Durkin and P. Langacker</subfield>
       <subfield code="s">Phys.Lett.,B166,436</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[43]</subfield>
+      <subfield code="o">43</subfield>
       <subfield code="h">Amaldi et al.</subfield>
       <subfield code="s">Phys.Rev.,D36,1385</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[43]</subfield>
+      <subfield code="o">43</subfield>
       <subfield code="h">Hayward and Yellow et al.</subfield>
       <subfield code="s">Phys.Lett.,B245,669</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[43]</subfield>
+      <subfield code="o">43</subfield>
       <subfield code="s">Nucl.Phys.,B342,15</subfield>
    </datafield>
 </record>""")
@@ -1547,25 +1551,25 @@ Rev. D 80 034030 1-25"""
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[15]</subfield>
+      <subfield code="o">15</subfield>
       <subfield code="s">Nucl.Phys.,B372,3</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[15]</subfield>
+      <subfield code="o">15</subfield>
       <subfield code="h">T.G. Rizzo</subfield>
       <subfield code="s">Phys.Rev.,D40,3035</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[15]</subfield>
+      <subfield code="o">15</subfield>
       <subfield code="h">(E. Berger (eds.))</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[15]</subfield>
+      <subfield code="o">15</subfield>
       <subfield code="h">V. Barger, J.L. Hewett and T.G. Rizzo</subfield>
       <subfield code="s">Phys.Rev.,D42,152</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[15]</subfield>
+      <subfield code="o">15</subfield>
       <subfield code="h">J.L. Hewett</subfield>
       <subfield code="s">Phys.Lett.,B238,98</subfield>
    </datafield>
@@ -1576,14 +1580,14 @@ Rev. D 80 034030 1-25"""
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[26]</subfield>
+      <subfield code="o">26</subfield>
       <subfield code="h">U. Gursoy and E. Kiritsis</subfield>
       <subfield code="t">Exploring improved holographic theories for QCD Part I</subfield>
       <subfield code="s">JHEP,0802,032</subfield>
       <subfield code="r">arXiv:0707.1324</subfield>
    </datafield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[26]</subfield>
+      <subfield code="o">26</subfield>
       <subfield code="h">U. Gursoy, E. Kiritsis and F. Nitti</subfield>
       <subfield code="t">Exploring improved holographic theories for QCD Part II</subfield>
       <subfield code="s">JHEP,0802,019</subfield>
@@ -1597,7 +1601,7 @@ Rev. D 80 034030 1-25"""
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[23]</subfield>
+      <subfield code="o">23</subfield>
       <subfield code="h">A. Taliotis</subfield>
       <subfield code="t">qq \u0304 Potential at Finite T and Weak Coupling in N = 4</subfield>
       <subfield code="s">Phys.Rev.,C83,045204</subfield>
@@ -1611,7 +1615,7 @@ Rev. D 80 034030 1-25"""
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[18]</subfield>
+      <subfield code="o">18</subfield>
       <subfield code="h">A. Taliotis</subfield>
       <subfield code="t">DIS from the AdS/CFT correspondence</subfield>
       <subfield code="s">Nucl.Phys.,A830,299C</subfield>
@@ -1624,7 +1628,19 @@ Rev. D 80 034030 1-25"""
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[20]</subfield>
+      <subfield code="o">20</subfield>
+      <subfield code="h">G. Duckeck et al.</subfield>
+      <subfield code="t">ATLAS computing Technical design report</subfield>
+      <subfield code="r">CERN-LHCC-2005-022</subfield>
+   </datafield>
+</record>""")
+
+    def test_report_with_slashes(self):
+        ref_line = u"""[20] G. Duckeck et al., “ATLAS computing: Technical design report,” CERN/LHCC/2005-022."""
+        reference_test(self, ref_line, u"""<record>
+   <controlfield tag="001">1</controlfield>
+   <datafield tag="999" ind1="C" ind2="5">
+      <subfield code="o">20</subfield>
       <subfield code="h">G. Duckeck et al.</subfield>
       <subfield code="t">ATLAS computing Technical design report</subfield>
       <subfield code="r">CERN-LHCC-2005-022</subfield>
@@ -1636,7 +1652,7 @@ Rev. D 80 034030 1-25"""
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[20]</subfield>
+      <subfield code="o">20</subfield>
       <subfield code="h">G. Duckeck, (ed.) et al.</subfield>
       <subfield code="t">ATLAS computing Technical design report</subfield>
       <subfield code="r">CERN-LHCC-2005-022</subfield>
@@ -1648,7 +1664,7 @@ Rev. D 80 034030 1-25"""
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[20]</subfield>
+      <subfield code="o">20</subfield>
       <subfield code="h">G. Duckeck</subfield>
       <subfield code="t">ATLAS computing Technical design report</subfield>
       <subfield code="s">JHEP,8803,1</subfield>
@@ -1660,7 +1676,7 @@ Rev. D 80 034030 1-25"""
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[22]</subfield>
+      <subfield code="o">22</subfield>
       <subfield code="h">B. Crowell</subfield>
       <subfield code="i">0-9704670-3-6</subfield>
    </datafield>
@@ -1671,7 +1687,7 @@ Rev. D 80 034030 1-25"""
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[119]</subfield>
+      <subfield code="o">119</subfield>
       <subfield code="h">D. E. Gray</subfield>
       <subfield code="i">9780070014855</subfield>
    </datafield>
@@ -1682,11 +1698,172 @@ Rev. D 80 034030 1-25"""
         reference_test(self, ref_line, u"""<record>
    <controlfield tag="001">1</controlfield>
    <datafield tag="999" ind1="C" ind2="5">
-      <subfield code="o">[1]</subfield>
+      <subfield code="o">1</subfield>
       <subfield code="h">D. Griffiths</subfield>
-      <subfield code="xbook">Introduction to elementary particles</subfield>
+      <subfield code="t">Introduction to elementary particles</subfield>
+      <subfield code="xbook" />
    </datafield>
 </record>""")
+
+    def test_complex_arxiv(self):
+        ref_line = u"""[4] J.Prat, arXiv:1012.3675v1 [physics.ins-det]"""
+        reference_test(self, ref_line, u"""<record>
+   <controlfield tag="001">1</controlfield>
+   <datafield tag="999" ind1="C" ind2="5">
+      <subfield code="o">4</subfield>
+      <subfield code="h">J.Prat</subfield>
+      <subfield code="r">arXiv:1012.3675 [physics.ins-det]</subfield>
+   </datafield>
+</record>""")
+
+    def test_new_arxiv(self):
+        ref_line = u"""[178] D. R. Tovey, On measuring the masses of pair-produced semi-invisibly decaying particles at hadron colliders, JHEP 04 (2008) 034, [0802.2879]."""
+        reference_test(self, ref_line, u"""<record>
+   <controlfield tag="001">1</controlfield>
+   <datafield tag="999" ind1="C" ind2="5">
+      <subfield code="o">178</subfield>
+      <subfield code="h">D. R. Tovey</subfield>
+      <subfield code="s">JHEP,0804,034</subfield>
+      <subfield code="r">arXiv:0802.2879</subfield>
+   </datafield>
+</record>""")
+
+    def test_unrecognized_author(self):
+        ref_line = u"""[27] B. Feng, Y. -H. He, P. Fre', "On correspondences between toric singularities and (p,q) webs," Nucl. Phys. B701 (2004) 334-356. [hep-th/0403133]"""
+        reference_test(self, ref_line, u"""<record>
+   <controlfield tag="001">1</controlfield>
+   <datafield tag="999" ind1="C" ind2="5">
+      <subfield code="o">27</subfield>
+      <subfield code="h">B. Feng, Y. -H. He, P. Fre'</subfield>
+      <subfield code="t">On correspondences between toric singularities and (p,q) webs</subfield>
+      <subfield code="s">Nucl.Phys.,B701,334</subfield>
+      <subfield code="r">hep-th/0403133</subfield>
+   </datafield>
+</record>""")
+
+    def test_unrecognized_author2(self):
+        ref_line = u"""[75] J. M. Figueroa-O’Farrill, J. M. Figueroa-O'Farrill, C. M. Hull and B. J. Spence, "Branes at conical singularities and holography," Adv. Theor. Math. Phys. 2, 1249 (1999) [arXiv:hep-th/9808014]"""
+        reference_test(self, ref_line, u"""<record>
+   <controlfield tag="001">1</controlfield>
+   <datafield tag="999" ind1="C" ind2="5">
+      <subfield code="o">75</subfield>
+      <subfield code="h">J. M. Figueroa-O’Farrill, J. M. Figueroa-O'Farrill, C. M. Hull and B. J. Spence</subfield>
+      <subfield code="t">Branes at conical singularities and holography</subfield>
+      <subfield code="s">Adv.Theor.Math.Phys.,2,1249</subfield>
+      <subfield code="r">hep-th/9808014</subfield>
+   </datafield>
+</record>""")
+
+    def test_pos(self):
+        ref_line = u"""[23] M. A. Donnellan, et al., PoS LAT2007 (2007) 369."""
+        reference_test(self, ref_line, u"""<record>
+   <controlfield tag="001">1</controlfield>
+   <datafield tag="999" ind1="C" ind2="5">
+      <subfield code="o">23</subfield>
+      <subfield code="h">M. A. Donnellan, et al.</subfield>
+      <subfield code="s">PoS,LAT2007,369</subfield>
+   </datafield>
+</record>""")
+
+    def test_complex_author(self):
+        ref_line = u"""[39] Michael E. Peskin, Michael E. Peskin and Michael E. Peskin “An Introduction To Quantum Field Theory,” Westview Press, 1995."""
+        reference_test(self, ref_line, u"""<record>
+   <controlfield tag="001">1</controlfield>
+   <datafield tag="999" ind1="C" ind2="5">
+      <subfield code="o">39</subfield>
+      <subfield code="h">Michael E. Peskin, Michael E. Peskin and Michael E. Peskin</subfield>
+      <subfield code="t">An Introduction To Quantum Field Theory</subfield>
+   </datafield>
+</record>""")
+
+    def test_complex_author2(self):
+        ref_line = u"""[39] Dan V. Schroeder, Dan V. Schroeder and Dan V. Schroeder “An Introduction To Quantum Field Theory,” Westview Press, 1995."""
+        reference_test(self, ref_line, u"""<record>
+   <controlfield tag="001">1</controlfield>
+   <datafield tag="999" ind1="C" ind2="5">
+      <subfield code="o">39</subfield>
+      <subfield code="h">Dan V. Schroeder, Dan V. Schroeder and Dan V. Schroeder</subfield>
+      <subfield code="t">An Introduction To Quantum Field Theory</subfield>
+   </datafield>
+</record>""")
+
+    def test_dan_journal(self):
+        ref_line = u"""[39] Michael E. Peskin and Dan V. Schroeder “An Introduction To Quantum Field Theory,” Westview Press, 1995."""
+        reference_test(self, ref_line, u"""<record>
+   <controlfield tag="001">1</controlfield>
+   <datafield tag="999" ind1="C" ind2="5">
+      <subfield code="o">39</subfield>
+      <subfield code="h">Michael E. Peskin and Dan V. Schroeder</subfield>
+      <subfield code="t">An Introduction To Quantum Field Theory</subfield>
+   </datafield>
+</record>""")
+
+    def test_dan_journal2(self):
+        ref_line = u"""[39] Dan V. Schroeder DAN B701 (2004) 334-356"""
+        reference_test(self, ref_line, u"""<record>
+   <controlfield tag="001">1</controlfield>
+   <datafield tag="999" ind1="C" ind2="5">
+      <subfield code="o">39</subfield>
+      <subfield code="h">Dan V. Schroeder</subfield>
+      <subfield code="s">Dokl.Akad.Nauk Ser.Fiz.,B701,334</subfield>
+   </datafield>
+</record>""")
+
+    def test_query_in_url(self):
+        ref_line = u"""[69] ATLAS Collaboration. Mutag. http://indico.cern.ch/getFile.py/access?contribId=9&resId=1&materialId=slides&confId=35502"""
+        reference_test(self, ref_line, u"""<record>
+   <controlfield tag="001">1</controlfield>
+   <datafield tag="999" ind1="C" ind2="5">
+      <subfield code="o">69</subfield>
+      <subfield code="h">(ATLAS Collaboration)</subfield>
+      <subfield code="u">http://indico.cern.ch/getFile.py/access?contribId=9&amp;resId=1&amp;materialId=slides&amp;confId=35502</subfield>
+   </datafield>
+</record>""")
+
+    def test_volume_colon_page(self):
+        ref_line = u"""[77] J. M. Butterworth et al. Multiparton interactions in photoproduction at hera. Z.Phys.C72:637-646,1996."""
+        reference_test(self, ref_line, u"""<record>
+   <controlfield tag="001">1</controlfield>
+   <datafield tag="999" ind1="C" ind2="5">
+      <subfield code="o">77</subfield>
+      <subfield code="h">J. M. Butterworth et al.</subfield>
+      <subfield code="s">Z.Phys.,C72,637</subfield>
+   </datafield>
+</record>""")
+
+    def test_no_spaces_numeration(self):
+        ref_line = u"""[1] I.M. Gregor et al, Optical links for the ATLAS SCT and Pixel detector, Z.Phys. 465(2001)131-134"""
+        reference_test(self, ref_line, u"""<record>
+   <controlfield tag="001">1</controlfield>
+   <datafield tag="999" ind1="C" ind2="5">
+      <subfield code="o">1</subfield>
+      <subfield code="h">I.M. Gregor et al.</subfield>
+      <subfield code="s">Z.Phys.,465,131</subfield>
+   </datafield>
+</record>""")
+
+
+    def test_dot_after_year(self):
+        ref_line = u"""[1] Neutrino Mass and New Physics, Phys.Rev. 2006. 56:569-628"""
+        reference_test(self, ref_line, u"""<record>
+   <controlfield tag="001">1</controlfield>
+   <datafield tag="999" ind1="C" ind2="5">
+      <subfield code="o">1</subfield>
+      <subfield code="s">Phys.Rev.,56,569</subfield>
+   </datafield>
+</record>""")
+
+    def test_journal_roman(self):
+        ref_line = u"""[19] D. Page and C. Pope, Commun. Math. Phys. VI (1990) 529."""
+        reference_test(self, ref_line, u"""<record>
+   <controlfield tag="001">1</controlfield>
+   <datafield tag="999" ind1="C" ind2="5">
+      <subfield code="o">19</subfield>
+      <subfield code="h">D. Page and C. Pope</subfield>
+      <subfield code="s">Commun.Math.Phys.,6,529</subfield>
+   </datafield>
+</record>""")
+
 
 if __name__ == '__main__':
     test_suite = make_test_suite(RefextractTest)

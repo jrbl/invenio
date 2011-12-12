@@ -17,6 +17,13 @@
 ## along with Invenio; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
+"""This is where all the public API calls are accessible
+
+This is the only file containing public calls and everything that is
+present here can be considered private by the invenio modules.
+"""
+
+
 import os
 
 from urllib import urlretrieve
@@ -29,28 +36,38 @@ from invenio.bibdocfile import BibRecDocs, InvenioWebSubmitFileError
 from invenio.bibedit_utils import get_record
 from invenio.bibtask import task_low_level_submission
 from invenio.bibrecord import record_delete_fields, record_xml_output, \
-    create_record, record_get_field_instances, record_add_fields
+    create_record, record_get_field_instances, record_add_fields, \
+    record_has_field
 from invenio.refextract_config import CFG_REFEXTRACT_FILENAME
 from invenio.config import CFG_TMPSHAREDDIR
 
 
 class FullTextNotAvailable(Exception):
-    pass
+    """Raised when we cannot access the document text"""
+
+
+class RecordHasReferences(Exception):
+    """Raised when
+    * we asked to updated references for a record
+    * we explicitely asked for not overwriting references for this record
+      (via the appropriate function argument)
+    * the record has references thus we cannot update them
+   """
 
 
 def extract_references_from_url_xml(url):
     """Extract references from the pdf specified in the url
-    
+
     The single parameter is the path to the pdf.
     It raises FullTextNotAvailable if the url gives a 404
     The result is given in marcxml.
     """
-    filename, headers = urlretrieve(url)
+    filename, _ = urlretrieve(url)
     try:
         try:
             marcxml = extract_references_from_file_xml(filename)
-        except IOError, e:
-            if e.code == 404:
+        except IOError, err:
+            if err.code == 404:
                 raise FullTextNotAvailable()
             else:
                 raise
@@ -61,7 +78,7 @@ def extract_references_from_url_xml(url):
 
 def extract_references_from_file_xml(path, recid=1, inspire=False):
     """Extract references from a local pdf file
-    
+
     The single parameter is the path to the file
     It raises FullTextNotAvailable if the file does not exist
     The result is given in marcxml.
@@ -69,31 +86,32 @@ def extract_references_from_file_xml(path, recid=1, inspire=False):
     if not os.path.isfile(path):
         raise FullTextNotAvailable()
 
-    (docbody, extract_error) = get_plaintext_document_body(path)
-    (reflines, extract_error, how_found_start) = \
-               extract_references_from_fulltext(docbody)
+    docbody, _ = get_plaintext_document_body(path)
+    reflines, _, _ = extract_references_from_fulltext(docbody)
     if not len(reflines):
-        (docbody, extract_error) = get_plaintext_document_body(path,
-                                                               keep_layout=True)
-        (reflines, extract_error, how_found_start) = \
-                   extract_references_from_fulltext(docbody)
+        docbody, _ = get_plaintext_document_body(path, keep_layout=True)
+        reflines, _, _ = extract_references_from_fulltext(docbody)
 
     return parse_references(reflines, recid=recid, inspire=inspire)
 
 
 def extract_references_from_string_xml(source, inspire=False):
     """Extract references from a string
-    
+
     The single parameter is the document
     The result is given in marcxml.
     """
     docbody = source.split('\n')
-    (reflines, extract_error, how_found_start) = \
-               extract_references_from_fulltext(docbody)
+    reflines, _, _ = extract_references_from_fulltext(docbody)
     return parse_references(reflines, inspire=inspire)
 
 
 def extract_references_from_record_xml(recid, inspire=False):
+    """Extract references from a record id
+
+    The single parameter is the document
+    The result is given in marcxml.
+    """
     rec_info = BibRecDocs(recid)
     docs = rec_info.list_bibdocs()
 
@@ -114,6 +132,15 @@ def extract_references_from_record_xml(recid, inspire=False):
 
 
 def replace_references(recid, inspire=False):
+    """Replace references for a record
+
+    The record itself is not updated, the marc xml of the document with updated
+    references is returned
+
+    Parameters:
+    * recid: the id of the record
+    * inspire: format of ther references
+    """
     # Parse references
     references_xml = extract_references_from_record_xml(recid, inspire=inspire)
     references = create_record(references_xml.encode('utf-8'))
@@ -136,7 +163,24 @@ def replace_references(recid, inspire=False):
     return out_xml
 
 
-def update_references(recid, inspire=False):
+def update_references(recid, inspire=False, overwrite=True):
+    """Update references for a record
+
+    First, we extract references from a record.
+    Then, we are not updating the record directly but adding a bibupload
+    task in -c mode which takes care of updating the record.
+    
+    Parameters:
+    * recid: the id of the record
+    * inspire: format of ther references
+    """
+
+    if not overwrite:
+        # Check for references in record
+        record = get_record(recid)
+        if record and record_has_field(record, '999'):
+            raise RecordHasReferences(recid)
+
     # Parse references
     references_xml = extract_references_from_record_xml(recid, inspire=inspire)
 
@@ -153,6 +197,7 @@ def update_references(recid, inspire=False):
 
 
 def record_has_fulltext(recid):
+    """Checks if we can access the fulltext for the given recid"""
     rec_info = BibRecDocs(recid)
     docs = rec_info.list_bibdocs()
 

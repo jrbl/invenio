@@ -17,12 +17,20 @@
 ## along with Invenio; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
+"""This is file handles the command line interface
+
+    * We parse the options for both daemon and standalone usage
+    * When using using the standalone mode, we use the function "main"
+      defined here to begin the extraction of references
+"""
+
 __revision__ = "$Id$"
 
 import optparse
 import sys
 
 from invenio.docextract_utils import write_message, setup_loggers
+from invenio.bibtask import task_update_progress
 
 # Is refextract running standalone? (Default = yes)
 RUNNING_INDEPENDENTLY = False
@@ -33,12 +41,17 @@ DESCRIPTION = ""
 HELP_MESSAGE = """
   -i, --inspire        Output journal standard reference form in the INSPIRE
                        recognised format: [series]volume,page.
-  --kb-journal         Manually specify the location of a journal title
+  --kb-journals        Manually specify the location of a journal title
                        knowledge-base file.
-  --kb-report-number   Manually specify the location of a report number
+  --kb-journals-re     Manually specify the location of a journal title regexps
                        knowledge-base file.
-  --kb-author          Manually specify the location of an author
+  --kb-reports         Manually specify the location of a report number
                        knowledge-base file.
+  --kb-authors         Manually specify the location of an author
+                       knowledge-base file.
+  --kb-books           Manually specify the location of a book
+                       knowledge-base file.
+  --no-overwrite       Do not touch record if it already has references
 
   Standalone Refextract options:
   -f, --fulltext       A single pdf or text document
@@ -56,7 +69,7 @@ HELP_MESSAGE = """
                        and standardisation of citations within lines.
 """
 
-USAGE_MESSAGE= """Usage: refextract [options] -f file1 [-f file2 ...]
+USAGE_MESSAGE = """Usage: refextract [options] -f file1 [-f file2 ...]
 Command options: %s
 Examples:
     refextract -x /home/chayward/refs.xml -f /home/chayward/thesis.pdf
@@ -88,6 +101,7 @@ def get_cli_options():
     # a 'configuration file'-specified kb, holding
     # 'seek---replace' terms, used when matching titles in references
     parser.add_option('--kb-journals', dest='kb_journals')
+    parser.add_option('--kb-journals-re', dest='kb_journals_re')
     # The location of the author kb requested to override
     parser.add_option('--kb-authors', dest='kb_authors')
     # The location of the author kb requested to override
@@ -104,6 +118,8 @@ def get_cli_options():
     parser.add_option('-a', '--new', action='store_true')
     parser.add_option('-c', '--collections', action='append')
     parser.add_option('-r', '--recids', action='append')
+    # Do not touch record if it already has references
+    parser.add_option('--no-overwrite', action="store_true")
     # Bibtask options
     parser.add_option('-u', '--user')
     parser.add_option('-t', '--runtime')
@@ -161,7 +177,7 @@ def usage(wmsg=None, err_code=0):
 
     # Display the help information and the warning in the stderr stream
     # 'help_message' is global
-    print >>sys.stderr, USAGE_MESSAGE
+    print >> sys.stderr, USAGE_MESSAGE
     # Output error message, either to the stderr stream also or
     # on the interface. Stop the extraction procedure
     halt(msg=wmsg, exit_code=err_code)
@@ -196,9 +212,14 @@ def main(config, args, run):
     if config.collections or config.recids:
         # These are arguments designed to be used for the daemon mode only
         # They should not be present here.
+        err = '--collections or --recids specified'
         usage("Error: '%s' is a daemon-specific flag and should not be used "
              "with specific fulltext input. \n Use '--help' for "
-             "flag options." % err.opt)
+             "flag options." % err)
+
+    if not config.fulltext:
+        # no files provided for reference extraction - error message
+        usage("Error: No valid input file specified (-f file [-f file ...])")
 
     run(config)
     write_message("Extraction complete", verbose=2)
