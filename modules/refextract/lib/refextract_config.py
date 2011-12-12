@@ -30,6 +30,7 @@ CFG_REFEXTRACT_VERSION = "Invenio/%s refextract/%s" % (CFG_VERSION, CFG_VERSION)
 
 # periodicals knowledge base:
 CFG_REFEXTRACT_KB_JOURNAL_TITLES = "%s/refextract/journal-titles.kb" % CFG_ETCDIR
+CFG_REFEXTRACT_KB_JOURNAL_TITLES_RE = "%s/refextract/journal-titles-re.kb" % CFG_ETCDIR
 CFG_REFEXTRACT_KB_JOURNAL_TITLES_INSPIRE = "%s/refextract/journal-titles-inspire.kb" % CFG_ETCDIR
 # report numbers knowledge base:
 CFG_REFEXTRACT_KB_REPORT_NUMBERS = "%s/refextract/report-numbers.kb" % CFG_ETCDIR

@@ -21,6 +21,7 @@
 
 import re
 
+from invenio.docextract_utils import write_message
 from invenio.refextract_re import \
     get_reference_section_title_patterns, \
     get_reference_line_numeration_marker_patterns, \
@@ -29,7 +30,8 @@ from invenio.refextract_re import \
     get_post_reference_section_keyword_patterns, \
     re_reference_line_bracket_markers, \
     re_reference_line_dot_markers, \
-    re_reference_line_number_markers
+    re_reference_line_number_markers, \
+    re_num
 
 
 def find_reference_section(docbody):
@@ -56,109 +58,121 @@ def find_reference_section(docbody):
          -- OR --
                 (None) - when the reference section could not be found.
     """
-    if not docbody:
-        return None
-
-    ref_start_line = ref_title = ref_line_marker = ref_line_marker_ptn = None
-    title_marker_same_line = found_part = None
-
+    ref_details = None
     title_patterns = get_reference_section_title_patterns()
-    marker_patterns = get_reference_line_numeration_marker_patterns()
-    p_num = re.compile(ur'(\d+)')
 
     # Try to find refs section title:
-    x = len(docbody) - 1
-    found_title = False
-    while x >= 0 and not found_title:
-        title_match = regex_match_list(docbody[x], title_patterns)
+    for reversed_index, line in enumerate(reversed(docbody)):
+        title_match = regex_match_list(line, title_patterns)
         if title_match:
-            temp_ref_start_line = x
-            temp_title = title_match.group('title')
-            # Need to escape to avoid problems like 'References['
-            temp_title = re.escape(temp_title)
-            mk_with_title_ptns = \
-               get_reference_line_numeration_marker_patterns(temp_title)
-            mk_with_title_match = \
-               regex_match_list(docbody[x], mk_with_title_ptns)
-            if mk_with_title_match:
-                mk = mk_with_title_match.group('mark')
-                mk_ptn = mk_with_title_match.re.pattern
-                m_num = p_num.search(mk)
-                if m_num and m_num.group(0) == '1':
-                    # Mark found.
-                    found_title = True
-                    ref_title = temp_title
-                    ref_line_marker = mk
-                    ref_line_marker_ptn = mk_ptn
-                    ref_start_line = temp_ref_start_line
-                    title_marker_same_line = True
-                else:
-                    found_part = True
-                    ref_start_line = temp_ref_start_line
-                    ref_line_marker = mk
-                    ref_line_marker_ptn = mk_ptn
-                    ref_title = temp_title
-                    title_marker_same_line = True
-            else:
-                try:
-                    y = x + 1
-                    # Move past blank lines
-                    while docbody[y].isspace() and y < len(docbody):
-                        y += 1
-                    # Is this line numerated like a reference line?
-                    mark_match = regex_match_list(docbody[y], marker_patterns)
-                    if mark_match:
-                        # Ref line found. What is it?
-                        title_marker_same_line = None
-                        mark = mark_match.group('mark')
-                        mk_ptn = mark_match.re.pattern
-                        m_num = p_num.search(mark)
-                        if m_num and m_num.group(0) == '1':
-                            # 1st ref truly found
-                            found_title = True
-                            ref_start_line = temp_ref_start_line
-                            ref_line_marker = mark
-                            ref_line_marker_ptn = mk_ptn
-                            ref_title = temp_title
-                        elif m_num is not None and m_num.groups(0) != 1:
-                            found_part = True
-                            ref_start_line = temp_ref_start_line
-                            ref_line_marker = mark
-                            ref_line_marker_ptn = mk_ptn
-                            ref_title = temp_title
-                        else:
-                            found_part = True
-                            ref_start_line = temp_ref_start_line
-                            ref_title = temp_title
-                            ref_line_marker = mark
-                            ref_line_marker_ptn = mk_ptn
-                    else:
-                        # No numeration
-                        found_part = True
-                        ref_start_line = temp_ref_start_line
-                        ref_title = temp_title
-                except IndexError:
-                    # References section title was on last line for some
-                    # reason. Ignore
-                    pass
-        x -= 1
+            title = title_match.group('title')
+            index = len(docbody) - 1 - reversed_index
+            temp_ref_details, found_title = find_numeration(docbody[index:], title)
+            if temp_ref_details:
+                ref_details = temp_ref_details
+                ref_details['start_line'] = index
+                ref_details['title_string'] = title
+            if found_title:
+                break
 
-    if found_part:
-        found_title = True
+    return ref_details
 
-    if ref_start_line:
-        # return dictionary containing details of reference section:
-        ref_sectn_details = {
-            'start_line' : ref_start_line,
-            'title_string' : ref_title,
-            'marker' : ref_line_marker,
-            'marker_pattern' : ref_line_marker_ptn,
-            'title_marker_same_line' : bool(title_marker_same_line)
-        }
-    else:
-        ref_sectn_details = None
 
-    return ref_sectn_details
+def find_numeration_in_body(docbody):
+    marker_patterns = get_reference_line_numeration_marker_patterns()
+    ref_details = None
+    found_title = False
+
+    for line in docbody:
+        # Move past blank lines
+        if line.isspace():
+            continue
+
+        # Is this line numerated like a reference line?
+        mark_match = regex_match_list(line, marker_patterns)
+        if mark_match:
+            mark = mark_match.group('mark')
+            mk_ptn = mark_match.re.pattern
+            ref_details = {
+                'marker': mark,
+                'marker_pattern': mk_ptn,
+                'title_marker_same_line': False,
+            }
+            # Check if it's the first reference
+            # Something like [1] or (1), etc.
+            m_num = re_num.search(mark)
+            if m_num and m_num.group(0) == '1':
+                # 1st ref truly found
+                break
+        else:
+            # No numeration
+            ref_details = {'title_marker_same_line': False}
+
+    return ref_details, found_title
+
+
+def find_numeration_in_title(docbody, title):
+    ref_details = None
+    found_title = False
+
+    try:
+        first_line = docbody[0]
+    except IndexError:
+        return ref_details, found_title
+
+    # Need to escape to avoid problems like 'References['
+    title = re.escape(title)
+
+    mk_with_title_ptns = \
+       get_reference_line_numeration_marker_patterns(title)
+    mk_with_title_match = \
+       regex_match_list(first_line, mk_with_title_ptns)
+    if mk_with_title_match:
+        mk = mk_with_title_match.group('mark')
+        mk_ptn = mk_with_title_match.re.pattern
+        m_num = re_num.search(mk)
+        if m_num and m_num.group(0) == '1':
+            # Mark found
+            found_title = True
+            ref_details = {
+                'marker': mk,
+                'marker_pattern': mk_ptn,
+                'title_marker_same_line': True
+            }
+        else:
+            ref_details = {
+                'marker': mk,
+                'marker_pattern': mk_ptn,
+                'title_marker_same_line': True
+            }
+
+    return ref_details, found_title
+
+
+def find_numeration(docbody, title):
+    """Find numeration pattern
+
+    1st try to find numeration in the title
+    e.g.
+    References [4] Riotto...
+
+    2nd find the numeration alone in the line after the title
+    e.g.
+    References
+    1
+    Riotto
+
+    3rnd find the numeration in the following line
+    e.g.
+    References
+    [1] Riotto
+    """
+    ref_details, found_title = find_numeration_in_title(docbody, title)
+    if not ref_details:
+        ref_details, found_title = find_numeration_in_body(docbody)
+
+    return ref_details, found_title
+
 
 
 def find_reference_section_no_title_via_brackets(docbody):
@@ -354,8 +368,8 @@ def find_end_of_reference_section(docbody,
         num_match = regex_match_list(docbody[x].strip(), mk_patterns)
         if num_match:
             try:
-                current_reference_count = num_match.group('marknum')
-            except IndexError:
+                current_reference_count = int(num_match.group('marknum'))
+            except (ValueError, IndexError):
                 # non numerical references marking
                 pass
         # look for a likely section title that would follow a reference section:
@@ -374,7 +388,7 @@ def find_end_of_reference_section(docbody,
                 if num_match and not num_match.group(0).isdigit():
                     try:
                         num = int(num_match.group('marknum'))
-                        if current_reference_count == num + 1:
+                        if current_reference_count + 1 == num:
                             line_found = True
                     except ValueError:
                         # We have the marknum index so it is
@@ -432,24 +446,35 @@ def get_reference_section_beginning(fulltext):
                   'title_string'   : None,
                   'marker_pattern' : None,
                   'marker'         : None,
+                  'how_found_start': None,
                   }
 
     ## Find start of refs section:
     sect_start = find_reference_section(fulltext)
     if sect_start is not None:
-        how_found_start = 1
+        sect_start['how_found_start'] = 1
     else:
         ## No references found - try with no title option
         sect_start = find_reference_section_no_title_via_brackets(fulltext)
-        if sect_start is not None: how_found_start = 2
+        if sect_start is not None:
+            sect_start['how_found_start'] = 2
         ## Try weaker set of patterns if needed
         if sect_start is None:
             ## No references found - try with no title option (with weaker patterns..)
             sect_start = find_reference_section_no_title_via_dots(fulltext)
-            if sect_start is not None: how_found_start = 3
+            if sect_start is not None:
+                sect_start['how_found_start'] = 3
             if sect_start is None:
                 ## No references found - try with no title option (with even weaker patterns..)
                 sect_start = find_reference_section_no_title_via_numbers(fulltext)
-                if sect_start is not None: how_found_start = 4
+                if sect_start is not None:
+                    sect_start['how_found_start'] = 4
 
+    if sect_start:
+        write_message('* title %r' % sect_start['title_string'], verbose=3)
+        write_message('* marker %s' % sect_start['marker'], verbose=3)
+        write_message('* title_marker_same_line %s' \
+            % sect_start['title_marker_same_line'], verbose=3)
+    else:
+        write_message('* could not find references section', verbose=3)
     return sect_start

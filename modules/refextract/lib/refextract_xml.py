@@ -22,10 +22,9 @@ import re
 from xml.sax.saxutils import escape as encode_for_xml
 from time import mktime, localtime
 
-from invenio.refextract_re import re_arxiv_notation
+from invenio.refextract_re import re_arxiv_notation, re_num
 from invenio.docextract_utils import write_message
 
-from invenio.refextract_bib import massage_arxiv_reportnumber
 from invenio.refextract_config import \
     CFG_REFEXTRACT_TAG_ID_REFERENCE, \
     CFG_REFEXTRACT_IND1_REFERENCE, \
@@ -51,6 +50,13 @@ from invenio.refextract_config import \
     CFG_REFEXTRACT_SUBFIELD_QUOTED, \
     CFG_REFEXTRACT_SUBFIELD_ISBN, \
     CFG_REFEXTRACT_SUBFIELD_BOOK
+
+
+def format_marker(line_marker):
+    num_match = re_num.search(line_marker)
+    if num_match:
+        line_marker = num_match.group(0)
+    return line_marker
 
 
 def create_xml_record(counts, recid, xml_lines, status_code=0):
@@ -321,8 +327,6 @@ def build_formatted_xml_citation(citation_elements, line_marker, inspire_format)
                 # %%%%% Set as NEW citation line %%%%%
                 xml_line, auth_for_ibid = append_datafield_element(line_marker,
                     citation_structure, line_elements, auth_for_ibid, xml_line)
-            if report_number.lower().find('arxiv') == 0:
-                report_number = massage_arxiv_reportnumber(report_number)
             # ADD to current datafield
             xml_line += """
       <subfield code="%(sf-code-ref-report-num)s">%(report-number)s</subfield>""" \
@@ -430,8 +434,10 @@ def build_formatted_xml_citation(citation_elements, line_marker, inspire_format)
             xml_line += '\n      <subfield code="' \
                 '%(subfield-code)s">%(title)s</subfield>' % {
                 'title'         : encode_for_xml(element['title']),
-                'subfield-code' : CFG_REFEXTRACT_SUBFIELD_BOOK,
+                'subfield-code' : CFG_REFEXTRACT_SUBFIELD_QUOTED,
             }
+            xml_line += '\n      <subfield code="%s" />' % \
+                CFG_REFEXTRACT_SUBFIELD_BOOK
 
         # The number of elements processed
         elements_processed += 1
@@ -455,11 +461,10 @@ def start_datafield_element(line_marker):
         @return: (string) The string holding the relevant datafield and
         subfield tags.
     """
-
     marker_subfield = """
       <subfield code="%(sf-code-ref-marker)s">%(marker-val)s</subfield>""" \
-            % {'sf-code-ref-marker' : CFG_REFEXTRACT_SUBFIELD_MARKER,
-               'marker-val'         : encode_for_xml(line_marker)}
+            % {'sf-code-ref-marker': CFG_REFEXTRACT_SUBFIELD_MARKER,
+               'marker-val'        : encode_for_xml(format_marker(line_marker))}
 
     new_datafield = """   <datafield tag="%(df-tag-ref)s" ind1="%(df-ind1-ref)s" ind2="%(df-ind2-ref)s">%(marker-subfield)s""" \
     % {'df-tag-ref'     : CFG_REFEXTRACT_TAG_ID_REFERENCE,
@@ -470,7 +475,7 @@ def start_datafield_element(line_marker):
     return new_datafield
 
 
-def dump_or_split_author(misc_txt,line_elements):
+def dump_or_split_author(misc_txt, line_elements):
     """
         Given the list of current elements, and misc text, try to decide how to use this
         author for splitting heuristics, and see if it is useful. Returning 'dump' indicates
@@ -619,7 +624,7 @@ def append_datafield_element(line_marker,
     """
     ## Add an author, if one must be added for ibid's, before splitting this line
     ## Also, if a standard title and an author are both present, save the author for future use
-    new_datafield, author = check_author_for_ibid(line_elements,author)
+    new_datafield, author = check_author_for_ibid(line_elements, author)
 
     xml_line += new_datafield
     ## Start the new datafield
@@ -631,7 +636,7 @@ def append_datafield_element(line_marker,
              'df-ind1-ref'        : CFG_REFEXTRACT_IND1_REFERENCE,
              'df-ind2-ref'        : CFG_REFEXTRACT_IND2_REFERENCE,
              'sf-code-ref-marker' : CFG_REFEXTRACT_SUBFIELD_MARKER,
-             'marker-val'         : encode_for_xml(line_marker)
+             'marker-val'         : encode_for_xml(format_marker(line_marker))
     }
 
     ## add the past elements for end previous citation to the citation_structure list
@@ -703,7 +708,7 @@ def restrict_m_subfields(reference_lines):
                     reference_lines[i - 1].find('<subfield code="o">') != -1 and \
                     reference_lines[i - 2].find('<datafield') != -1:
                     ## If both of these are true then its a solitary "m" tag
-                    mlength= len(m_tag.search(reference_lines[i]).group(1))
+                    mlength = len(m_tag.search(reference_lines[i]).group(1))
                     if mlength < min_length or mlength > max_length:
                         filter_list[i-2] = filter_list[i-1] = filter_list[i] = filter_list[i+1] = 0
                         m_restricted += 1
@@ -714,7 +719,7 @@ def restrict_m_subfields(reference_lines):
     return m_restricted, new_reference_lines
 
 
-def get_subfield_content(line,subfield_code):
+def get_subfield_content(line, subfield_code):
     """ Given a line (subfield element) and a xml code attribute for a subfield element,
         return the contents of the subfield element.
     """
@@ -781,7 +786,7 @@ def compress_subfields(out, subfield_code):
                 ## for later insertion into the same place
                 new_rec_lines.append(subfield_start)
                 position = len(new_rec_lines) - 1
-            new_text = get_subfield_content(line,subfield_code)
+            new_text = get_subfield_content(line, subfield_code)
             if (len(content_text) > 0) and (len(new_text)) > 0:
                 ## Append spaces between merged text, if needed
                 if (content_text[-1]+new_text[0]).find(" ") == -1:

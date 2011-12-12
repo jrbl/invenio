@@ -26,7 +26,6 @@ pylib_DATA = \
              refextract_text.py \
              refextract_xml.py \
              refextract_find.py \
-             refextract_bib.py \
              refextract_tag.py \
              refextract_cli.py
 

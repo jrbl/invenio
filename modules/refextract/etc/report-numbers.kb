@@ -1,12 +1,6 @@
 %%%%% $Id$ %%%%%
 
 
-##ArXiv new format##
-<syymms9999v9>
-<syymms9999>
-ARXIV           ---arXiv
-
-
 #####LANL#####
 <s/syymm999>
 <syymm999>
@@ -142,11 +136,16 @@ FERMILAB PUB	---FERMILAB-Pub
 FERMILAB TM	    ---FERMILAB-TM
 FERMILAB DESIGN ---FERMILAB-Design
 FERMILAB THESIS ---FERMILAB-Thesis
+FERMILAB MASTERS---FERMILAB-Masters
 
+#####Fermilab DØ notes#####
+< 9999>
+
+DØ NOTE---DØ-Note
 
 #####CERN#####
 < yy 999>
-< yyyy 999>
+<syyyy 999>
 
 ALEPH                  ---ALEPH
 ALICE                  ---ALICE
@@ -154,6 +153,8 @@ ALICE INT              ---ALICE-INT
 ALICE NOTE             ---ALICE-INT
 ATL CAL                ---ATL-CAL
 ATL COM                ---ATL-COM
+ATL COM SOFT           ---ATL-COM-SOFT
+ATL COM PUB            ---ATL-COM-DAQ
 ATL COM DAQ            ---ATL-COM-DAQ
 ATL COM MUON           ---ATL-COM-MUON
 ATL COM PHYS           ---ATL-COM-PHYS
@@ -166,11 +167,16 @@ ATL GEN                ---ATL-GEN
 ATL INDET              ---ATL-INDET
 ATL LARG               ---ATL-LARG
 ATL MUON               ---ATL-MUON
+ATL PUB MUON           ---ATL-PUB-MUON
 ATL PHYS               ---ATL-PHYS
 ATL PHYS PUB           ---ATL-PHYS-PUB
 ATL PHYS INT           ---ATL-PHYS-INT
 ATL TECH               ---ATL-TECH
 ATL TILECAL            ---ATL-TILECAL
+ATL SOFT PUB           ---ATL-SOFT-PUB
+ATL IS EN              ---ATL-IS-EN
+ATL IS QA              ---ATL-IS-QA
+CERN                   ---CERN
 CERN AB                ---CERN-AB
 CERN ALEPH             ---CERN-ALEPH
 CERN ALEPH PHYSIC      ---CERN-ALEPH-PHYSIC
@@ -237,6 +243,11 @@ CERN/LHCC       ---CERN-LHCC
 CERN/PHESS      ---CERN-PHESS
 
 
+#####CERN DIFFERENT FORMAT#####
+< 9999999>
+CERN GE         ---CERN-GE
+
+
 #####LHC#####
 < 999>
 < 9999>
@@ -246,6 +257,7 @@ LHC PROJECT NOTE        ---LHC-Project-Note
 CERN LHC PROJECT REPORT ---CERN-LHC-Project-Report
 LHC PROJECT REPORT      ---CERN-LHC-Project-Report
 CLIC NOTE               ---CERN-CLIC-Note
+ATLAS TDR               ---ATL-TDR
 
 
 #####KEK#####

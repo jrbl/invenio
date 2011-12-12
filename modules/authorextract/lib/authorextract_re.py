@@ -70,12 +70,12 @@ def get_initial_surname_author_pattern(incl_numeration=False):
 
     return ur"""
     (?:
-        (?:[A-Z]\w{3,20}\s+)?                                ## Optionally a first name before the initials
+        (?:[A-Z]\w{2,20}\s+)?                                ## Optionally a first name before the initials
 
         (?<!Volume\s)                                        ## Initials (1-5) (cannot follow 'Volume\s')
-        [A-Z](?:\s*[.'’\s-]{1,2}\s*[A-Z]){0,4}[.\s-]{1,2}\s* ## separated by .,-,',etc.
+        [A-Z](?:\s*[.'’\s-]{1,3}\s*[A-Z]){0,4}[.\s-]{1,2}\s* ## separated by .,-,',etc.
 
-        (?:[A-Z]\w{3,20}\s+)?                                ## Optionally a first name after the initials
+        (?:[A-Z]\w{2,20}\s+)?                                ## Optionally a first name after the initials
 
         (?:
             (?!%(invalid_prefixes)s)                         ## Invalid prefixes to avoid
@@ -83,9 +83,10 @@ def get_initial_surname_author_pattern(incl_numeration=False):
         )?                                                   ## character prefixes before the surname (e.g. 'van','de')
 
         (?!%(invalid_surnames)s)                             ## Invalid surnames to avoid
-        [A-Z]                                                ## The surname, which must start with an upper case character 
+        [A-Z]                                                ## The surname, which must start with an upper case character
         (?:[rR]\.|\w{1,20})                                  ## handle Jr.
-        (?:[\-’'`´]\w{1,20})?                                ## single hyphen allowed jan-el
+        (?:[\-’'`´][\w’']{1,20})?                            ## single hyphen allowed jan-el or Figueroa-O'Farrill
+        [’']?                                                ## Eventually an ending '
 
         %(numeration)s                                       ## A possible number to appear after an author name, used for author extraction
 
@@ -268,8 +269,8 @@ def make_auth_regex_str(etal, initial_surname_author=None, surname_initial_autho
                                                                     ## or it can begin with a single 'surname initial' author
 
             (?:                                                     ## The first author in the 'author group'
-               (?P<sur_initial_auth>%(s_i_author)s) |
-               %(i_s_author)s
+               %(i_s_author)s |
+               (?P<sur_initial_auth>%(s_i_author)s)
             )
 
             (?P<multi_auth>

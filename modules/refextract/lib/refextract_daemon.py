@@ -19,30 +19,22 @@
 
 """Initialise Refextract task"""
 
-import sys, os, time, traceback
-from shutil import copyfile
-from tempfile import mkstemp
+import sys, traceback
 from datetime import datetime
 
 from invenio.bibtask import task_init, task_set_option, \
                             task_get_option, write_message, \
-                            task_has_option, task_get_task_param, \
                             task_sleep_now_if_required, \
                             task_update_progress
-from invenio.config import CFG_VERSION, CFG_TMPDIR, CFG_BINDIR, CFG_ETCDIR
+from invenio.config import CFG_VERSION
 from invenio.dbquery import run_sql
-# Used to create a new record object, to obtain fulltexts
-from invenio.bibdocfile import BibRecDocs
 # Used to obtain the fulltexts for a given collection
 from invenio.search_engine import get_collection_reclist
-# begin_extraction() is the beginning method of extracting references,
-# given that either standalone or non-standlone methods have been selected
-from invenio.refextract_engine import begin_extraction
 # Help message is the usage() print out of how to use Refextract
 from invenio.refextract_cli import HELP_MESSAGE, DESCRIPTION
-from invenio.refextract_api import update_references, FullTextNotAvailable
-from invenio.refextract_config import CFG_REFEXTRACT_JOB_FILE_PARAMS
-from invenio.config import CFG_PATH_GFILE
+from invenio.refextract_api import update_references, \
+                                   FullTextNotAvailable, \
+                                   RecordHasReferences
 
 
 class TaskNotFound(Exception):
@@ -71,13 +63,17 @@ def fetch_last_updated(name='refextract'):
 
 
 def store_last_updated(recid, creation_date, name='refextract'):
-    sql = "UPDATE xtrJOB SET last_id = %s, last_updated = %s WHERE name=%s"
-    row = run_sql(sql, (recid, creation_date.isoformat(), name))
+    sql = "UPDATE xtrJOB SET last_id = %s WHERE name=%s AND last_id < %s"
+    run_sql(sql, (recid, name, recid))
+    sql = "UPDATE xtrJOB SET last_updated = %s " \
+                "WHERE name=%s AND last_updated < %s"
+    iso_date = creation_date.isoformat()
+    run_sql(sql, (iso_date, name, iso_date))
 
 def task_run_core_wrapper():
     try:
         return task_run_core()
-    except Exception, e:
+    except Exception:
         # Remove extra '\n'
         write_message(traceback.format_exc()[:-1])
         raise
@@ -113,11 +109,16 @@ def task_run_core():
         task_update_progress(msg)
         write_message(msg)
         try:
-            update_references(recid, task_get_option('inspire'))
+            update_references(recid,
+                              inspire=task_get_option('inspire'),
+                              overwrite=not task_get_option('no-overwrite'))
             write_message("Extracted references for %s" % recid)
         except FullTextNotAvailable:
             write_message("No full text available for %s" % recid)
-        store_last_updated(recid, creation_date)
+        except RecordHasReferences:
+            write_message("Record %s has references, skipping" % recid)
+        if task_get_option('new'):
+            store_last_updated(recid, creation_date)
         count += 1
 
     write_message("Reference extraction complete.")
@@ -154,12 +155,16 @@ def _task_submit_elaborate_specific_parameter(key, value, opts, args):
         task_set_option('kb-reports', value)
     elif key in ('--kb-journals'):
         task_set_option('kb-journals', value)
+    elif key in ('--kb-journals-re'):
+        task_set_option('kb-journals-re', value)
     elif key in ('--kb-authors'):
         task_set_option('kb-authors', value)
     elif key in ('--kb-books'):
         task_set_option('kb-books', value)
     elif key in ('--kb-conferences'):
         task_set_option('kb-conferences', value)
+    elif key in ('--no-overwrite'):
+        task_set_option('no-overwrite', True)
     elif key in ('-c', '--collections'):
         collections = task_get_option('collections')
         if not collections:
@@ -193,7 +198,7 @@ def main():
    (run a daemon job)
       refextract -a
    (run on a set of records)
-      refextract --redids 1,2 -r 3
+      refextract --recids 1,2 -r 3
    (run on a collection)
       refextract --collections "Reports"
    (run as standalone)
@@ -210,11 +215,15 @@ def main():
                              "xmlfile=",
                              "dictfile=",
                              "inspire",
-                             "kb-journal=",
-                             "kb-report-number=",
+                             "kb-journals=",
+                             "kb-journals-re=",
+                             "kb-reports=",
+                             "kb-authors=",
+                             "kb-books=",
                              "recids=",
                              "collections=",
-                             "new"]),
+                             "new",
+                             "no-overwrite"]),
         task_submit_elaborate_specific_parameter_fnc= \
         _task_submit_elaborate_specific_parameter,
         task_submit_check_options_fnc=_task_submit_check_options,

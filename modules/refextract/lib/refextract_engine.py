@@ -27,21 +27,16 @@ import sys
 import re
 import os
 import csv
-import getopt
 import subprocess
 
-from time import ctime
-
 from invenio.refextract_config import \
-            CFG_REFEXTRACT_TEST_REFERENCES, \
             CFG_REFEXTRACT_KB_AUTHORS, \
             CFG_REFEXTRACT_KB_JOURNAL_TITLES, \
+            CFG_REFEXTRACT_KB_JOURNAL_TITLES_RE, \
             CFG_REFEXTRACT_KB_JOURNAL_TITLES_INSPIRE, \
             CFG_REFEXTRACT_KB_REPORT_NUMBERS, \
             CFG_REFEXTRACT_KB_BOOKS, \
             CFG_REFEXTRACT_KB_CONFERENCES, \
-            CFG_REFEXTRACT_SUBFIELD_MISC, \
-            CFG_REFEXTRACT_SUBFIELD_AUTH, \
             CFG_REFEXTRACT_XML_VERSION, \
             CFG_REFEXTRACT_XML_COLLECTION_OPEN, \
             CFG_REFEXTRACT_XML_COLLECTION_CLOSE, \
@@ -54,9 +49,7 @@ from invenio.refextract_config import \
             CFG_REFEXTRACT_MARKER_CLOSING_TITLE_IBID, \
             CFG_REFEXTRACT_MARKER_CLOSING_AUTHOR_ETAL, \
             CFG_REFEXTRACT_MARKER_CLOSING_TITLE, \
-            CFG_REFEXTRACT_MARKER_CLOSING_SERIES, \
-            CFG_REFEXTRACT_MARKER_CLOSING_QUOTED, \
-            CFG_REFEXTRACT_MARKER_CLOSING_ISBN
+            CFG_REFEXTRACT_MARKER_CLOSING_SERIES
 
 # make refextract runnable without requiring the full Invenio installation:
 from invenio.config import CFG_PATH_GFILE
@@ -73,7 +66,6 @@ from invenio.docextract_utils import write_message
 from invenio.refextract_cli import halt
 from invenio.refextract_re import re_punctuation, \
                                   re_kb_line, \
-                                  re_isbn, \
                                   re_regexp_character_class, \
                                   re_report_num_chars_to_escape, \
                                   re_extract_quoted_text, \
@@ -82,16 +74,8 @@ from invenio.refextract_re import re_punctuation, \
                                   regex_match_list, \
                                   re_tagged_citation, \
                                   re_numeration_no_ibid_txt, \
-                                  re_recognised_numeration_for_title_plus_series, \
-                                  re_series_from_title
-
-
-# Try to get the bibtask functions, necessary when running refextract
-# as a bibsched task. They won't be needed for standalone execution of
-# Refextract however.
-from invenio import bibtask
-from invenio.bibtask import task_update_progress
-from invenio.bibtask import task_sleep_now_if_required
+                                  re_roman_numbers, \
+                                  re_recognised_numeration_for_title_plus_series
 
 
 description = """
@@ -177,6 +161,8 @@ def institute_num_pattern_to_regex(pattern):
        @return: (string) the regexp for recognising the pattern.
     """
     simple_replacements = [ ('9',    r'\d'),
+                            ('9+',   r'\d+'),
+                            ('w+',   r'\w+'),
                             ('a',    r'[A-Za-z]'),
                             ('v',    r'[Vv]'),
                             ('mm',   r'(0[1-9]|1[0-2])'),
@@ -347,6 +333,9 @@ def build_reportnum_knowledge_base(fpath):
             fh = fpath
 
         for rawline in fh:
+            if rawline.startswith('#'):
+                continue
+
             kb_line_num += 1
             try:
                 rawline = rawline.decode("utf-8")
@@ -459,12 +448,16 @@ def build_books_knowledge_base(fpath):
         fpath_needs_closing = False
         source = fpath
 
-    books = {}
-    for line in source:
-        try:
-            books[line[1].upper()] = line
-        except IndexError:
-            write_message('Invalid line in books kb %s' % line, verbose=1)
+    try:
+        books = {}
+        for line in source:
+            try:
+                books[line[1].upper()] = line
+            except IndexError:
+                write_message('Invalid line in books kb %s' % line, verbose=1)
+    finally:
+        if fpath_needs_closing:
+            fh.close()
 
     return books
 
@@ -506,8 +499,45 @@ def build_authors_knowledge_base(fpath):
 
     return replacements
 
+def build_journals_re_knowledge_base(fpath):
+    """Load journals regexps knowledge base
+    
+    @see build_journals_knowledge_base
+    """
+    def make_tuple(match):
+        regexp = re.compile(match.group('seek'), re.UNICODE)
+        repl = '<cds.TITLE>%s</cds.TITLE>' % match.group('repl')
+        return (regexp, repl)
 
-def build_titles_knowledge_base(fpath):
+    kb = []
+
+    if isinstance(fpath, basestring):
+        fpath_needs_closing = True
+        try:
+            fh = open(fpath, "r")
+        except IOError:
+            halt(err=IOError,
+                 msg="Error: Unable to open journal kb '%s'" % fpath,
+                 exit_code=1)
+    else:
+        fpath_needs_closing = False
+        fh = fpath
+
+    try:
+        for rawline in fh:
+            if rawline.startswith('#'):
+                continue
+            # Extract the seek->replace terms from this KB line:
+            m_kb_line = re_kb_line.search(rawline.decode('utf-8'))
+            kb.append(make_tuple(m_kb_line))
+    finally:
+        if fpath_needs_closing:
+            fh.close()
+
+    return kb
+
+
+def build_journals_knowledge_base(fpath):
     """Given the path to a knowledge base file, read in the contents
        of that file into a dictionary of search->replace word phrases.
        The search phrases are compiled into a regex pattern object.
@@ -556,7 +586,7 @@ def build_titles_knowledge_base(fpath):
 
         count = 0
         for rawline in fh:
-            if rawline.find('\\') != -1:
+            if rawline.startswith('#'):
                 continue
             count += 1
             # Test line to ensure that it is a correctly formatted
@@ -708,11 +738,41 @@ def remove_reference_line_marker(line):
     return (marker_val, line)
 
 
+def roman2arabic(num):
+    """Convert numbers from roman to arabic
+    
+    This function expects a string like XXII
+    and outputs an integer
+    """
+    t = 0
+    p = 0
+    for r in num:
+        n = 10 ** (205558 % ord(r) % 7) % 9995
+        t += n - 2 * p % n
+        p = n
+    return t
+
+
 ## Transformations
+
+def format_volume(citation_elements):
+    """format volume number (roman numbers to arabic)
+
+    When the volume number is expressed in roman numbers (CXXII),
+    they are converted to their equivalent in arabic numbers (42)
+    """
+    re_roman = re.compile(re_roman_numbers + u'$', re.UNICODE)
+    for el in citation_elements:
+        if el['type'] == 'TITLE'\
+            and re_roman.match(el['volume']):
+                print el
+                el['volume'] = str(roman2arabic(el['volume'].upper()))
+    return citation_elements
+
 
 def handle_special_journals(citation_elements, kbs):
     """format special journals (like JHEP) volume number
-    
+
     JHEP needs the volume number prefixed with the year
     e.g. JHEP 0301 instead of JHEP 01
     """
@@ -734,10 +794,10 @@ def handle_special_journals(citation_elements, kbs):
 
 def format_report_number(citation_elements):
     """Format report numbers that are missing a dash
-    
+
     e.g. CERN-LCHH2003-01 to CERN-LHCC-2003-01
     """
-    re_report = re.compile(ur'^(?P<name>[A-Z-]+)(?P<nums>[\d-]+)$')
+    re_report = re.compile(ur'^(?P<name>[A-Z-]+)(?P<nums>[\d-]+)$', re.UNICODE)
     for el in citation_elements:
         if el['type'] == 'REPORTNUMBER':
             m = re_report.match(el['report_num'])
@@ -745,6 +805,20 @@ def format_report_number(citation_elements):
                 name = m.group('name')
                 if not name.endswith('-'):
                     el['report_num'] = m.group('name') + '-' + m.group('nums')
+    return citation_elements
+
+
+def format_hep(citation_elements):
+    """Format hep-th report numbers with a dash
+
+    e.g. replaceing hep-th-9711200 with hep-th/9711200
+    """
+    for el in citation_elements:
+        if el['type'] == 'REPORTNUMBER' and \
+                    ( el['report_num'].startswith('hep-th-') or \
+                      el['report_num'].startswith('hep-ph-') ):
+            el['report_num'] = el['report_num'][:6] + '/' + \
+                                el['report_num'][7:]
     return citation_elements
 
 
@@ -810,10 +884,12 @@ def parse_reference_line(ref_line, kbs, bad_titles_count):
                                     identified_urls)
 
     # Transformations on elements
+    #citation_elements = format_volume(citation_elements)
     citation_elements = handle_special_journals(citation_elements, kbs)
     citation_elements = format_report_number(citation_elements)
     citation_elements = format_author_ed(citation_elements)
     citation_elements = look_for_books(citation_elements, kbs)
+    citation_elements = format_hep(citation_elements)
 
     return citation_elements, line_marker, counts, bad_titles_count
 
@@ -908,7 +984,6 @@ def parse_tagged_reference_line(line_marker,
         @return count_*: (integer) the number of * (pieces of info) found in the reference line.
     """
     count_misc = count_title = count_reportnum = count_url = count_doi = count_auth_group = 0
-    xml_line = ""
     processed_line = line
     cur_misc_txt = u""
 
@@ -1387,7 +1462,7 @@ def write_raw_references_to_stream(recid, raw_refs, strm):
        @return: None.
     """
     # write the reference lines to the stream:
-    for line in raw_refs:
+    for x in raw_refs:
         strm.write("%(recid)s:%(refline)s\n" % {'recid' : recid,
                                                 'refline' : x.encode("utf-8")})
     strm.flush()
@@ -1477,11 +1552,6 @@ def begin_extraction(config):
 
     # Gather fulltext document locations from input arguments
     extract_jobs = config.fulltext
-
-    if len(extract_jobs) == 0:
-        # no files provided for reference extraction - error message
-        usage(wmsg="Error: No valid input file specified " \
-                    "(-f file [-f file ...])")
 
     # Read the authors knowledge base, creating the search
     # and replace terms
@@ -1615,12 +1685,15 @@ def write_titles_statistics(all_found_titles_count, destination_file):
 
 
 def load_kbs(kb_journals=None, kb_reports=None, kb_authors=None,
-    kb_books=None, kb_conferences=None, inspire=False):
+    kb_books=None, kb_conferences=None, kb_journals_re=None, inspire=False):
     if kb_journals is None:
         if inspire:
             kb_journals = CFG_REFEXTRACT_KB_JOURNAL_TITLES_INSPIRE
         else:
             kb_journals = CFG_REFEXTRACT_KB_JOURNAL_TITLES
+
+    if kb_journals_re is None:
+        kb_journals_re = CFG_REFEXTRACT_KB_JOURNAL_TITLES_RE
 
     if kb_reports is None:
         kb_reports = CFG_REFEXTRACT_KB_REPORT_NUMBERS
@@ -1635,7 +1708,8 @@ def load_kbs(kb_journals=None, kb_reports=None, kb_authors=None,
         kb_conferences = CFG_REFEXTRACT_KB_CONFERENCES
 
     return {
-        'journals': build_titles_knowledge_base(kb_journals),
+        'journals_re': build_journals_re_knowledge_base(kb_journals_re),
+        'journals': build_journals_knowledge_base(kb_journals),
         'reports' : build_reportnum_knowledge_base(kb_reports),
         'authors' : build_authors_knowledge_base(kb_authors),
         'books' : build_books_knowledge_base(kb_books),
@@ -1669,7 +1743,7 @@ def build_xml_references(citations, inspire):
 
 def parse_references(reference_lines, recid=1, inspire=False,
         kb_journals=None, kb_reports=None, kb_authors=None,
-        kb_books=None, kb_conferences=None):
+        kb_books=None, kb_conferences=None, kb_journals_re=None):
     """Parse a list of references
     
     Given a list of raw reference lines (list of strings),
@@ -1680,6 +1754,7 @@ def parse_references(reference_lines, recid=1, inspire=False,
                    kb_authors=kb_authors,
                    kb_books=kb_books,
                    kb_conferences=kb_conferences,
+                   kb_journals_re=kb_journals_re,
                    inspire=inspire)
     # Identify journal titles, report numbers, URLs, DOIs, and authors...
     (processed_references, counts, bad_titles_count) = \
