@@ -1267,6 +1267,92 @@ function onPreviewClick(){
        });
 }
 
+/************* Reference extraction in BibEdit ***************/
+
+function onRefExtractClick() {
+   /*
+    * Handle reference extraction button
+    *
+    * 1) Create dialog box while loading
+    * 2) Send request to the server to extract references
+    * 3) Update dialog box with references extracted
+    * 4) If user approves, redraw interface with new content and update
+    *    cache in server
+    * 
+    */
+
+   /* Create the modal dialog that will contain the references */
+   var dialogReferences = $( '<div>' );
+   var contentParagraph = $('<p>'),
+       contentSpan = $('<span>'),
+       iconSpan = $('<span>');
+   
+   contentParagraph.addClass('dialog-box-centered');
+   contentSpan.html("Extracting references...<br /><br /> <img src='/img/ajax-loader.gif'>");
+   dialogReferences.append(contentParagraph.append(contentSpan));
+   dialogReferences.appendTo( $( 'body' ) );
+   dialogReferences.dialog({
+        title: "Loading...",
+        resizable: false,
+        modal: true,
+        height: 750,
+        width: 700
+    });
+
+    /* Create a request to extract references */
+    var bibrecord, textmarc, xmlrecord;
+    createReq({recID: gRecID, requestType: 'refextract'},
+        function(json){
+            bibrecord = json['ref_bibrecord'];
+            textmarc = json['ref_textmarc'];
+            xmlrecord = json['ref_xmlrecord'];
+            if (!xmlrecord) {
+                contentParagraph.css('margin-top', '50px');
+                contentSpan.html("The record does not have a PDF file ");
+                dialogReferences.dialog({
+                    title: "PDF not found",
+                    height: '200',
+                    width: '350',
+                    buttons: {
+                        "Accept" : function() {
+                                    $( this ).remove();
+                                   }
+                    }
+                });
+            }
+            /* References were extracted */
+            else {
+                iconSpan.addClass('ui-icon').addClass('ui-icon-alert').addClass('dialog-icon');
+                contentParagraph.before(iconSpan);
+                contentParagraph.removeClass('dialog-box-centered');
+                /* Update the dialog with the content received from server */
+                contentSpan.html("Do you want to apply the following references?\n\
+                                 <br /><br />" + textmarc);
+                dialogReferences.dialog({
+                    title: "Apply references",
+                    buttons: {
+                        "Apply references": function() {
+                                                /* Update global record with the updated version */
+                                                gRecord = bibrecord;
+                                                /* Update cache in the server to have the updated record */
+                                                createReq({recID: gRecID, recXML: xmlrecord, requestType: 'updateCacheRef'});
+                                                /* Redraw whole content table and enable submit button */
+                                                $('#bibEditTable').remove();
+                                                displayRecord();
+                                                redrawFields();
+                                                reColorFields();
+                                                $('#btnSubmit').removeAttr('disabled');
+                                                $('#btnSubmit').css('background-color', 'lightgreen');
+                                                $( this ).remove();
+                                            },
+                        Cancel: function() {
+                                    $( this ).remove();
+                                }
+                }});
+            }
+        });
+}
+
 function onCancelClick(){
   /*
    * Handle 'Cancel' button (cancel editing).
@@ -1453,6 +1539,7 @@ function addHandler_autocompleteAffiliations(tg) {
                 if (term.length < 3) {
                     return false;
                 }
+                return true;
     }
     });
 }

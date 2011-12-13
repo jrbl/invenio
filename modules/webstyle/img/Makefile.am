@@ -143,6 +143,7 @@ img_DATA = add-small.png \
            rcorners-gray-1280x18.gif \
            rcorners-gray-1280x60-folded.gif \
            red_gradient.gif \
+           ref_extract.png \
            refresh.png \
            replace.png \
            restricted.gif \

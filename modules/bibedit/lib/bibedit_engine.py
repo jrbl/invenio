@@ -46,7 +46,7 @@ from invenio.bibedit_config import CFG_BIBEDIT_AJAX_RESULT_CODES, \
     CFG_BIBEDIT_KEYWORD_TAXONOMY, CFG_BIBEDIT_KEYWORD_TAG, \
     CFG_BIBEDIT_KEYWORD_RDFLABEL
 
-from invenio.config import CFG_SITE_LANG, CFG_DEVEL_SITE
+from invenio.config import CFG_SITE_LANG, CFG_DEVEL_SITE, CFG_INSPIRE_SITE
 from invenio.bibedit_dblayer import get_name_tags_all, reserve_record_id, \
     get_related_hp_changesets, get_hp_update_xml, delete_hp_change, \
     get_record_last_modification_date, get_record_revision_author, \
@@ -180,6 +180,8 @@ def perform_request_init(uid, ln, req, lastupdated):
                     req         = req)
 
 
+    body += '<link rel="stylesheet" type="text/css" href="/img/jquery-ui.css" />'
+
     if CFG_CERN_SITE:
         cern_site = 'true'
     data = {'gRECORD_TEMPLATES': record_templates,
@@ -225,16 +227,14 @@ def perform_request_init(uid, ln, req, lastupdated):
             "   var fieldTemplates = %s\n" % (json.dumps(fieldTemplates), ) + \
             "</script>\n"
     # Add scripts (the ordering is NOT irrelevant).
-    scripts = ['jquery.jeditable.mini.js', 'jquery.hotkeys.js', 'json2.js',
-               'bibedit_display.js', 'bibedit_engine.js', 'bibedit_keys.js',
+    scripts = ['jquery-ui.min.js',  'jquery.jeditable.mini.js', 'jquery.hotkeys.js',
+               'json2.js', 'bibedit_display.js', 'bibedit_engine.js', 'bibedit_keys.js',
                'bibedit_menu.js', 'bibedit_holdingpen.js', 'marcxml.js',
-               'bibedit_clipboard.js','jquery-ui.min.js']
+               'bibedit_clipboard.js']
 
     for script in scripts:
         body += '    <script type="text/javascript" src="%s/js/%s">' \
             '</script>\n' % (CFG_SITE_URL, script)
-
-    body += '<link rel="stylesheet" type="text/css" href="/img/jquery-ui.css" />'
 
     # Build page structure and menu.
     # rec = create_record(format_record(235, "xm"))[0]
@@ -334,7 +334,7 @@ def perform_request_ajax(req, recid, uid, data, isBulk = False, \
         # User related requests.
         response.update(perform_request_user(req, request_type, recid, data))
     elif request_type in ('getRecord', 'submit', 'cancel', 'newRecord',
-        'deleteRecord', 'deleteRecordCache', 'prepareRecordMerge', 'revert'):
+        'deleteRecord', 'deleteRecordCache', 'prepareRecordMerge', 'revert', 'updateCacheRef'):
         # 'Major' record related requests.
         response.update(perform_request_record(req, request_type, recid, uid,
                                                data))
@@ -378,6 +378,8 @@ def perform_request_ajax(req, recid, uid, data, isBulk = False, \
                                                   undo_redo, cacheMTime))
     elif request_type in ('preview', ):
         response.update(perform_request_preview_record(request_type, recid, uid))
+    elif request_type in ('refextract', ):
+        response.update(perform_request_ref_extract(recid, uid))
 
     return response
 
@@ -653,6 +655,9 @@ def perform_request_record(req, request_type, recid, uid, data, ln=CFG_SITE_LANG
         # - Invalid XML characters
         # If the cache is outdated cacheOutdated will be set to True in the
         # response.
+        a = open('/tmp/k.txt', 'w')
+        print >>a, 'cacheMTime Servidor: ' + str(get_cache_mtime(recid, uid))
+        print >>a, 'cacheMTime Cliente: ' + str(data['cacheMTime'])
         if not cache_exists(recid, uid):
             response['resultCode'] = 106
         elif not get_cache_mtime(recid, uid) == data['cacheMTime']:
@@ -763,6 +768,20 @@ def perform_request_record(req, request_type, recid, uid, data, ln=CFG_SITE_LANG
                 data['cacheMTime']:
             delete_cache_file(recid, uid)
         response['resultCode'] = 11
+    elif request_type == 'updateCacheRef':
+        # Update cache with the contents coming from BibEdit JS interface
+        # Used when updating references using ref extractor
+        record_revision, record, pending_changes, \
+                        deactivated_hp_changes, undo_list, redo_list = \
+                        get_cache_file_contents(recid, uid)[1:]
+
+        record = create_record(data['recXML'])[0]
+
+        response['cacheMTime'], response['cacheDirty'] = update_cache_file_contents(recid, uid, record_revision, record, \
+                                   pending_changes, \
+                                   deactivated_hp_changes, undo_list, \
+                                   redo_list), True
+        response['resultCode'] = CFG_BIBEDIT_AJAX_RESULT_CODES_REV['cache_updated_with_references']
 
     elif request_type == 'prepareRecordMerge':
         # We want to merge the cache with the current DB version of the record,
@@ -1176,11 +1195,42 @@ def perform_request_bibcatalog(request_type, recid, uid):
         response['resultCode'] = 31
     return response
 
+def perform_request_ref_extract(recid, uid):
+    """ Handle request to extract references in the given record
+
+    """
+    from invenio.refextract_api import replace_references, FullTextNotAvailable
+    from invenio import xmlmarc2textmarc as xmlmarc2textmarc
+
+    sysno = ""
+
+    options = {"aleph-marc":0, "correct-mode":1, "append-mode":0,
+               "delete-mode":0, "insert-mode":0, "replace-mode":0,
+               "text-marc":1}
+
+    response = {}
+    is_inspire = False
+    if CFG_INSPIRE_SITE:
+        is_inspire = True
+    try:
+        recordExtended = replace_references(recid, inspire=is_inspire)
+    except FullTextNotAvailable:
+        response['ref_xmlrecord'] = False
+        return response
+
+    ref_bibrecord = create_record(recordExtended)[0]
+    response['ref_bibrecord'] = ref_bibrecord
+    response['ref_xmlrecord'] = recordExtended
+
+    textmarc_references = [line.strip() for line in xmlmarc2textmarc.create_marc_record(ref_bibrecord,sysno,options).split('\n') if '999C5' in line]
+    response['ref_textmarc'] = '<br />'.join(textmarc_references)
+
+    return response
+
 def perform_request_preview_record(request_type, recid, uid):
     """ Handle request to preview record with formatting
 
     """
-
     response = {}
     if request_type == "preview":
         if cache_exists(recid, uid):

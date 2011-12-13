@@ -490,6 +490,29 @@ def page_style():
                     padding-top: 46px;
                 }
 
+                #topToolbarLeft {
+                    position: absolute;
+                    top:0;
+                    left:0;
+                    height: 48px;
+                    padding-top: 17px;
+                    padding-left: 10px;
+                 }
+
+                 /* jQuery-UI Theming used for:
+                  * - Dialog refextract
+                  */
+
+                .dialog-box-centered {
+                    margin-top: 300px;
+                    text-align: center;
+                }
+
+                .dialog-icon {
+                    float: left;
+                    margin: 12px 7px 10px 0;
+                }
+
                 /* jQuery-UI Theming used for:
                  * - Autocomplete menu
                  */
@@ -500,14 +523,6 @@ def page_style():
 
                 .ui-corner-all {
                     -moz-border-radius: 4px 4px 4px 4px;
-                }
-
-                .ui-widget-content {
-                    width: 300px;
-                }
-                .ui-widget-content a {
-                    background-color: white;
-                    color: black;
                 }
 
                 .ui-widget-overlay {
@@ -525,7 +540,6 @@ def page_style():
                 }
 
                 .ui-widget {
-                    /* font-family: Trebuchet MS,Tahoma,Verdana,Arial,sans-serif; */
                     font-size: .8em;
                 }
 
@@ -546,6 +560,7 @@ def page_style():
 
                 .ui-autocomplete {
                     cursor: default;
+                    width: 300px;
                 }
 
             """
