@@ -590,26 +590,40 @@ function createTopToolbar(){
   $('.headline_div').after('<div class="revisionLine"></div>');
   // When Special modes are available there will be a loop through all of
   // them and the appropriate icons will be added
-  
-  var toolbar_html = "<div id='topToolbarRight'><img id='img_preview' class='bibEditImgCtrlDisabled' src='/img/document-preview.png' ";
-  toolbar_html += "width='40px' height='40px' title='Preview record' /></div>";
+  var icon_doc_preview = "<img id='img_preview' class='bibEditImgCtrlDisabled' \n\
+                          src='/img/document-preview.png' width='40px' \n\
+                          height='40px' title='Preview record' />";
+  var icon_run_refextract = "<img id='img_run_refextract' class='bibEditImgCtrlDisabled' \n\
+                             src='/img/ref_extract.png' width='40px' \n\
+                             height='37px' title='Run reference extractor on this record' />";
+
+  var toolbar_html = "<div id='topToolbarRight'>" +  icon_doc_preview + "</div>";
+  toolbar_html += "<div id='topToolbarLeft'>" + icon_run_refextract + "</div>";
   toolbar_html += "<div id='top_toolbar_hr'><hr></div>"
 
   $('.headline_div').html(toolbar_html);
   $('#img_preview').bind('click', onPreviewClick);
+  $('#img_run_refextract').bind('click', onRefExtractClick);
 
   $('#img_preview').unbind('click').removeClass(
+    'bibEditImgCtrlEnabled').addClass('bibEditImgCtrlDisabled');
+  $('#img_run_refextract').unbind('click').removeClass(
     'bibEditImgCtrlEnabled').addClass('bibEditImgCtrlDisabled');
 }
 
 function updateToolbar(enable) {
     if (enable === true) {
-        $('#img_preview').bind('click', onPreviewClick).removeClass(
+        /* Unbind first to avoid double binding when changing record */
+        $('#img_preview').unbind('click', onPreviewClick).bind('click', onPreviewClick).removeClass(
+        'bibEditImgCtrlDisabled').addClass('bibEditImgCtrlEnabled');
+        $('#img_run_refextract').unbind('click', onRefExtractClick).bind('click', onRefExtractClick).removeClass(
         'bibEditImgCtrlDisabled').addClass('bibEditImgCtrlEnabled');
         $('.revisionLine').show();
     }
     else {
         $('#img_preview').unbind('click', onPreviewClick).removeClass(
+        'bibEditImgCtrlEnabled').addClass('bibEditImgCtrlDisabled');
+        $('#img_run_refextract').unbind('click', onRefExtractClick).removeClass(
         'bibEditImgCtrlEnabled').addClass('bibEditImgCtrlDisabled');
         $('.revisionLine').hide();
     }

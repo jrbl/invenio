@@ -151,7 +151,7 @@ function initHotkeys(){
     onTriggerFormControl('Cancel', event);
   });
   // Clear current form.
-  $(document).bind('keydown', 'ctrl+shift+x', function(event){
+  $(document).bind('keydown','ctrl+shift+x', function(event){
     onTriggerFormControl('Clear', event);
   });
   // Add subfield in form.
