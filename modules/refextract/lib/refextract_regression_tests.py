@@ -1056,7 +1056,7 @@ class RefextractTest(unittest.TestCase):
 
     def test_ibidem(self):
         """IBIDEM test
-        
+
         ibidem must copy the previous reference journal and not
         the first one
         """
@@ -1472,7 +1472,7 @@ Rev. D 80 034030 1-25"""
 
     def test_wrong_replacement(self):
         """Wrong replacement
-        
+
         A. J. Hey, Gauge by Astron.J. Hey
         """
         ref_line = u"""[5] I. J. Aitchison and A. J. Hey, Gauge Theories in Particle Physics, Vol II: QCD and the Electroweak Theory. CRC Pr I Llc, 2003."""
@@ -1861,6 +1861,17 @@ Rev. D 80 034030 1-25"""
       <subfield code="o">19</subfield>
       <subfield code="h">D. Page and C. Pope</subfield>
       <subfield code="s">Commun.Math.Phys.,6,529</subfield>
+   </datafield>
+</record>""")
+
+    def test_journal_phys_rev_d(self):
+        ref_line = u"""[6] Sivers D. W., Phys. Rev.D, 41 (1990) 83"""
+        reference_test(self, ref_line, u"""<record>
+   <controlfield tag="001">1</controlfield>
+   <datafield tag="999" ind1="C" ind2="5">
+      <subfield code="o">6</subfield>
+      <subfield code="h">Sivers D. W.</subfield>
+      <subfield code="s">Phys.Rev.D,41,83</subfield>
    </datafield>
 </record>""")
 

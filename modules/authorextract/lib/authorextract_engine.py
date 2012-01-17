@@ -1216,12 +1216,12 @@ def choose_author_method(tagged_info, std_info, aff_info,
 def get_affiliation_canonical_value(proposed_affil):
     """Given a proposed affiliation, look for a canonical form in the
     affils knowledge base
- 
+
     @param proposed_affil the possible affiliation name to be looked for
     @return canonical form returns none if no key matches
- 
+
     """
- 
+
     try:
         from invenio.bibformat_dblayer import get_kb_mapping_value
     except ImportError:

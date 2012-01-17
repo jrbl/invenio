@@ -106,7 +106,11 @@ def find_numeration_in_body(docbody):
                 break
         else:
             # No numeration
-            ref_details = {'title_marker_same_line': False}
+            ref_details = {
+                'title_marker_same_line': False,
+                'marker': '',
+                'marker_pattern': '',
+            }
 
     return ref_details, found_title
 

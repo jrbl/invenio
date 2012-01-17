@@ -352,7 +352,7 @@ def tag_isbn(line):
 
 def tag_titles(line):
     """Tag quoted titles
-    
+
     We use titles for pretty display of references that we could not
     associate we record.
     We also use titles for recognising books.
@@ -362,7 +362,7 @@ def tag_titles(line):
 
 def tag_arxiv(line):
     """Tag arxiv report numbers
-    
+
     We handle arXiv in 2 ways:
     * starting with arXiv:1022.1111
     * this format exactly 9999.9999
@@ -387,7 +387,7 @@ def tag_arxiv(line):
 
 def tag_pos_volume(line):
     """Tag POS volume number
-    
+
     POS is journal that has special volume numbers
     e.g. PoS LAT2007 (2007) 369
     """
@@ -1009,7 +1009,7 @@ def tag_numeration(line):
         and possibly recognized/marked-up.
     """
     patterns = (
-        re_strip_series_and_volume_labels,
+        #re_strip_series_and_volume_labels,
 
         # vol,page,year
         re_numeration_vol_page_yr,
