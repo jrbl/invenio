@@ -139,7 +139,7 @@ def create_xml_record(counts, recid, xml_lines, status_code=0):
            % { 'record-close' : CFG_REFEXTRACT_XML_RECORD_CLOSE, }
 
     ## Be sure to call this BEFORE compress_subfields
-    out = filter_processed_references(''.join(out))  
+    out = filter_processed_references(''.join(out))
     ## Compress mulitple 'm' subfields in a datafield
     out = compress_subfields(out, CFG_REFEXTRACT_SUBFIELD_MISC)
     ## Compress multiple 'h' subfields in a datafield
@@ -669,7 +669,7 @@ def filter_processed_references(out):
                     # <subfield code="a">Invenio/X.XX.X
                     # refextract/X.XX.X-timestamp-err-repnum-title-URL-misc
                     # remake the "a" tag for new numbe of "m" tags
-                    if a_tag.search(ref_lines[i]):  
+                    if a_tag.search(ref_lines[i]):
                         data = a_tag.search(ref_lines[i]).group(1)
                         words1 = data.split()
                         words2 = words1[-1].split('-')

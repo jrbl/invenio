@@ -169,7 +169,7 @@ def update_references(recid, inspire=False, overwrite=True):
     First, we extract references from a record.
     Then, we are not updating the record directly but adding a bibupload
     task in -c mode which takes care of updating the record.
-    
+
     Parameters:
     * recid: the id of the record
     * inspire: format of ther references

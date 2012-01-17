@@ -114,7 +114,7 @@ def join_lines(line1, line2):
 
 def repair_broken_urls(line):
     """Attempt to repair broken URLs in a line of text.
-    
+
     E.g.: remove spaces from the middle of a URL; something like that.
 
     @param line: (string) the line in which to check for broken URLs.

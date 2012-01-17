@@ -196,7 +196,7 @@ re_wash_volume_tag = (
 )
 
 # Roman Numbers
-re_roman_numbers = ur"[DdCcLlXxVvIi]+"
+re_roman_numbers = ur"[XxVvIi]+"
 
 ## Sep
 re_sep = ur"\s*[,\s:]\s*"

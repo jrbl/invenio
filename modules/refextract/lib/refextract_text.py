@@ -71,7 +71,7 @@ def extract_references_from_fulltext(fulltext):
                              "no end to refs!", verbose=2)
         else:
             # If the end of the reference section was found.. start extraction
-            refs = get_reference_lines(fulltext, 
+            refs = get_reference_lines(fulltext,
                                        ref_sect_start["start_line"],
                                        ref_sect_end,
                                        ref_sect_start["title_string"],

@@ -330,7 +330,7 @@ etal_matches = (
 # Editor notation: 'eds?.' | 'ed.' | 'ed'
 re_ed_text = ur"(?:[Ee][Dd]|[Ee]dited|[Ee]ditor)\.?"
 re_ed_notation = ur"""
-    (?: 
+    (?:
         \(?
         %(text)s
         \s?

@@ -31,10 +31,10 @@ def find_author_section(docbody, author_marker=None, first_author=None):
           [A-Z]\w+, [A-Z]\.?\s?[A-Z]?\.?\s?\d*
           (i.e. a word starting with caps, followed by comma, space, one
           or two initials with possible periods and then possibly a number.
-    
+
        @param docbody: (list) of strings - the full document body.
        @param author_marker: (string) optional (regexp) marker embedded by latex
-       for beginning and end of author section  
+       for beginning and end of author section
        @param first_author: (string) optional (regexp) first author to help find
        beginning of section
        @return: (dictionary) :

@@ -75,7 +75,7 @@ def get_authors_lines(docbody,
                       marker_ptn,
                       title_marker_same_line):
     """Extract author lines from fulltext
-    
+
     from a given section of a document extract the relevant lines, not
     including the various markers.
     @param start_line  index of docbody on which sect starts
@@ -84,7 +84,7 @@ def get_authors_lines(docbody,
     @param marker_ptn  pattern that ids start of a line
     @param title_marker_same_line integer tells whether title and
     marker are on same line
-    @param section[="references"] string denoting type of section 
+    @param section[="references"] string denoting type of section
     @return: (list) of strings. Each string is a reference line, extracted
     from the document. """
 
