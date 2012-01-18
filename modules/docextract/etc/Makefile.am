@@ -16,7 +16,19 @@
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 etcdir = $(sysconfdir)/docextract/
-etc_DATA = 
+etc_DATA = example.pdf \
+           example.txt \
+           authors.kb \
+           collaborations.kb \
+           publishers.kb \
+           journal-titles-re.kb \
+           report-numbers.kb \
+           test1.txt \
+           books.kb \
+           job-preprints.cfg \
+           journal-titles.kb \
+           test2.txt \
+           special-journals.kb
 
 EXTRA_DIST = $(etc_DATA)
 

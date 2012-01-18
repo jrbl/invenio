@@ -20,6 +20,7 @@
 VERBOSITY = None
 
 import sys
+from datetime import datetime
 
 from invenio.bibtask import write_message as bibtask_write_message
 
@@ -36,8 +37,9 @@ def setup_loggers(verbosity):
 def write_message(msg, stream=sys.stdout, verbose=1):
     """Write message and flush output stream (may be sys.stdout or sys.stderr).
     Useful for debugging stuff."""
-
     if VERBOSITY is None:
-        return bibtask_write_message(msg, stream ,verbose)
+        return bibtask_write_message(msg, stream, verbose)
     elif msg and VERBOSITY >= verbose:
+        if VERBOSITY > 8:
+            print >>stream, datetime.now().strftime('[%H:%M:%S] '),
         print >>stream, msg

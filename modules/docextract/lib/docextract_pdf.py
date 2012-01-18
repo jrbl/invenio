@@ -187,7 +187,7 @@ UNDESIRABLE_CHAR_REPLACEMENTS = {
         u"\U000E007D" : u"",
         u"\U000E007E" : u"",
         u"\U000E007F" : u"",
-        ## Musical Notation Scoping
+        # Musical Notation Scoping
         u"\U0001D173" : u"",
         u"\U0001D174" : u"",
         u"\U0001D175" : u"",
@@ -196,37 +196,37 @@ UNDESIRABLE_CHAR_REPLACEMENTS = {
         u"\U0001D178" : u"",
         u"\U0001D179" : u"",
         u"\U0001D17A" : u"",
-        u'\u0000' : u"", # NULL
-        u'\u0001' : u"", # START OF HEADING
+        u'\u0000' : u"",  # NULL
+        u'\u0001' : u"",  # START OF HEADING
         # START OF TEXT & END OF TEXT:
         u'\u0002' : u"",
         u'\u0003' : u"",
-        u'\u0004' : u"", # END OF TRANSMISSION
+        u'\u0004' : u"",  # END OF TRANSMISSION
         # ENQ and ACK
         u'\u0005' : u"",
         u'\u0006' : u"",
-        u'\u0007' : u"", # BELL
-        u'\u0008' : u"", # BACKSPACE
+        u'\u0007' : u"",  # BELL
+        u'\u0008' : u"",  # BACKSPACE
         # SHIFT-IN & SHIFT-OUT
         u'\u000E' : u"",
         u'\u000F' : u"",
         # Other controls:
-        u'\u0010' : u"", # DATA LINK ESCAPE
-        u'\u0011' : u"", # DEVICE CONTROL ONE
-        u'\u0012' : u"", # DEVICE CONTROL TWO
-        u'\u0013' : u"", # DEVICE CONTROL THREE
-        u'\u0014' : u"", # DEVICE CONTROL FOUR
-        u'\u0015' : u"", # NEGATIVE ACK
-        u'\u0016' : u"", # SYNCRONOUS IDLE
-        u'\u0017' : u"", # END OF TRANSMISSION BLOCK
-        u'\u0018' : u"", # CANCEL
-        u'\u0019' : u"", # END OF MEDIUM
-        u'\u001A' : u"", # SUBSTITUTE
-        u'\u001B' : u"", # ESCAPE
-        u'\u001C' : u"", # INFORMATION SEPARATOR FOUR (file separator)
-        u'\u001D' : u"", # INFORMATION SEPARATOR THREE (group separator)
-        u'\u001E' : u"", # INFORMATION SEPARATOR TWO (record separator)
-        u'\u001F' : u"", # INFORMATION SEPARATOR ONE (unit separator)
+        u'\u0010' : u"",  # DATA LINK ESCAPE
+        u'\u0011' : u"",  # DEVICE CONTROL ONE
+        u'\u0012' : u"",  # DEVICE CONTROL TWO
+        u'\u0013' : u"",  # DEVICE CONTROL THREE
+        u'\u0014' : u"",  # DEVICE CONTROL FOUR
+        u'\u0015' : u"",  # NEGATIVE ACK
+        u'\u0016' : u"",  # SYNCRONOUS IDLE
+        u'\u0017' : u"",  # END OF TRANSMISSION BLOCK
+        u'\u0018' : u"",  # CANCEL
+        u'\u0019' : u"",  # END OF MEDIUM
+        u'\u001A' : u"",  # SUBSTITUTE
+        u'\u001B' : u"",  # ESCAPE
+        u'\u001C' : u"",  # INFORMATION SEPARATOR FOUR (file separator)
+        u'\u001D' : u"",  # INFORMATION SEPARATOR THREE (group separator)
+        u'\u001E' : u"",  # INFORMATION SEPARATOR TWO (record separator)
+        u'\u001F' : u"",  # INFORMATION SEPARATOR ONE (unit separator)
         # \r -> remove it
         u'\r' : u"",
         # Strange parantheses - change for normal:
@@ -313,7 +313,7 @@ UNDESIRABLE_CHAR_REPLACEMENTS = {
         u'\x13A' : u'\u00C1',
         u'\x13E' : u'\u00C9',
         u'\x13I' : u'\u00CD',
-        u'\x13ı' : u'\u00ED', # Lower case turkish 'i' (dotless i)
+        u'\x13ı' : u'\u00ED',  # Lower case turkish 'i' (dotless i)
         u'\x13O' : u'\u00D3',
         u'\x13U' : u'\u00DA',
         u'\x13Y' : u'\u00DD',
@@ -397,12 +397,13 @@ UNDESIRABLE_CHAR_REPLACEMENTS = {
         u'\u02DCO' : u'\u00D5',
         u'\u02DCa' : u'\u00E3',
         u'\u02DCA' : u'\u00C3',
-        u'\u02DCs' : u'\u0303s', ## Combining tilde with 's'
+        u'\u02DCs' : u'\u0303s',  # Combining tilde with 's'
     }
 
 UNDESIRABLE_STRING_REPLACEMENTS = [
     (u'\u201c ', '"'),
 ]
+
 
 def replace_undesirable_characters(line):
     """
@@ -445,6 +446,7 @@ def pdftotext_conversion_is_bad(txtlines):
         return True
     else:
         return False
+
 
 def convert_PDF_to_plaintext(fpath, keep_layout=False):
     """ Convert PDF to txt using pdftotext

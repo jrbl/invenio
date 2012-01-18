@@ -36,7 +36,8 @@ modules/bibcirculation/bin/bibcircd
 modules/bibclassify/bin/bibclassify
 modules/bibconvert/bin/bibconvert
 modules/bibedit/bin/bibedit
-modules/bibedit/bin/refextract
+modules/docextract/bin/refextract
+modules/docextract/bin/docextract
 modules/bibedit/bin/textmarc2xmlmarc
 modules/bibedit/bin/xmlmarc2textmarc
 modules/bibedit/bin/xmlmarclint

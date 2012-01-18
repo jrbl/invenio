@@ -20,7 +20,29 @@ pylibdir = $(libdir)/python/invenio
 pylib_DATA = docextract_pdf.py \
              docextract_text.py \
              docextract_utils.py \
-             docextract.py
+             docextract_task.py \
+             docextract_webinterface.py \
+             refextract_task.py \
+             refextract_config.py \
+             refextract_engine.py \
+             refextract_re.py \
+             refextract_api.py \
+             refextract_text.py \
+             refextract_xml.py \
+             refextract_find.py \
+             refextract_tag.py \
+             refextract_cli.py \
+             refextract_kbs.py \
+             authorextract_api.py \
+             authorextract_engine.py \
+             authorextract_cli.py \
+             authorextract_task.py \
+             authorextract_re.py \
+             authorextract_find.py \
+             authorextract_xml.py \
+             authorextract_config.py \
+             authorextract_text.py
+
 
 EXTRA_DIST = $(pylib_DATA)
 

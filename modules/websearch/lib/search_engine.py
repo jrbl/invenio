@@ -2225,6 +2225,10 @@ def search_unit(p, f=None, m=None, wl=0, synonyms=True):
     elif f == 'refersto':
         # we are doing search by the citation count
         hitset = search_unit_refersto(p)
+    elif f == 'rawref':
+        from invenio.refextract_api import search_from_reference
+        field, pattern = search_from_reference(p)
+        return search_unit(pattern, field)
     elif f == 'citedby':
         # we are doing search by the citation count
         hitset = search_unit_citedby(p)

@@ -209,6 +209,12 @@ except:
     register_exception(alert_admin=True, subject='EMERGENCY')
     WebInterfaceBibAuthorIDPages = WebInterfaceDumbPages
 
+try:
+    from invenio.docextract_webinterface import WebInterfaceDocExtract
+except:
+    register_exception(alert_admin=True, subject='EMERGENCY')
+    WebInterfaceDocExtract = WebInterfaceDumbPages
+
 if CFG_OPENAIRE_SITE:
     try:
         from invenio.openaire_deposit_webinterface import \
