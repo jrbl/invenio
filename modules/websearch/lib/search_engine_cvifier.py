@@ -31,14 +31,15 @@ from invenio.config import CFG_SITE_URL, CFG_SITE_SUPPORT_EMAIL
 import invenio.template
 websearch_templates = invenio.template.load('websearch')
 
-def cvify_records(recids, of, ln, req=None):
+def cvify_records(recids, of, ln, req=None, so='d'):
     """
        Write a CV for records RECIDS in the format OF in language LN.
        REQ is the Apache/mod_python request object.
     """
     # intbitsets don't support indexing, so we need a list from our hitset first
     recids = [hit for hit in recids]
-
+    if so == 'd':
+        recids.reverse()
     if of.startswith('h'):
         if of == 'hcv':
             format_records(recids, of=of,

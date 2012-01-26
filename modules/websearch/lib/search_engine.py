@@ -5480,7 +5480,7 @@ def perform_request_search(req=None, cc=CFG_SITE_NAME, c=None, p="", f="", rg=CF
                 summarize_records(results_final_for_all_selected_colls, 'hcs', ln, search_p, search_f, req)
             elif of in ['hcv', 'htcv', 'tlcv'] and CFG_INSPIRE_SITE:
                 from invenio.search_engine_cvifier import cvify_records
-                cvify_records(results_final_for_all_selected_colls, of, ln, req)
+                cvify_records(results_final_for_all_selected_colls, of, ln, req, so)
             else:
                 if len(colls_to_search)>1:
                     cpu_time = -1 # we do not want to have search time printed on each collection
