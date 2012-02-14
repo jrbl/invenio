@@ -41,7 +41,8 @@ pylib_DATA = bibauthorid_backinterface.py \
 
 jsdir=$(localstatedir)/www/js
 
-js_DATA = bibauthorid.js
+js_DATA = bibauthorid.js \
+          hepname_update.js
 
 EXTRA_DIST = $(pylib_DATA) \
              $(js_DATA)
