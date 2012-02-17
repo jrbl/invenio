@@ -71,6 +71,7 @@ __revision__ = "$Id$"
 
 
 import sys
+import traceback
 import ConfigParser
 
 from invenio.config import CFG_ETCDIR
@@ -161,6 +162,7 @@ def task_run_core():
                     % key)
     except StandardError, e:
         write_message("\nException caught: %s" % e, sys.stderr)
+        write_message(traceback.format_exc()[:-1])
         register_exception()
         task_update_status("ERROR")
         sys.exit(1)
@@ -207,6 +209,11 @@ def main():
 
  -A --author-citations     Calculate author citations.
 
+ --self-citations          Calculate self-citations.
+
+ --db-self-citations       Calculate self-citations but store them in a
+                           special table
+
  Repairing options:
  -k,  --check              check consistency for all records in the table(s)
                            check if update of ranking data is necessary
@@ -214,6 +221,8 @@ def main():
 """,
             version=__revision__,
             specific_params=("AE:ladSi:m:c:kUrRM:f:w:", [
+                "self-citations",
+                "db-self-citations",
                 "author-citations",
                 "print-extcites=",
                 "lastupdate",
@@ -256,6 +265,10 @@ def task_submit_elaborate_specific_parameter(key, value, opts, dummy):
         task_set_option("cmd", "print-missing")
     elif key in ("-A", "--author-citations"):
         task_set_option("author-citations", "1")
+    elif key in ("--self-citations"):
+        task_set_option("self-citations", True)
+    elif key in ("--db-self-citations"):
+        task_set_option("db-self-citations", True)
     elif key in ("-d", "--del"):
         task_set_option("cmd", "del")
     elif key in ("-k", "--check"):

@@ -41,11 +41,7 @@ from invenio.refextract_cli import HELP_MESSAGE, DESCRIPTION
 from invenio.refextract_api import update_references, \
                                    FullTextNotAvailable, \
                                    RecordHasReferences
-from invenio.docextract_task import task_run_core_wrapper
-
-
-def split_ids(value):
-    return [c.strip() for c in value.split(',') if c.strip()]
+from invenio.docextract_task import task_run_core_wrapper, split_ids
 
 
 def check_options():
@@ -53,8 +49,10 @@ def check_options():
     before submitting the task, in order for example to provide default
     values. It must return False if there are errors in the options.
     """
-    if not task_get_option('new') and not task_get_option('recids') \
-                and not task_get_option('collections'):
+    if not task_get_option('new') \
+            and not task_get_option('modified') \
+            and not task_get_option('recids') \
+            and not task_get_option('collections'):
         print >>sys.stderr, 'Error: No input file specified, you need' \
             ' to specify which files to run on'
         return False
@@ -71,6 +69,9 @@ def parse_option(key, value, opts, args):
 
     if key in ('-a', '--new'):
         task_set_option('new', True)
+        task_set_option('no-overwrite', True)
+    elif key in ('-m', '--modified'):
+        task_set_option('modified', True)
         task_set_option('no-overwrite', True)
     elif key in ('-i', '--inspire'):
         task_set_option('inspire', True)
@@ -147,7 +148,7 @@ def main():
 
 """,
         version="Invenio v%s" % CFG_VERSION,
-        specific_params=("hVv:x:r:c:nai",
+        specific_params=("hVv:x:r:c:naim",
                             ["help",
                              "version",
                              "verbose=",

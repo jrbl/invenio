@@ -428,69 +428,67 @@ def get_citation_informations(recid_list, config):
                   (end_time - begin_time))
     return citation_informations
 
-def get_self_citations(new_record_list, citationdic, initial_selfcitdict, config):
+
+def prepare_self_citations_cache(updated_records_list, references_dict):
+    from invenio.bibrank_selfcites_task import compute_and_store_self_citations
+    from invenio.bibrank_selfcites_indexer import get_authors_tags, \
+                                                  fetch_references
+
+    tags = get_authors_tags()
+
+    to_update = set()
+    for recid in updated_records_list:
+        to_update.add(recid)
+        # References that were in the self-citations dict but
+        # were deleted, we need to reprocesss these records
+        to_update.update(fetch_references(recid))
+        # References that are new
+        to_update.update(references_dict.get(recid, set()))
+
+    for index, recid in enumerate(to_update):
+        if index % 1000 == 0:
+            mesg = "Self cite done %d/%d" % (index, len(to_update))
+            write_message(mesg)
+            task_update_progress(mesg)
+
+        compute_and_store_self_citations(recid, tags)
+
+
+def get_self_citations(updated_records_list, citations_dict, references_dict,
+                                                     initial_self_dict, config):
     """Check which items have been cited by one of the authors of the
        citing item: go through id's in new_record_list, use citationdic to get citations,
        update "selfcites". Selfcites is originally initial_selfcitdict. Return selfcites.
     """
-    i = 0 #just for debugging ..
-    #get the tags for main author, coauthors, ext authors from config
-    tags = ['first_author', 'additional_author', 'alternative_author_name']
-    for t in tags:
-        try:
-            dummy = config.get(config.get("rank_method", "function"), t)
-        except:
-            register_exception(prefix="attribute "+t+" missing in config", alert_admin=True)
-            return initial_selfcitdict
+    from invenio.bibrank_selfcites_indexer import compute_self_citations, \
+                                                  get_authors_tags
+    tags = get_authors_tags()
+    selfcites = initial_self_dict
+    selfcitedbydic = get_cit_dict("selfcitdict")
 
-    r_mainauthortag = config.get(config.get("rank_method", "function"), "first_author")
-    r_coauthortag = config.get(config.get("rank_method", "function"), "additional_author")
-    r_extauthortag = config.get(config.get("rank_method", "function"), "alternative_author_name")
-    #parse the tags
-    mainauthortag = tagify(parse_tag(r_mainauthortag))
-    coauthortag = tagify(parse_tag(r_coauthortag))
-    extauthortag = tagify(parse_tag(r_extauthortag))
+    to_update = set()
+    for recid in updated_records_list:
+        to_update.add(recid)
+        # References that are in the self-citations dict but
+        # were deleted, we need to reprocesss these records
+        to_update.update(selfcitedbydic.get(recid, set()))
+        # References that are new
+        to_update.update(references_dict.get(recid, set()))
 
-    selfcites = initial_selfcitdict
-    for k in new_record_list:
-        if (i % 1000 == 0):
-            mesg = "Selfcites done "+str(i)+" of "+str(len(new_record_list))+" records"
+    for index, recid in enumerate(to_update):
+        if index % 1000 == 0:
+            mesg = "Self cite done %d/%d" % (index, len(to_update))
             write_message(mesg)
             task_update_progress(mesg)
-        i = i+1
-        #get the author of k
-        authorlist = get_fieldvalues(k, mainauthortag)
-        coauthl = get_fieldvalues(k, coauthortag)
-        extauthl = get_fieldvalues(k, extauthortag)
-        authorlist.append(coauthl)
-        authorlist.append(extauthl)
-        #author tag
-        #print "record "+str(k)+" by "+str(authorlist)
-        #print "is cited by"
-        #get the "x-cites-this" list
-        if citationdic.has_key(k):
-            xct = citationdic[k]
-            for c in xct:
-                #get authors of c
-                cauthorlist = get_fieldvalues(c, mainauthortag)
-                coauthl = get_fieldvalues(c, coauthortag)
-                extauthl = get_fieldvalues(c, extauthortag)
-                cauthorlist.extend(coauthl)
-                cauthorlist.extend(extauthl)
-                #print str(c)+" by "+str(cauthorlist)
-                for ca in cauthorlist:
-                    if (ca in authorlist):
-                        #found!
-                        if selfcites.has_key(k):
-                            val = selfcites[k]
-                            #add only if not there already
-                            if val:
-                                if not c in val:
-                                    val.append(c)
-                            selfcites[k] = val
-                        else:
-                            #new key for selfcites
-                            selfcites[k] = [c]
+
+        self_citations = compute_self_citations(recid, tags)
+        if self_citations:
+            selfcites[recid] = self_citations
+        else:
+            try:
+                del selfcites[recid]
+            except KeyError:
+                pass
 
     mesg = "Selfcites done fully"
     write_message(mesg)
@@ -866,34 +864,23 @@ def ref_analyzer(citation_informations, initialresult, initial_citationlist,
             del reference_list[k]
 
     write_message("Phase 6: self-citations")
-    selfdic = {}
     #get the initial self citation dict
-    initial_self_dict = get_cit_dict("selfcitdict")
-    selfdic = initial_self_dict
-    #add new records to selfdic
-    acit = task_get_option("author-citations")
-    if not acit:
-        write_message("Self cite processing disabled. Use -A option to enable it.")
+    selfdic = get_cit_dict("selfcitdict")
+    if not task_get_option("self-citations"):
+        write_message("Self cite processing disabled. Use --self-citations option to enable it.")
     else:
-        write_message("self cite and author citations enabled")
+        write_message("self cite enabled")
         selfdic = get_self_citations(updated_rec_list, citation_list,
-                                 initial_self_dict, config)
+                                               reference_list, selfdic, config)
     #selfdic consists of
     #key k -> list of values [v1,v2,..]
     #where k is a record with author A and k cites v1,v2.. and A appears in v1,v2..
 
     #create a reverse "x cited by y" self cit dict
     selfcitedbydic = {}
-    for k in selfdic.keys():
-        vlist = selfdic[k]
+    for k, vlist in selfdic.iteritems():
         for v in vlist:
-            if selfcitedbydic.has_key(v):
-                tmplist = selfcitedbydic[v]
-                if not k in tmplist:
-                    tmplist.append(k)
-            else:
-                tmplist = [k]
-            selfcitedbydic[v] = tmplist
+            selfcitedbydic.setdefault(v, set()).add(k)
 
     write_message("Getting author citations")
 
@@ -908,6 +895,12 @@ def ref_analyzer(citation_informations, initialresult, initial_citationlist,
         authorcitdic = get_author_citations(updated_rec_list, citation_list,
                                         initial_author_dict, config)
 
+    write_message("Phase 7: fill self-citations table")
+    if not task_get_option("db-self-citations"):
+        write_message("Self cite caching disabled." \
+                      " Use --db-self-citations option to enable it.")
+    else:
+        prepare_self_citations_cache(updated_rec_list, reference_list)
 
     if task_get_task_param('verbose') >= 3:
         #print only X first to prevent flood

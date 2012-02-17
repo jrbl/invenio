@@ -21,7 +21,8 @@
 
 import sys
 import traceback
-
+from itertools import chain
+from datetime import datetime
 from invenio.bibtask import task_init, task_set_option, \
                             task_get_option, write_message, \
                             task_sleep_now_if_required, \
@@ -29,11 +30,14 @@ from invenio.bibtask import task_init, task_set_option, \
 from invenio.dbquery import run_sql
 
 
-def task_run_core_wrapper(name, core_func):
+def task_run_core_wrapper(name, core_func, extra_vars=None):
+    """
+    Wraps task main function in order to display a traceback in case of error
+    """
     def fun():
         try:
-            return task_run_core(name, core_func)
-        except Exception, e:
+            return task_run_core(name, core_func, extra_vars)
+        except Exception:
             # Remove extra '\n'
             write_message(traceback.format_exc()[:-1])
             raise
@@ -41,12 +45,13 @@ def task_run_core_wrapper(name, core_func):
 
 
 def fetch_last_updated(name):
+    """Fetch last runtime of given task"""
     select_sql = "SELECT last_id, last_updated FROM xtrJOB" \
-        " WHERE name = %s LIMIT 1"
+                 " WHERE name = %s LIMIT 1"
     row = run_sql(select_sql, (name,))
     if not row:
         sql = "INSERT INTO xtrJOB (name, last_updated, last_id) " \
-            "VALUES (%s, NOW(), 0)"
+              "VALUES (%s, NOW(), 0)"
         run_sql(sql, (name,))
         row = run_sql(select_sql, (name,))
 
@@ -58,6 +63,7 @@ def fetch_last_updated(name):
 
 
 def store_last_updated(recid, creation_date, name):
+    """Store the date of the latest daemon run"""
     sql = "UPDATE xtrJOB SET last_id = %s WHERE name=%s AND last_id < %s"
     run_sql(sql, (recid, name, recid))
     sql = "UPDATE xtrJOB SET last_updated = %s " \
@@ -67,6 +73,11 @@ def store_last_updated(recid, creation_date, name):
 
 
 def fetch_concerned_records(name):
+    """
+    Fetch records specified by the task options
+    Usually recently created/modified records
+    or a list of ids specified via the command line
+    """
     task_update_progress("Fetching record ids")
 
     last_id, last_date = fetch_last_updated(name)
@@ -76,14 +87,16 @@ def fetch_concerned_records(name):
         sql = "SELECT `id`, `creation_date` FROM `bibrec` " \
             "WHERE `creation_date` >= %s " \
             "AND `id` > %s " \
-            "ORDER BY `creation_date`"
+            "ORDER BY `creation_date`" \
+            "LIMIT 5000"
         records = run_sql(sql, (last_date.isoformat(), last_id))
     elif task_get_option('modified'):
         # Fetch all records inserted since last run
         sql = "SELECT `id`, `modification_date` FROM `bibrec` " \
             "WHERE `modification_date` >= %s " \
             "AND `id` > %s " \
-            "ORDER BY `modification_date`"
+            "ORDER BY `modification_date`" \
+            "LIMIT 5000"
         records = run_sql(sql, (last_date.isoformat(), last_id))
     else:
         recids = task_get_option('recids')
@@ -99,8 +112,8 @@ def fetch_concerned_records(name):
     return records
 
 
-def task_run_core(name, func):
-    """calls extract_references in refextract"""
+def task_run_core(name, func, extra_vars=None):
+    """Calls extract_references in refextract"""
     write_message("Starting")
 
     last_id, last_date = fetch_last_updated(name)
@@ -110,13 +123,42 @@ def task_run_core(name, func):
     total = len(records)
     for recid, date in records:
         task_sleep_now_if_required(can_stop_too=True)
-        msg = "Extracting for %s (%d/%d)" % (recid, count, total)
+        msg = "Extracting for %s (%d/%d)" % (recid, count + 1, total)
         task_update_progress(msg)
         write_message(msg)
-        func(recid)
+        if extra_vars:
+            func(recid, **extra_vars)
+        else:
+            func(recid)
         if date:
             store_last_updated(recid, date, name)
         count += 1
 
     write_message("Complete")
     return True
+
+
+def split_ids(value):
+    """
+    Split ids given in the command line
+    Possible formats are:
+    * 1
+    * 1,2,3,4
+    * 1-5,20,30,40
+    Returns respectively
+    * set([1])
+    * set([1,2,3,4])
+    * set([1,2,3,4,5,20,30,40])
+    """
+    def parse(el):
+        el = el.strip()
+        if not el:
+            ret = []
+        elif '-' in el:
+            start, end = el.split('-', 1)
+            ret = xrange(int(start), int(end) + 1)
+        else:
+            ret = [int(el)]
+        return ret
+    return chain(*(parse(c) for c in value.split(',') if c.strip()))
+

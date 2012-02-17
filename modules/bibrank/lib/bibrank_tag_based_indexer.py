@@ -23,6 +23,7 @@
 import os
 import sys
 import time
+import traceback
 import ConfigParser
 
 from invenio.config import \
@@ -414,6 +415,7 @@ def bibrank_engine(run):
                 raise StandardError
     except StandardError, e:
         write_message("\nException caught: %s" % e, sys.stderr)
+        write_message(traceback.format_exc()[:-1])
         register_exception()
         raise StandardError
 

@@ -53,6 +53,7 @@ modules/bibindex/bin/bibstat
 modules/bibmatch/bin/bibmatch
 modules/bibrank/bin/bibrank
 modules/bibrank/bin/bibrankgkb
+modules/bibrank/bin/selfcites
 modules/bibrank/etc/bibrankgkb.cfg
 modules/bibrank/etc/demo_jif.cfg
 modules/bibrank/etc/template_single_tag_rank_method.cfg

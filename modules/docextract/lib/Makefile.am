@@ -43,7 +43,6 @@ pylib_DATA = docextract_pdf.py \
              authorextract_config.py \
              authorextract_text.py
 
-
 EXTRA_DIST = $(pylib_DATA)
 
 CLEANFILES = *~ *.tmp *.pyc
