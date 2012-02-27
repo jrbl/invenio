@@ -1259,7 +1259,7 @@ function onPreviewClick(){
   /*
    * Handle 'Preview' button (preview record).
    */
-    createReq({data: {'new_window': false}, recID: gRecID, requestType: 'preview'
+    createReq({'new_window': true, recID: gRecID, requestType: 'preview'
        }, function(json){
        // Preview was successful.
         var html_preview = json['html_preview'];

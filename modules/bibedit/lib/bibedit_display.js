@@ -787,7 +787,8 @@ function displayMessage(msgCode, keepContent, args){
       break;
     case 4:
       msg = 'Your modifications have now been submitted. ' +
-  'They will be processed as soon as the task queue is empty.';
+  'They will be processed as soon as the task queue is empty. ' +
+  'Below is a preview of the record submitted: <br />';
       break;
     case 10:
       msg = 'The record will be deleted as soon as the task queue is empty.';
@@ -1127,7 +1128,6 @@ function escapeHTML(value){
   value = value.replace(/>/g, '&gt;');
   return value;
 }
-
 
 /*
  * **************************** Functions related to Template interface ****************************************
