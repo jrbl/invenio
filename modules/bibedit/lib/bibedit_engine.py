@@ -70,7 +70,8 @@ from invenio.bibrecord import create_record, print_rec, record_add_field, \
     record_modify_subfield, record_move_subfield, \
     create_field, record_replace_field, record_move_fields, \
     record_modify_controlfield, record_get_field_values, \
-    record_get_subfields
+    record_get_subfields, record_get_field_instances, record_add_fields, \
+    record_strip_empty_fields, record_strip_empty_volatile_subfields
 from invenio.config import CFG_BIBEDIT_PROTECTED_FIELDS, CFG_CERN_SITE, \
     CFG_SITE_URL, CFG_SITE_RECORD, CFG_BIBEDIT_KB_SUBJECTS, \
     CFG_BIBEDIT_KB_INSTITUTIONS, CFG_BIBEDIT_AUTOCOMPLETE_INSTITUTIONS_FIELDS
@@ -378,7 +379,7 @@ def perform_request_ajax(req, recid, uid, data, isBulk = False, \
         response.update(perform_bulk_request_ajax(req, recid, uid, changes, \
                                                   undo_redo, cacheMTime))
     elif request_type in ('preview', ):
-        response.update(perform_request_preview_record(request_type, recid, uid))
+        response.update(perform_request_preview_record(request_type, recid, uid, data))
     elif request_type in ('refextract', ):
         response.update(perform_request_ref_extract(recid, uid))
 
@@ -656,9 +657,6 @@ def perform_request_record(req, request_type, recid, uid, data, ln=CFG_SITE_LANG
         # - Invalid XML characters
         # If the cache is outdated cacheOutdated will be set to True in the
         # response.
-        a = open('/tmp/k.txt', 'w')
-        print >>a, 'cacheMTime Servidor: ' + str(get_cache_mtime(recid, uid))
-        print >>a, 'cacheMTime Cliente: ' + str(data['cacheMTime'])
         if not cache_exists(recid, uid):
             response['resultCode'] = 106
         elif not get_cache_mtime(recid, uid) == data['cacheMTime']:
@@ -1228,7 +1226,7 @@ def perform_request_ref_extract(recid, uid):
 
     return response
 
-def perform_request_preview_record(request_type, recid, uid):
+def perform_request_preview_record(request_type, recid, uid, data):
     """ Handle request to preview record with formatting
 
     """
@@ -1238,11 +1236,15 @@ def perform_request_preview_record(request_type, recid, uid):
             dummy1, dummy2, record, dummy3, dummy4, dummy5, dummy6 = get_cache_file_contents(recid, uid)
         else:
             record = get_bibrecord(recid)
-    response['html_preview'] = _get_formated_record(record)
+
+    # clean the record from unfilled volatile fields
+    record_strip_empty_volatile_subfields(record)
+    record_strip_empty_fields(record)
+    response['html_preview'] = _get_formated_record(record, data['new_window'])
 
     return response
 
-def _get_formated_record(record):
+def _get_formated_record(record, new_window):
     """Returns a record in a given format
 
     @param record: BibRecord object
@@ -1251,25 +1253,27 @@ def _get_formated_record(record):
 
     xml_record = bibrecord.record_xml_output(record)
 
-    result =  "<html><head><title>Record preview</title>"
-    result += """<style type="text/css">
-                    #referenceinp_link { display: none; }
-                    #referenceinp_link_span { display: none; }
-                </style></head>
-                <link rel="stylesheet" href="%(cssurl)s/img/invenio%(cssskin)s.css" type="text/css">
-                """%{'cssurl': CFG_SITE_URL,
-                     'cssskin': CFG_WEBSTYLE_TEMPLATE_SKIN != 'default' and '_' + CFG_WEBSTYLE_TEMPLATE_SKIN or ''
-                     }
-    result += get_mathjax_header(True)
-    result += "<body><h2> Brief format preview </h2><br />"
+    result = ''
+    if new_window:
+        result =  "<html><head><title>Record preview</title>"
+        result += """<style type="text/css">
+                        #referenceinp_link { display: none; }
+                        #referenceinp_link_span { display: none; }
+                    </style></head>
+                    <link rel="stylesheet" href="%(cssurl)s/img/invenio%(cssskin)s.css" type="text/css">
+                    """%{'cssurl': CFG_SITE_URL,
+                         'cssskin': CFG_WEBSTYLE_TEMPLATE_SKIN != 'default' and '_' + CFG_WEBSTYLE_TEMPLATE_SKIN or ''
+                        }
+        result += get_mathjax_header(True) + '<body>'
+    result += "<h2> Brief format preview </h2><br />"
     result += bibformat.format_record(recID=None,
                                      of="hb",
                                      xml_record=xml_record)
-    result += "<br /><h2> Detailed format preview </h2><br />"
-
-    result += bibformat.format_record(recID=None,
-                                     of="hd",
-                                     xml_record=xml_record)
+    if new_window:
+        result += "<br /><h2> Detailed format preview </h2><br />"
+        result += bibformat.format_record(recID=None,
+                                         of="hd",
+                                         xml_record=xml_record)
     #Preview references
     result += "<br /><h2> References </h2><br />"
 
@@ -1277,7 +1281,8 @@ def _get_formated_record(record):
                                     'hdref',
                                     xml_record=xml_record)
 
-    result += "</body></html>"
+    if new_window:
+        result += "</body></html>"
 
 
     return result
