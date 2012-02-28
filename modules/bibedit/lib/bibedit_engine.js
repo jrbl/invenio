@@ -2965,6 +2965,7 @@ function onContentChange(value, th){
   value = value.replace(/^\s+|\s+$/g,""); // Remove whitespace from the ends of strings
 
   var oldValue = ""; //variable that will contain old value from gRecord
+  var newValue = escapeHTML(value);
   if (subfieldIndex == undefined){
     /* Edit field tag */
     if (cellType == 'fieldTag') {
@@ -2992,6 +2993,7 @@ function onContentChange(value, th){
         }
     }
     else {
+        var oldSubfieldCode = gRecord[tag][fieldPosition][0][subfieldIndex][0];
         var subfieldsToAdd = new Array(), bulkOperation = false, subfield_offset;
         /* Edit subfield value */
         /* If editing subject field, check KB */
@@ -3002,19 +3004,24 @@ function onContentChange(value, th){
          * e.g 999C5 $$mThis a test$$hThis is a second subfield */
         else if (valueContainsSubfields(value)) {
             bulkOperation = true;
-            var subfieldCode = field[0][subfieldIndex][0];
-            splitContentSubfields(value, subfieldCode, subfieldsToAdd);
+            oldSubfieldCode = field[0][subfieldIndex][0];
+            splitContentSubfields(value, oldSubfieldCode, subfieldsToAdd);
             if (tag_ind == '999C5' && !is_reference_manually_curated(field)){
                 subfieldsToAdd.push(new Array('9', 'CURATOR'));
             }
+            oldValue = field[0][subfieldIndex][1];
             field[0].splice(subfieldIndex, 1); // update gRecord, remove old content
             field[0].push.apply(field[0], subfieldsToAdd); // update gRecord, add new subfields
-            oldValue = field[0][subfieldIndex][1];
             subfield_offset = 1;
+            newValue = subfieldsToAdd[0][1];
+        }
+        else if (field[0][subfieldIndex][1] == value) {
+            return escapeHTML(value);
         }
         /* If editing reference field, add $$9 subfield */
         else if (tag_ind == '999C5' && !is_reference_manually_curated(field)){
             bulkOperation = true;
+            field[0][subfieldIndex][1] = value;
             subfieldsToAdd.push.apply(subfieldsToAdd, field[0]);
             subfieldsToAdd.push(new Array("9", "CURATOR"));
             var test = field[0].length;
@@ -3022,16 +3029,12 @@ function onContentChange(value, th){
             field[0].push.apply(field[0], subfieldsToAdd); // update gRecord, add new
             subfield_offset = subfieldsToAdd.length - 1;
         }
-        else if (field[0][subfieldIndex][1] == value)
-            return escapeHTML(value);
         else {
             oldValue = field[0][subfieldIndex][1]; // get old subfield value from gRecord
             field[0][subfieldIndex][1] = value; // update gRecord
         }
     }
   }
-
-  var newValue = escapeHTML(value);
 
   var urHandler;
   var operation_type;
@@ -3071,8 +3074,6 @@ function onContentChange(value, th){
               /* Prepare  undo handlers to modify subfield content and to
                * add new subfields */
 
-              /* 1) Modify main subfield content */
-              newValue = subfieldsToAdd[0][1];
               undoHandlers.push(prepareUndoHandlerChangeSubfield(tag,
                                                        fieldPosition,
                                                        subfieldIndex,
