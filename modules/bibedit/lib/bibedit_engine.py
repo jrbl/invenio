@@ -62,7 +62,7 @@ from invenio.bibedit_utils import cache_exists, cache_expired, \
     revision_to_timestamp, timestamp_to_revision, \
     get_record_revision_timestamps, record_revision_exists, \
     can_record_have_physical_copies, extend_record_with_template, \
-    merge_record_with_template
+    merge_record_with_template, record_xml_output
 
 from invenio.bibrecord import create_record, print_rec, record_add_field, \
     record_add_subfield_into, record_delete_field, \
@@ -86,6 +86,9 @@ from invenio.bibknowledge import get_kbd_values_for_bibedit, get_kbr_values, \
 
 from invenio.bibcirculation_dblayer import get_number_copies, has_copies
 from invenio.bibcirculation_utils import create_item_details_url
+
+from invenio.refextract_api import replace_references, FullTextNotAvailable
+from invenio import xmlmarc2textmarc as xmlmarc2textmarc
 
 import invenio.template
 bibedit_templates = invenio.template.load('bibedit')
@@ -1198,8 +1201,6 @@ def perform_request_ref_extract(recid, uid):
     """ Handle request to extract references in the given record
 
     """
-    from invenio.refextract_api import replace_references, FullTextNotAvailable
-    from invenio import xmlmarc2textmarc as xmlmarc2textmarc
 
     sysno = ""
 
@@ -1213,13 +1214,25 @@ def perform_request_ref_extract(recid, uid):
         is_inspire = True
     try:
         recordExtended = replace_references(recid, inspire=is_inspire)
-    except FullTextNotAvailable:
+    except (FullTextNotAvailable, KeyError):
         response['ref_xmlrecord'] = False
         return response
 
     ref_bibrecord = create_record(recordExtended)[0]
+
+    # 1) Retrieve record from cache
+    # 2) Add 999C5 from cache to ref_bibrecord if $$9 CURATOR
+    cache_dirty, record_revision, record, pending_changes, disabled_hp_changes, undo_list, redo_list = get_cache_file_contents(recid, uid)
+    for field_instance in record_get_field_instances(record, "999", "C", "5"):
+        for subfield_instance in field_instance[0]:
+            if subfield_instance[0] == '9' and subfield_instance[1] == 'CURATOR':
+                # Add reference field on top of references, removing first $$o
+                field_instance = ([subfield for subfield in field_instance[0] if subfield[0] != 'o'], field_instance[1], field_instance[2], field_instance[3], field_instance[4])
+                record_add_fields(ref_bibrecord, '999', [field_instance], field_position_local=0)
+
     response['ref_bibrecord'] = ref_bibrecord
-    response['ref_xmlrecord'] = recordExtended
+
+    response['ref_xmlrecord'] = record_xml_output(ref_bibrecord)
 
     textmarc_references = [line.strip() for line in xmlmarc2textmarc.create_marc_record(ref_bibrecord,sysno,options).split('\n') if '999C5' in line]
     response['ref_textmarc'] = '<br />'.join(textmarc_references)
