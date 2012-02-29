@@ -54,7 +54,7 @@ class RecordHasReferences(Exception):
     """Raised when
     * we asked to updated references for a record
     * we explicitely asked for not overwriting references for this record
-      (via the appropriate function argument)
+    (via the appropriate function argument)
     * the record has references thus we cannot update them
    """
 
@@ -220,6 +220,13 @@ def record_has_fulltext(recid):
 
 
 def search_from_reference(text):
+    """Convert a raw reference to a search query
+
+    Called by the search engine to convert a raw reference:
+    find rawref John, JINST 4 (1994) 45
+    is converted to
+    journal:"JINST,4,45"
+    """
     field = ''
     pattern = ''
 

@@ -19,16 +19,14 @@
 
 """Generic Framework for extracting metadata from records using bibsched"""
 
-import sys
 import traceback
 from itertools import chain
 from datetime import datetime
-from invenio.bibtask import task_init, task_set_option, \
-                            task_get_option, write_message, \
+from invenio.bibtask import task_get_option, write_message, \
                             task_sleep_now_if_required, \
                             task_update_progress
 from invenio.dbquery import run_sql
-
+from invenio.search_engine import get_collection_reclist
 
 def task_run_core_wrapper(name, core_func, extra_vars=None):
     """
@@ -116,7 +114,6 @@ def task_run_core(name, func, extra_vars=None):
     """Calls extract_references in refextract"""
     write_message("Starting")
 
-    last_id, last_date = fetch_last_updated(name)
     records = fetch_concerned_records(name)
 
     count = 1
