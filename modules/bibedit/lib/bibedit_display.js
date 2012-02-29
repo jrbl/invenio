@@ -188,8 +188,8 @@ function createRow(tag, ind1, ind2, subfieldCode, subfieldValue, fieldID,
   cellContentTitle + cellContentOnClick + 'tabindex="0">' + subfieldTagToPrint +
       '</td>' +
       '<td id="content_' + subfieldID + '" class="' + cellContentClass + cellContentAdditionalClass +  '" ' +
-	cellContentTitle + autosuggestkeypress + cellContentOnClick + 'tabindex="0">' +
-	subfieldValue +
+      cellContentTitle + autosuggestkeypress + cellContentOnClick + 'tabindex="0">' +
+      subfieldValue +
       '</td>' +
       '<td class="bibEditCellAddSubfields">' + btnAddSubfield + '</td>' +
       '</tr>';
@@ -571,7 +571,7 @@ function createHoldingPenPanelEntry(changesetNumber, changesetDatetime){
   //informationsSection = "<div class=\"bibeditHPInformationsSection\">" + numberSection + previewSection + datetimeSection  + "</div>";
 
   //return "<div class=\"bibeditHPPanelEntry\" id=\"bibeditHoldingPenPanelEntry_" +
-  //	changesetNumber	 + "\">" + informationsSection + manipulationControlsSection + "</div>";
+  //   changesetNumber  + "\">" + informationsSection + manipulationControlsSection + "</div>";
 }
 
 function createGeneralControlsPanel(){
@@ -593,19 +593,26 @@ function createTopToolbar(){
   var icon_doc_preview = "<img id='img_preview' class='bibEditImgCtrlDisabled' \n\
                           src='/img/document-preview.png' width='40px' \n\
                           height='40px' title='Preview record' />";
+  var icon_open_pdf = "<img id='img_open_pdf' class='bibEditImgCtrlDisabled' \n\
+                          src='/img/application_pdf.png' width='40px' \n\
+                          height='40px' title='Open PDF file' />";
   var icon_run_refextract = "<img id='img_run_refextract' class='bibEditImgCtrlDisabled' \n\
                              src='/img/ref_extract.png' width='40px' \n\
                              height='37px' title='Run reference extractor on this record' />";
 
-  var toolbar_html = "<div id='topToolbarRight'>" +  icon_doc_preview + "</div>";
+
+  var toolbar_html = "<div id='topToolbarRight'>" +  icon_open_pdf + icon_doc_preview + "</div>";
   toolbar_html += "<div id='topToolbarLeft'>" + icon_run_refextract + "</div>";
   toolbar_html += "<div id='top_toolbar_hr'><hr></div>"
 
   $('.headline_div').html(toolbar_html);
   $('#img_preview').bind('click', onPreviewClick);
+  $('#img_open_pdf').bind('click', onOpenPDFClick);
   $('#img_run_refextract').bind('click', onRefExtractClick);
 
   $('#img_preview').unbind('click').removeClass(
+    'bibEditImgCtrlEnabled').addClass('bibEditImgCtrlDisabled');
+  $('#img_open_pdf').unbind('click').removeClass(
     'bibEditImgCtrlEnabled').addClass('bibEditImgCtrlDisabled');
   $('#img_run_refextract').unbind('click').removeClass(
     'bibEditImgCtrlEnabled').addClass('bibEditImgCtrlDisabled');
@@ -616,12 +623,18 @@ function updateToolbar(enable) {
         /* Unbind first to avoid double binding when changing record */
         $('#img_preview').unbind('click', onPreviewClick).bind('click', onPreviewClick).removeClass(
         'bibEditImgCtrlDisabled').addClass('bibEditImgCtrlEnabled');
+        if (record_has_pdf()) {
+          $('#img_open_pdf').unbind('click', onOpenPDFClick).bind('click', onOpenPDFClick).removeClass(
+          'bibEditImgCtrlDisabled').addClass('bibEditImgCtrlEnabled');
+        }
         $('#img_run_refextract').unbind('click', onRefExtractClick).bind('click', onRefExtractClick).removeClass(
         'bibEditImgCtrlDisabled').addClass('bibEditImgCtrlEnabled');
         $('.revisionLine').show();
     }
     else {
         $('#img_preview').unbind('click', onPreviewClick).removeClass(
+        'bibEditImgCtrlEnabled').addClass('bibEditImgCtrlDisabled');
+        $('#img_open_pdf').unbind('click', onOpenPDFClick).removeClass(
         'bibEditImgCtrlEnabled').addClass('bibEditImgCtrlDisabled');
         $('#img_run_refextract').unbind('click', onRefExtractClick).removeClass(
         'bibEditImgCtrlEnabled').addClass('bibEditImgCtrlDisabled');
@@ -646,20 +659,20 @@ function createAddFieldForm(fieldTmpNo, fieldTemplateNo, def_field_tag, def_ind1
   return '' +
     '<tbody id="rowGroupAddField_' + fieldTmpNo + '">' +
       '<tr>' +
-	'<td></td>' +
-	'<td><b>New</b></td>' +
-	'<td></td>' +
-	'<td></td>' +
-	'<td><div class="bibEditAddFieldManipulationsBar"><div class="bibEditAddFieldFormSelectTemplate">Add field: ' +
+    '<td></td>' +
+    '<td><b>New</b></td>' +
+    '<td></td>' +
+    '<td></td>' +
+    '<td><div class="bibEditAddFieldManipulationsBar"><div class="bibEditAddFieldFormSelectTemplate">Add field: ' +
     select('selectAddFieldTemplate_' + fieldTmpNo, fieldTemplatesData, fieldTemplateNo) +
     '</div><div class="bibEditAddFieldFormCreateSimilar"> Add ' +
       input('text', 'selectAddFieldTemplateTimes_' + fieldTmpNo, "addFieldAddSimilarInput", {"maxlength" : 4, "size": 1}) +
-	button('similar', 'selectAddSimilarFields_' + fieldTmpNo, "", {}) +
+    button('similar', 'selectAddSimilarFields_' + fieldTmpNo, "", {}) +
         '</div></div></td>' +
-	'<td>' +
+    '<td>' +
         img('/img/add.png', 'btnAddFieldAddSubfield_' + fieldTmpNo, '', {
-	    title: 'Add subfield'}) +
-	'</td>' +
+        title: 'Add subfield'}) +
+    '</td>' +
       '</tr>' +
       createAddFieldRow(fieldTmpNo, 0, "", "", def_field_tag, def_ind1, def_ind2) +
       // adding a row used to insert at the end without repositioning the tag and indicators
@@ -719,12 +732,12 @@ function createAddFieldRow(fieldTmpNo, subfieldTmpNo, defaultCode, defaultValue,
       '</td>' +
       '<td></td>' +
       '<td class="bibEditCellAddSubfieldCode">' +
-	input('text', 'txtAddFieldSubfieldCode_' + fieldTmpNo + '_' +
-	      subfieldTmpNo, 'bibEditTxtSubfieldCode', {maxlength: 1, value: fieldCode}) +
+    input('text', 'txtAddFieldSubfieldCode_' + fieldTmpNo + '_' +
+          subfieldTmpNo, 'bibEditTxtSubfieldCode', {maxlength: 1, value: fieldCode}) +
       '</td>' +
       '<td>' +
-	input('text', 'txtAddFieldValue_' + fieldTmpNo + '_' +
-	      subfieldTmpNo, 'bibEditTxtValue' + additionalClass, {value : fieldValue}) +
+    input('text', 'txtAddFieldValue_' + fieldTmpNo + '_' +
+          subfieldTmpNo, 'bibEditTxtValue' + additionalClass, {value : fieldValue}) +
       '</td>' +
       '<td>' + btnAddFieldRemove + '</td>' +
     '</tr>';
@@ -760,8 +773,8 @@ function createAddSubfieldsRow(fieldID, subfieldTmpNo, defSubCode, defValue){
       '<td></td>' +
       '<td></td>' +
       '<td class="bibEditCellAddSubfieldCode">' +
-	input('text', 'txtAddSubfieldsCode_' + subfieldID,
-	      'bibEditTxtSubfieldCode', {maxlength: 1},  defSubCode) +
+    input('text', 'txtAddSubfieldsCode_' + subfieldID,
+          'bibEditTxtSubfieldCode', {maxlength: 1},  defSubCode) +
       '</td>' +
       '<td>' +
       input('text', 'txtAddSubfieldsValue_' + subfieldID, 'bibEditTxtValue', {}, defValue) +

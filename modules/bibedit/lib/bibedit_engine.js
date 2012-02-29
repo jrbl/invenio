@@ -1219,6 +1219,8 @@ function onGetRecordSuccess(json){
 
   createReq({recID: gRecID, requestType: 'getTickets'}, onGetTicketsSuccess);
 
+  // Refresh top toolbar
+  updateToolbar(false);
   updateToolbar(true);
 }
 
@@ -1267,6 +1269,32 @@ function onPreviewClick(){
         preview_window.document.write(html_preview);
         preview_window.document.close(); // needed for chrome and safari
        });
+}
+
+function onOpenPDFClick() {
+  /*
+   * Create request to retrieve PDF from record and open it in new window
+   */
+   createReq({recID: gRecID, requestType: 'get_pdf_url'
+       }, function(json){
+        // Preview was successful.
+        var pdf_url = json['pdf_url'];
+        var preview_window = window.open(pdf_url, '', 'resizeable,scrollbars');
+        preview_window.document.close(); // needed for chrome and safari
+       });
+
+}
+
+function record_has_pdf() {
+  /*
+   * Request server if the record has a pdf attached
+   */
+   var record_has_pdf;
+   createReq({recID: gRecID, requestType: 'record_has_pdf'
+       }, function(json){
+            record_has_pdf = json['record_has_pdf'];
+       }, false);
+   return record_has_pdf;
 }
 
 function getPreview() {
