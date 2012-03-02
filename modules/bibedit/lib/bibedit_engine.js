@@ -3021,7 +3021,6 @@ function onContentChange(value, th){
         }
     }
     else {
-        var oldSubfieldCode = gRecord[tag][fieldPosition][0][subfieldIndex][0];
         var subfieldsToAdd = new Array(), bulkOperation = false, subfield_offset;
         /* Edit subfield value */
         /* If editing subject field, check KB */
@@ -3032,7 +3031,6 @@ function onContentChange(value, th){
          * e.g 999C5 $$mThis a test$$hThis is a second subfield */
         else if (valueContainsSubfields(value)) {
             bulkOperation = true;
-            oldSubfieldCode = field[0][subfieldIndex][0];
             splitContentSubfields(value, oldSubfieldCode, subfieldsToAdd);
             if (tag_ind == '999C5' && !is_reference_manually_curated(field)){
                 subfieldsToAdd.push(new Array('9', 'CURATOR'));
@@ -3052,8 +3050,7 @@ function onContentChange(value, th){
             field[0][subfieldIndex][1] = value;
             subfieldsToAdd.push.apply(subfieldsToAdd, field[0]);
             subfieldsToAdd.push(new Array("9", "CURATOR"));
-            var test = field[0].length;
-            field[0].splice(0, test);
+            field[0].splice(0, field[0].length);
             field[0].push.apply(field[0], subfieldsToAdd); // update gRecord, add new
             subfield_offset = subfieldsToAdd.length - 1;
         }
