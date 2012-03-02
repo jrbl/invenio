@@ -2849,6 +2849,7 @@ function onContentChange(value, th){
     }
   }
   else {
+    var oldSubfieldCode = field[0][subfieldIndex][0];
     if (cellType == 'subfieldTag') {
         /* Edit subfield code */
         if (field[0][subfieldIndex][0] == value)
@@ -2856,6 +2857,7 @@ function onContentChange(value, th){
         else {
             oldValue = field[0][subfieldIndex][0]; // get old subfield code from gRecord
             field[0][subfieldIndex][0] = value; // update gRecord
+            oldSubfieldCode = field[0][subfieldIndex][0];
         }
     }
     else {
@@ -2868,8 +2870,9 @@ function onContentChange(value, th){
          * e.g 999C5 $$mThis a test$$hThis is a second subfield */
         if (valueContainsSubfields(value)) {
             var bulkOperation = true;
-            var subfieldsToAdd = new Array(), subfieldCode = field[0][subfieldIndex][0];
-            splitContentSubfields(value, subfieldCode, subfieldsToAdd);
+            var subfieldsToAdd = new Array();
+            oldSubfieldCode = field[0][subfieldIndex][0];
+            splitContentSubfields(value, oldSubfieldCode, subfieldsToAdd);
             field[0].splice(subfieldIndex, 1); // update gRecord, remove old content
             field[0].push.apply(field[0], subfieldsToAdd); // update gRecord, add new subfields
             oldValue = field[0][subfieldIndex][1];
@@ -2884,9 +2887,7 @@ function onContentChange(value, th){
   }
 
   var newValue = escapeHTML(value);
-  if (subfieldIndex != undefined) {
-      var oldSubfieldCode = gRecord[tag][fieldPosition][0][subfieldIndex][0];
-  }
+
   var urHandler;
   var operation_type;
   switch (cellType) {
