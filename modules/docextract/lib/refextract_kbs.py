@@ -701,11 +701,11 @@ def build_journals_kb(fpath):
                 seek_phrase = m_kb_line.group('seek')
                 # add the phrase from the KB if the 'seek' phrase is longer
                 # compile the seek phrase into a pattern:
-                # seek_ptn = re.compile(ur'(?<!\w)(' + \
-                #                        re.escape(seek_phrase) + \
-                #                        ur')\W', re.UNICODE)
-                #
-                # kb[seek_phrase] = seek_ptn
+                seek_ptn = re.compile(ur'(?<!\w)(' + \
+                                       re.escape(seek_phrase) + \
+                                       ur')\W', re.UNICODE)
+
+                kb[seek_phrase] = seek_ptn
                 standardised_titles[seek_phrase] = m_kb_line.group('repl')
                 seek_phrases.append(seek_phrase)
             else:

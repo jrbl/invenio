@@ -1170,7 +1170,8 @@ def identify_journals(line, kb_journals):
         # search for all instances of the current periodical title
         # in the line:
         # for each matched periodical title:
-        for title_match in find_all(line, title):
+        for title_match in periodical_title_search_kb[title].finditer(line):
+            
             if title not in titles_count:
                 # Add this title into the titles_count dictionary:
                 titles_count[title] = 1
@@ -1180,16 +1181,16 @@ def identify_journals(line, kb_journals):
 
             # record the details of this title match:
             # record the match length:
-            title_matches_matchlen[title_match] = len(title)
+            title_matches_matchlen[title_match.start()] = len(title)
 
             # record the matched non-standard version of the title:
-            title_matches_matchtext[title_match] = title
+            title_matches_matchtext[title_match.start()] = title
 
             # replace the matched title text in the line it n * '_',
             # where n is the length of the matched title:
-            line = u"".join((line[:title_match],
+            line = u"".join((line[:title_match.start()],
                             u"_"*len(title),
-                            line[title_match+len(title):]))
+                            line[title_match.start()+len(title):]))
 
     # return recorded information about matched periodical titles,
     # along with the newly changed working line:
