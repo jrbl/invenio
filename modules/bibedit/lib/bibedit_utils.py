@@ -279,7 +279,7 @@ def save_xml_record(recid, uid, xml_record='', to_upload=True, to_merge=False):
     # order subfields alphabetically before saving the record
     record_order_subfields(record)
 
-    xml_to_write = record_xml_output(record)
+    xml_to_write = clean_xml_characters(record_xml_output(record))
 
     # Write XML file.
     if not to_merge:
@@ -693,3 +693,14 @@ def merge_record_with_template(rec, template_name):
                                                field_get_subfield_values(template_field_instance,
                                                code)[0])
     return rec
+
+def clean_xml_characters(xml_record):
+    """
+    Removes all non XML compliant characters to avoid failure when creating
+    or submitting a record
+    """
+    ranges = [(0, 8), (0xb, 0x1f), (0x7f, 0x84), (0x86, 0x9f), (0xd800, 0xdfff),
+             (0xfdd0, 0xfddf), (0xfffe, 0xffff)]
+    # fromkeys creates  the wanted (codepoint -> None) mapping
+    nukemap = dict.fromkeys(r for start, end in ranges for r in range(start, end+1))
+    return xml_record.decode('utf-8', errors='ignore').translate(nukemap).encode('utf-8')
