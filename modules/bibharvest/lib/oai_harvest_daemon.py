@@ -903,6 +903,11 @@ def call_authorlist_extract(active_file, extracted_file, harvested_identifier_li
                     additional_authors = record_get_field_instances(authorlist_record, '700')
                     record_add_fields(existing_record, '100', first_author)
                     record_add_fields(existing_record, '700', additional_authors)
+                    if CFG_INSPIRE_SITE and 'arXiv' in identifier:
+                        # If INSPIRE, then append the arXiv id to the file of records having authorlists
+                        # extracted
+                        filepath = "/afs/cern.ch/project/inspire/updates/has_authorlist.txt"
+                        append_arxiv_id_to_file(filepath, identifier)
         updated_xml.append(record_xml_output(existing_record))
     updated_xml.append('</collection>')
     # Write to file
@@ -1578,6 +1583,17 @@ def task_submit_elaborate_specific_parameter(key, value, opts, args):
         return False
     return True
 
+def append_arxiv_id_to_file(filepath, identifier):
+    """
+    Used by INSPIRE site only, to append an arXiv id to a file used
+    to list all arXiv records having their authorlist extracted.
+
+    Only a temporary function until SPIRES shutoff.
+    """
+    id_arxiv = "arXiv:%s" % (re.findall('[a-zA-Z\\-]+/\\d+|\\d+\\.\\d+', identifier)[0],)
+    fd_authorlist = open(filepath, 'a')
+    fd_authorlist.write("%s\n" % (id_arxiv,))
+    fd_authorlist.close()
 
 ### okay, here we go:
 if __name__ == '__main__':
