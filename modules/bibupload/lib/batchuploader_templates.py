@@ -124,6 +124,12 @@ class Template:
                 $("#datepicker").datepicker({dateFormat: 'yy-mm-dd'});
             });
         </script>
+        <style type="text/css">
+        fieldset label {
+            float: left;
+            width: 150px;
+        }
+        </style>
         """
         body_content += """<form id="uploadform" method="post" action="%(site_url)s/batchuploader/metasubmit" enctype="multipart/form-data">""" \
                                        % {'site_url': CFG_SITE_URL}
@@ -149,15 +155,29 @@ class Template:
                 <div><b>%(msg)s</b></div>
                 """ % {'msg': _("Warning: Please, select a valid date")}
         body_content += """
-    <div><span class="mandatory_field""> * </span> %(txt_file)s:<input type="file" name="metafile" size="30" onChange="filename.value=(this.value)"></div>
-    <input type="hidden" name="filename" id="filename" value="">
-    <div><span class="mandatory_field""> * </span> %(txt_file_type)s:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <div>
+        <label for="metafile">
+            <span class="mandatory_field""> * </span>
+            %(txt_file)s:
+        </label>
+        <input type="file" name="metafile" size="30" onChange="filename.value=(this.value)">
+        <input type="hidden" name="filename" id="filename" value="">
+    </div>
+    <div>
+        <label for="filetype">
+            <span class="mandatory_field""> * </span>
+            %(txt_file_type)s:
+        </label>
         <select name="filetype">
             <option %(type_sel1)s value="marcxml">MarcXML</option>
             <option %(type_sel2)s value="textmarc">TextMARC</option>
         </select>
     </div>
-    <div><span class="mandatory_field""> * </span> %(txt_upload_mode)s:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <div>
+        <label for="mode">
+            <span class="mandatory_field""> * </span>
+            %(txt_upload_mode)s:
+        </label>
         <select name="mode">
             <option %(mode_sel1)s>--insert</option>
             <option %(mode_sel2)s>--replace</option>
@@ -168,17 +188,31 @@ class Template:
         </select>
     <a href="%(site_url)s/help/admin/bibupload-admin-guide#3.3" target="_blank"><img class="img_link" src="/img/help.png" title="Upload mode help"></a>
     </div>
-    <div>&nbsp;&nbsp;%(txt_priority)s:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <div>
+        <label for="priority">
+            &nbsp;&nbsp;%(txt_priority)s:
+        </label>
         <select name="priority">
             <option value="1">normal</option>
             <option value="5">high</option>
         </select>
-    <br/>
-    <div>%(txt_upload_later)s&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="italics">%(txt_date)s:</span>
+    </div>
+    <div>
+        <label for="strong_tags">
+            &nbsp;&nbsp;%(txt_strong_tags)s:
+        </label>
+        <select name="strong_tags">
+            <option value="normal">normal</option>
+            <option value="replace">replace</option>
+        </select>
+    </div>
+    <div>
+        %(txt_upload_later)s&nbsp;&nbsp;&nbsp; <span class="italics">%(txt_date)s:</span>
     <input type="text" id="datepicker" name="submit_date" value=%(submit_date)s onBlur="defText(this)" onFocus="clearText(this)" style="width:100px" >
     &nbsp;&nbsp;<span class="italics">%(txt_time)s:</span>
     <input type="text" name="submit_time" value=%(submit_time)s onBlur="defText(this)" onFocus="clearText(this)" style="width:100px" >
     <span class="italics">%(txt_example)s: 2009-12-20 19:22:18</span>
+    </div>
     <div><i>%(txt_mandatory)s</i></div>
     <div> <input type="submit" value="Upload" class="adminbutton"> </div>
 </fieldset>
@@ -192,6 +226,7 @@ class Template:
         'txt_mandatory': _("All fields with %(x_fmt_open)s*%(x_fmt_close)s are mandatory") % \
                   {'x_fmt_open': '<span class="mandatory_field">', 'x_fmt_close': '</span>'},
         'txt_priority': _("Upload priority"),
+        'txt_strong_tags': _("Strong tags"),
         'type_sel1': filetype == 'marcxml' and "selected" or "",
         'type_sel2': filetype == 'textmarc' and "selected" or "",
         'mode_sel1': mode == '--insert' and "selected" or "",

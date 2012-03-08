@@ -235,8 +235,8 @@ def bibupload(record, opt_tag=None, opt_mode=None,
             record_delete_field(rec_old,'005')
 
         # In Replace mode, take over old strong tags if applicable:
-        if opt_mode == 'replace' or \
-            opt_mode == 'replace_or_insert':
+        if (opt_mode == 'replace' or opt_mode == 'replace_or_insert') and \
+                not task_get_option('ignore_strong_tags'):
             copy_strong_tags_from_old_record(record, rec_old)
 
         # Delete tags to correct in the record
@@ -1822,12 +1822,12 @@ def copy_strong_tags_from_old_record(record, rec_old):
     modifies RECORD structure on the spot.
     """
     for strong_tag in CFG_BIBUPLOAD_STRONG_TAGS:
-        if not record_get_field_instances(record, strong_tag):
-            strong_tag_old_field_instances = record_get_field_instances(rec_old, strong_tag)
-            if strong_tag_old_field_instances:
-                for strong_tag_old_field_instance in strong_tag_old_field_instances:
-                    sf_vals, fi_ind1, fi_ind2, controlfield, dummy = strong_tag_old_field_instance
-                    record_add_field(record, strong_tag, fi_ind1, fi_ind2, controlfield, sf_vals)
+        strong_tag_old_field_instances = record_get_field_instances(rec_old, strong_tag, '%', '%')
+        if strong_tag_old_field_instances:
+            record_delete_fields(record, strong_tag)
+            for strong_tag_old_field_instance in strong_tag_old_field_instances:
+                sf_vals, fi_ind1, fi_ind2, controlfield, dummy = strong_tag_old_field_instance
+                record_add_field(record, strong_tag, fi_ind1, fi_ind2, controlfield, sf_vals)
     return
 
 ### Delete functions
@@ -1953,6 +1953,8 @@ Examples:
   --pretend\t\tdo not really insert/append/correct/replace the input file
   --force\t\twhen --replace, use provided 001 tag values, even if the matching
 \t\t\trecord does not exist (thus allocating it on-the-fly)
+  --ignore-strong-tags allows to overwrite strong tags
+                       (specified in CFG_BIBUPLOAD_STRONG_TAGS)
   --callback-url\tSend via a POST request a JSON-serialized answer (see admin guide), in
 \t\t\torder to provide a feedback to an external service about the outcome of the operation.
 """,
@@ -1971,6 +1973,7 @@ Examples:
                    "holdingpen",
                    "pretend",
                    "force",
+                   "ignore-strong-tags",
                    "callback-url="
                  ]),
             task_submit_elaborate_specific_parameter_fnc=task_submit_elaborate_specific_parameter,
@@ -2055,6 +2058,9 @@ def task_submit_elaborate_specific_parameter(key, value, opts, args):
         task_set_option('force', True)
         fix_argv_paths([args[0]])
         task_set_option('file_path', os.path.abspath(args[0]))
+
+    elif key in ("--ignore-strong-tags",):
+        task_set_option('ignore_strong_tags', True)
 
     # Stage
     elif key in ("-S", "--stage"):

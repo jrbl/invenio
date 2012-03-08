@@ -167,8 +167,10 @@ class WebInterfaceBatchUploaderPages(WebInterfaceDirectory):
         """Interface for robots used like this:
             $ curl -F 'file=@localfile.xml' -F 'mode=-i' [-F 'callback_url=http://...' http://cdsweb.cern.ch/batchuploader/robotupload] -A invenio_webupload
         """
-        argd = wash_urlargd(form, {'mode': (str, None), 'callback_url': (str, None)})
-        cli_upload(req, form.get('file', None), argd['mode'], argd['callback_url'])
+        argd = wash_urlargd(form, {'mode': (str, None),
+                                   'callback_url': (str, None),
+                                   'ignore_strong_tags': (str, False)})
+        cli_upload(req, form.get('file', None), argd['mode'], argd['callback_url'], argd['ignore_strong_tags'] == 'replace')
 
     def allocaterecord(self, req, form):
         """
@@ -185,7 +187,8 @@ class WebInterfaceBatchUploaderPages(WebInterfaceDirectory):
                                    'submit_date': (str, None),
                                    'submit_time': (str, None),
                                    'filename': (str, None),
-                                   'priority': (str, None)})
+                                   'priority': (str, None),
+                                   'strong_tags': (str, None)})
         _ = gettext_set_language(argd['ln'])
 
         not_authorized = user_authorization(req, argd['ln'])
@@ -220,11 +223,13 @@ class WebInterfaceBatchUploaderPages(WebInterfaceDirectory):
             redirect_to_url(req, "%s/batchuploader/metadata?error=4&filetype=%s&mode=%s&submit_time=%s"
             % (CFG_SITE_SECURE_URL, argd['filetype'], argd['mode'], argd['submit_time']))
 
-        #Function where bibupload queues the file
+        ignore_strong_tags = argd['strong_tags'] == 'replace'
+        # Function where bibupload queues the file
         auth_code, auth_message = metadata_upload(req,
                                   form.get('metafile', None), argd['filetype'], argd['mode'].split()[0],
                                   date, time, argd['filename'], argd['ln'],
-                                  argd['priority'])
+                                  argd['priority'],
+                                  ignore_strong_tags=ignore_strong_tags)
 
         if auth_code == 1: # not authorized
             referer = '/batchuploader/'

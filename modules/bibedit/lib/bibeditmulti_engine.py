@@ -627,15 +627,21 @@ def _upload_file_with_bibupload(file_path, upload_mode, num_records, req):
            and the upload file path
     """
     if num_records < CFG_BIBEDITMULTI_LIMIT_INSTANT_PROCESSING:
-        task_low_level_submission('bibupload', 'multiedit', '-P', '5', upload_mode, '%s' % file_path)
+        task_low_level_submission('bibupload', 'multiedit', '-P', '5',
+                                  upload_mode, '--ignore-strong-tags',
+                                  file_path)
         return (0, file_path)
     elif num_records < CFG_BIBEDITMULTI_LIMIT_DELAYED_PROCESSING:
-        task_low_level_submission('bibupload', 'multiedit', '-P', '5', upload_mode, '-L', CFG_BIBEDITMULTI_LIMIT_DELAYED_PROCESSING_TIME,'%s' % file_path)
+        task_low_level_submission('bibupload', 'multiedit', '-P', '5',
+                                  upload_mode, '--ignore-strong-tags',
+              '-L', CFG_BIBEDITMULTI_LIMIT_DELAYED_PROCESSING_TIME, file_path)
         return (1, file_path)
     else:
         user_info = collect_user_info(req)
         if isUserSuperAdmin(user_info):
-            task_low_level_submission('bibupload', 'multiedit', '-P', '5', upload_mode, '-L', CFG_BIBEDITMULTI_LIMIT_DELAYED_PROCESSING_TIME, '%s' % file_path)
+            task_low_level_submission('bibupload', 'multiedit', '-P', '5',
+                                      upload_mode, '--ignore-strong-tags',
+               '-L', CFG_BIBEDITMULTI_LIMIT_DELAYED_PROCESSING_TIME, file_path)
             return (2, file_path)
         return (3, file_path)
 

@@ -558,9 +558,15 @@ def bibupload_ffts(ffts, append=False, debug=False, interactive=True):
             if interactive:
                 wait_for_user("This will be corrected via BibUpload")
             if debug:
-                task = task_low_level_submission('bibupload', 'bibdocfile', '-c', tmp_file_name, '-N', 'FFT', '-S2', '-v9')
+                task = task_low_level_submission('bibupload', 'bibdocfile',
+                                                 '-c', tmp_file_name, '-N',
+                                                 '--ignore-strong-tags',
+                                                 'FFT', '-S2', '-v9')
             else:
-                task = task_low_level_submission('bibupload', 'bibdocfile', '-c', tmp_file_name, '-N', 'FFT', '-S2')
+                task = task_low_level_submission('bibupload', 'bibdocfile',
+                                                 '-c', tmp_file_name,
+                                                 '--ignore-strong-tags',
+                                                 '-N', 'FFT', '-S2')
             if interactive:
                 print "BibUpload correct submitted with id %s" % task
     elif interactive:
