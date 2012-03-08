@@ -73,7 +73,7 @@ def cli_allocate_record(req):
     recid = run_sql("insert into bibrec (creation_date,modification_date) values(NOW(),NOW())")
     return recid
 
-def cli_upload(req, file_content=None, mode=None, callback_url=None):
+def cli_upload(req, file_content=None, mode=None, callback_url=None, ignore_strong_tags=False):
     """ Robot interface for uploading MARC files
     """
     req.content_type = "text/plain"
@@ -138,18 +138,23 @@ def cli_upload(req, file_content=None, mode=None, callback_url=None):
         _log(msg)
         return _write(req, msg)
     # run upload command
+    params = ['bibupload',
+              "batchupload",
+              arg_mode,
+              filename]
     if callback_url:
-        task_low_level_submission('bibupload', "batchupload", arg_mode, filename, "--callback-url", callback_url)
-        msg = "[INFO] %s %s %s %s %s" % ('bibupload', arg_mode, filename, "--callback-url", callback_url)
-    else:
-        task_low_level_submission('bibupload', "batchupload", arg_mode, filename)
-        msg = "[INFO] %s %s %s" % ('bibupload', arg_mode, filename)
+        params.extend(["--callback-url", callback_url])
+    if ignore_strong_tags:
+        params.append('--ignore-strong-tags')
+
+    task_low_level_submission(*params)
+    msg = "[INFO] %s" % ' '.join(params)
     _log(msg)
     return _write(req, msg)
 
 def metadata_upload(req, metafile=None, filetype=None, mode=None, exec_date=None,
                     exec_time=None, metafilename=None, ln=CFG_SITE_LANG,
-                    priority="1"):
+                    priority="1", ignore_strong_tags=False):
     """
     Metadata web upload service. Get upload parameters and exec bibupload for the given file.
     Finally, write upload history.
@@ -191,14 +196,26 @@ def metadata_upload(req, metafile=None, filetype=None, mode=None, exec_date=None
         if xmlmarclint_output != 0:
             msg = "[ERROR] MARCXML is not valid."
             return (error_codes['invalid_marc'], msg)
+
     # run upload command:
+    params = [
+        'bibupload',
+        user_info['nickname'],
+        mode,
+        "--name=" + metafilename,
+        "--priority=" + priority,
+        filename
+    ]
+    if ignore_strong_tags:
+        params.append('--ignore-strong-tags')
+
     if exec_date:
         date = exec_date
         if exec_time:
             date += ' ' + exec_time
-        jobid = task_low_level_submission('bibupload', user_info['nickname'], mode, "--name=" + metafilename, "--priority=" + priority, "-t", date, filename)
-    else:
-        jobid = task_low_level_submission('bibupload', user_info['nickname'], mode, "--name=" + metafilename, "--priority=" + priority, filename)
+        params.extend(["-t", date])
+
+    jobid = task_low_level_submission(*params)
 
     # write batch upload history
     run_sql("""INSERT INTO hstBATCHUPLOAD (user, submitdate,
@@ -319,7 +336,12 @@ def document_upload(req=None, folder="", matching="", mode="", exec_date="", exe
             # Execute bibupload with the appropiate mode
             if exec_date:
                 date = '--runtime=' + "\'" + exec_date + ' ' + exec_time + "\'"
-                jobid = task_low_level_submission('bibupload', user, "--" + mode, "--name=" + docfile, "--priority=" + priority, date, filename)
+                jobid = task_low_level_submission('bibupload', user,
+                                                  "--" + mode,
+                                                  '--ignore-strong-tags',
+                                                  "--name=" + docfile,
+                                                  "--priority=" + priority,
+                                                  date, filename)
             else:
                 jobid = task_low_level_submission('bibupload', user, "--" + mode, "--name=" + docfile, "--priority=" + priority, filename)
 
