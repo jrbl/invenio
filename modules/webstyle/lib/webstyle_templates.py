@@ -733,7 +733,7 @@ URI: http://%(host)s%(page)s
 
         # Prepare restriction flag
         restriction_flag = ''
-        if not record_public_p(recid):
+        if not record_public_p(recid) and not CFG_INSPIRE_SITE:
             restriction_flag = '<div class="restrictedflag"><span>%s</span></div>' % _("Restricted")
 
         # If no tabs, returns nothing (excepted if restricted)
