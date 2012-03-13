@@ -33,12 +33,6 @@ from invenio.refextract_engine import parse_references
 from invenio.docextract_utils import setup_loggers
 from invenio.refextract_text import wash_and_repair_reference_line
 
-try:
-    from nose.plugins.skip import SkipTest
-except ImportError:
-    class SkipTest(Exception):
-        """Skip a test"""
-
 
 def compare_references(test, references, expected_references, ignore_misc=True):
     out = references
@@ -47,8 +41,9 @@ def compare_references(test, references, expected_references, ignore_misc=True):
     out = out[:out.find('<datafield tag="999" ind1="C" ind2="6">')].rstrip()
     out += "\n</record>"
 
-    # We don't care about what's in the misc field
-    out = re.sub('      <subfield code="m">[^<]*</subfield>\n', '', out)
+    if ignore_misc:
+        # We don't care about what's in the misc field
+        out = re.sub('      <subfield code="m">[^<]*</subfield>\n', '', out)
 
     if out != expected_references:
         print 'OUT'
@@ -67,7 +62,7 @@ def reference_test(test, ref_line, parsed_reference, ignore_misc=True):
         'report-numbers' : test.kb_report_numbers,
         'books'          : test.kb_books,
     })
-    compare_references(test, out, parsed_reference)
+    compare_references(test, out, parsed_reference, ignore_misc)
 
 
 class RefextractInvenioTest(unittest.TestCase):
@@ -172,6 +167,7 @@ class RefextractTest(unittest.TestCase):
             "#####LANL#####",
             "<s/syymm999>",
             "<syymm999>",
+            "ASTRO PH---astro-ph",
             "HEP PH---hep-ph",
             "HEP TH---hep-th",
             "#####LHC#####",
@@ -1720,6 +1716,52 @@ Rev. D 80 034030 1-25"""
    </datafield>
 </record>""")
 
+    def test_new_arxiv2(self):
+        ref_line = u"""[178] D. R. Tovey, On measuring the masses of pair-produced semi-invisibly decaying particles at hadron colliders, JHEP 04 (2008) 034, [9112.2879]."""
+        reference_test(self, ref_line, u"""<record>
+   <controlfield tag="001">1</controlfield>
+   <datafield tag="999" ind1="C" ind2="5">
+      <subfield code="o">178</subfield>
+      <subfield code="h">D. R. Tovey</subfield>
+      <subfield code="s">JHEP,0804,034</subfield>
+      <subfield code="r">arXiv:9112.2879</subfield>
+   </datafield>
+</record>""")
+
+    def test_new_arxiv3(self):
+        ref_line = u"""[178] D. R. Tovey, On measuring the masses of pair-produced semi-invisibly decaying particles at hadron colliders, JHEP 04 (2008) 034, [1212.2879]."""
+        reference_test(self, ref_line, u"""<record>
+   <controlfield tag="001">1</controlfield>
+   <datafield tag="999" ind1="C" ind2="5">
+      <subfield code="o">178</subfield>
+      <subfield code="h">D. R. Tovey</subfield>
+      <subfield code="s">JHEP,0804,034</subfield>
+      <subfield code="r">arXiv:1212.2879</subfield>
+   </datafield>
+</record>""")
+
+    def test_new_arxiv_invalid(self):
+        ref_line = u"""[178] D. R. Tovey, On measuring the masses of pair-produced semi-invisibly decaying particles at hadron colliders, JHEP 04 (2008) 034, [9002.2879]."""
+        reference_test(self, ref_line, u"""<record>
+   <controlfield tag="001">1</controlfield>
+   <datafield tag="999" ind1="C" ind2="5">
+      <subfield code="o">178</subfield>
+      <subfield code="h">D. R. Tovey</subfield>
+      <subfield code="s">JHEP,0804,034</subfield>
+   </datafield>
+</record>""")
+
+    def test_new_arxiv_invalid2(self):
+        ref_line = u"""[178] D. R. Tovey, On measuring the masses of pair-produced semi-invisibly decaying particles at hadron colliders, JHEP 04 (2008) 034, [9113.2879]."""
+        reference_test(self, ref_line, u"""<record>
+   <controlfield tag="001">1</controlfield>
+   <datafield tag="999" ind1="C" ind2="5">
+      <subfield code="o">178</subfield>
+      <subfield code="h">D. R. Tovey</subfield>
+      <subfield code="s">JHEP,0804,034</subfield>
+   </datafield>
+</record>""")
+
     def test_special_journals(self):
         ref_line = u"""[178] D. R. Tovey, JHEP 04 (2008) 034"""
         reference_test(self, ref_line, u"""<record>
@@ -1888,6 +1930,27 @@ Rev. D 80 034030 1-25"""
    </datafield>
 </record>""")
 
+    def test_hep_formatting(self):
+        ref_line = u"""[6] Sivers D. W., hep-ph-9711200"""
+        reference_test(self, ref_line, u"""<record>
+   <controlfield tag="001">1</controlfield>
+   <datafield tag="999" ind1="C" ind2="5">
+      <subfield code="o">6</subfield>
+      <subfield code="h">Sivers D. W.</subfield>
+      <subfield code="r">hep-ph/9711200</subfield>
+   </datafield>
+</record>""")
+
+    def test_hep_formatting2(self):
+        ref_line = u"""[6] Sivers D. W., astro-ph-9711200"""
+        reference_test(self, ref_line, u"""<record>
+   <controlfield tag="001">1</controlfield>
+   <datafield tag="999" ind1="C" ind2="5">
+      <subfield code="o">6</subfield>
+      <subfield code="h">Sivers D. W.</subfield>
+      <subfield code="r">astro-ph/9711200</subfield>
+   </datafield>
+</record>""")
 
 if __name__ == '__main__':
     test_suite = make_test_suite(RefextractTest)

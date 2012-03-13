@@ -24,21 +24,14 @@ Sends references to parse through bibsched
 """
 
 import sys
-import traceback
-from datetime import datetime
 
 from invenio.bibtask import task_init, task_set_option, \
-                            task_get_option, write_message, \
-                            task_sleep_now_if_required, \
-                            task_update_progress
+                            task_get_option, write_message
 from invenio.config import CFG_VERSION, \
                            CFG_INSPIRE_SITE, \
                            CFG_SITE_SECURE_URL, \
                            CFG_BIBCATALOG_SYSTEM, \
                            CFG_REFEXTRACT_TICKET_QUEUE
-from invenio.dbquery import run_sql
-# Used to obtain the fulltexts for a given collection
-from invenio.search_engine import get_collection_reclist
 # Help message is the usage() print out of how to use Refextract
 from invenio.refextract_cli import HELP_MESSAGE, DESCRIPTION
 from invenio.refextract_api import update_references, \
@@ -49,6 +42,7 @@ from invenio.bibcatalog_system_rt import BibCatalogSystemRT
 from invenio.bibedit_utils import get_bibrecord
 from invenio.bibrecord import record_get_field_instances, \
                               field_get_subfield_values
+
 
 def check_options():
     """ Reimplement this method for having the possibility to check options
@@ -144,10 +138,10 @@ def create_ticket(recid, bibcatalog_system, queue=CFG_REFEXTRACT_TICKET_QUEUE):
 
         text = '%s/record/edit/#state=edit&recid=%s' % (CFG_SITE_SECURE_URL, \
                                                         recid)
-        ticketid = bibcatalog_system.ticket_submit(subject=subject,
-                                                   queue=queue,
-                                                   text=text,
-                                                   recordid=recid)
+        bibcatalog_system.ticket_submit(subject=subject,
+                                        queue=queue,
+                                        text=text,
+                                        recordid=recid)
 
 
 def task_run_core(recid, bibcatalog_system=None):

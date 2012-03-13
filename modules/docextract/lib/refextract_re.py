@@ -18,6 +18,7 @@
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 import re
+from datetime import datetime
 
 # Pattern for PoS journal
 re_pos_year = ur'\s*(?P<year>\s\(?(?:19|20)\d{2}\)?)?'
@@ -25,13 +26,17 @@ re_pos_year = ur'\s*(?P<year>\s\(?(?:19|20)\d{2}\)?)?'
 re_pos_volume = ur'\s+(?P<volume>\w{1,10}(?:19|20)\d{2})\s*'
 re_pos_page = ur'\s+(?P<page>\d{1,4})'
 re_pos_title = ur'POS'
+
 re_pos_patterns = [
     re_pos_title + re_pos_year + re_pos_volume + re_pos_page,
     re_pos_title + re_pos_volume + re_pos_year + re_pos_page,
     re_pos_title + re_pos_volume + re_pos_page + re_pos_year,
 ]
 re_opts = re.VERBOSE | re.UNICODE | re.IGNORECASE
-re_pos = [re.compile(p, re_opts) for p in re_pos_patterns]
+
+def compute_pos_patterns(patterns):
+    return [re.compile(p, re_opts) for p in patterns]
+re_pos = compute_pos_patterns(re_pos_patterns)
 
 # Pattern for arxiv numbers
 re_arxiv = re.compile(ur""" # arxiv 9910-1234v9 [physics.ins-det]
@@ -39,11 +44,23 @@ re_arxiv = re.compile(ur""" # arxiv 9910-1234v9 [physics.ins-det]
     [\s.-]*(?P<num>\d{4})(?:[\s-]*V(?P<version>\d))?
     \s*(?P<suffix>\[[A-Z.-]+\])? """, re.VERBOSE | re.UNICODE | re.IGNORECASE)
 
+
+def compute_years():
+    current_year = datetime.now().year
+    return '|'.join(str(y)[2:] for y in xrange(1991, current_year + 1))
+arxiv_years = compute_years()
+
+def compute_months():
+    return '|'.join(str(y).zfill(2) for y in xrange(1, 13))
+arxiv_months = compute_months()
+
 re_new_arxiv = re.compile(ur""" # 9910.1234v9 [physics.ins-det]
     (?<!ARXIV:)
-    (?P<year>\d{2})(?P<month>\d{2})
+    (?P<year>%(arxiv_years)s)
+    (?P<month>%(arxiv_months)s)
     \.(?P<num>\d{4})(?:[\s-]*V(?P<version>\d))?
-    \s*(?P<suffix>\[[A-Z.-]+\])? """, re.VERBOSE | re.UNICODE | re.IGNORECASE)
+    \s*(?P<suffix>\[[A-Z.-]+\])? """ % {'arxiv_years': arxiv_years,
+        'arxiv_months': arxiv_months}, re.VERBOSE | re.UNICODE | re.IGNORECASE)
 
 # Pattern to recognize quoted text:
 re_quoted = re.compile(ur'"(?P<title>[^"]+)"', re.UNICODE)
@@ -506,9 +523,12 @@ def get_reference_section_title_patterns():
                u'bibliographie',
                u'citations',
                u'literaturverzeichnis' ]
-    sect_marker = u'^\s*([\[\-\{\(])?\s*((\w|\d){1,5}([\.\-\,](\w|\d){1,5})?\s*[\.\-\}\)\]]\s*)?(?P<title>'
+    sect_marker = u'^\s*([\[\-\{\(])?\s*' \
+                  u'((\w|\d){1,5}([\.\-\,](\w|\d){1,5})?\s*' \
+                  u'[\.\-\}\)\]]\s*)?' \
+                  u'(?P<title>'
     sect_marker1 = u'^(\d){1,3}\s*(?P<title>'
-    line_end  = ur'(\s+?s\s*e\s*c\s*t\s*i\s*o\s*n\s*)?)' \
+    line_end  = ur'(\s*s\s*e\s*c\s*t\s*i\s*o\s*n\s*)?)([\)\}\]])?' \
         ur'($|\s*[\[\{\(\<]\s*[1a-z]\s*[\}\)\>\]]|\:$)'
 
     for t in titles:

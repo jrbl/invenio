@@ -23,7 +23,9 @@ import csv
 import os
 
 try:
+    # pylint: disable=E0611
     from hashlib import md5
+    # pylint: enable=E0611
 except ImportError:
     from md5 import new as md5
 
@@ -65,16 +67,16 @@ class RefExtractKBsDataCacher(DataCacher):
     Cache holding refextract knowledge bases
     """
     def __init__(self, custom_kbs_files=None, inspire=CFG_INSPIRE_SITE):
+        kbs_files = CFG_REFEXTRACT_KBS.copy()
+        # On inspire sites, use inspire journals kb by default
+        if inspire:
+            kbs_files['journals'] = CFG_REFEXTRACT_JOURNALS_INSPIRE
+        if custom_kbs_files:
+            for key, path in custom_kbs_files.items():
+                if path:
+                    kbs_files[key] = path
 
         def cache_filler():
-            kbs_files = CFG_REFEXTRACT_KBS.copy()
-            # On inspire sites, use inspire journals kb by default
-            if inspire:
-                kbs_files['journals'] = CFG_REFEXTRACT_JOURNALS_INSPIRE
-            if custom_kbs_files:
-                for key, path in custom_kbs_files.items():
-                    if path:
-                        kbs_files[key] = path
             return load_kbs(kbs_files)
 
         def timestamp_verifier():
@@ -571,11 +573,9 @@ def build_authors_kb(fpath):
         fh = fpath
 
     try:
-        count = 0
         for rawline in fh:
             if rawline.startswith('#'):
                 continue
-            count += 1
 
             # Extract the seek->replace terms from this KB line:
             m_kb_line = re_kb_line.search(rawline.decode('utf-8'))

@@ -175,10 +175,8 @@ def format_volume(citation_elements):
     """
     re_roman = re.compile(re_roman_numbers + u'$', re.UNICODE)
     for el in citation_elements:
-        if el['type'] == 'JOURNAL'\
-            and re_roman.match(el['volume']):
-                print el
-                el['volume'] = str(roman2arabic(el['volume'].upper()))
+        if el['type'] == 'JOURNAL' and re_roman.match(el['volume']):
+            el['volume'] = str(roman2arabic(el['volume'].upper()))
     return citation_elements
 
 
@@ -225,13 +223,13 @@ def format_hep(citation_elements):
 
     e.g. replaces hep-th-9711200 with hep-th/9711200
     """
+    prefixes = ('astro-ph-', 'hep-th-', 'hep-ph-', 'hep-ex-', 'hep-lat-')
     for el in citation_elements:
-        if el['type'] == 'REPORTNUMBER' and \
-                    ( el['report_num'].startswith('hep-th-') or \
-                      el['report_num'].startswith('hep-ph-') or \
-                      el['report_num'].startswith('hep-ex-')):
-            el['report_num'] = el['report_num'][:6] + '/' + \
-                                el['report_num'][7:]
+        if el['type'] == 'REPORTNUMBER':
+            for p in prefixes:
+                if el['report_num'].startswith(p):
+                    el['report_num'] = el['report_num'][:len(p) - 1] + '/' + \
+                                                    el['report_num'][len(p):]
     return citation_elements
 
 
@@ -978,9 +976,6 @@ def begin_extraction(config, files):
        and values processed by the Refextract Daemon. This is full only when
        called as a scheduled bibtask inside bibsched.
     """
-    global RUNNING_INDEPENDENTLY
-    RUNNING_INDEPENDENTLY = True
-
     # What journal title format are we using?
     if not config.inspire:
         config.inspire = CFG_INSPIRE_SITE

@@ -129,7 +129,8 @@ def get_reference_lines(docbody,
     else:
         ref_lines = docbody[start_idx:]
 
-    ref_lines = strip_footer(ref_lines, ref_sect_title)
+    if ref_sect_title:
+        ref_lines = strip_footer(ref_lines, ref_sect_title)
     if not ref_line_marker or not ref_line_marker.isdigit():
         ref_lines = strip_pagination(ref_lines)
     # Now rebuild reference lines:
@@ -147,7 +148,7 @@ def strip_pagination(ref_lines):
 
 def strip_footer(ref_lines, section_title):
     """Remove footer title from references lines"""
-    pattern = ur'\(?\[?\d{0,4}\]?\)?\.?\s*%s\s*$' % section_title
+    pattern = ur'\(?\[?\d{0,4}\]?\)?\.?\s*%s\s*$' % re.escape(section_title)
     re_footer = re.compile(pattern, re.UNICODE)
     return [l for l in ref_lines if not re_footer.match(l)]
 

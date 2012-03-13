@@ -53,7 +53,6 @@ from invenio.refextract_re import \
     re_numeration_vol_nucphys_series_page_yr, \
     re_html_tagged_url, \
     re_numeration_yr_vol_page, \
-    re_strip_series_and_volume_labels, \
     re_numeration_vol_nucphys_page_yr, \
     re_wash_volume_tag, \
     re_numeration_vol_nucphys_yr_subvol_page, \

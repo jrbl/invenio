@@ -597,7 +597,7 @@ def check_author_for_ibid(line_elements, author):
             ## No need to reset the author to be used for ibids, since this line holds an ibid
             return """
           <subfield code="%(sf-code-ref-auth)s">%(authors)s</subfield>""" \
-                % { 'authors'          : author['auth_txt'].strip('()'),
+                % { 'authors'          : encode_for_xml(author['auth_txt'].strip('()')),
                     'sf-code-ref-auth' : CFG_REFEXTRACT_SUBFIELD_AUTH,
                   }, author
 

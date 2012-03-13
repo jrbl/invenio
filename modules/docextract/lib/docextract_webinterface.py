@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+    # -*- coding: utf-8 -*-
 ##
 ## This file is part of Invenio.
 ## Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011 CERN.
@@ -24,7 +24,7 @@ Exposes document extration facilities to the world
 
 from tempfile import NamedTemporaryFile
 
-from invenio.webinterface_handler import wash_urlargd, WebInterfaceDirectory
+from invenio.webinterface_handler import WebInterfaceDirectory
 from invenio.webuser import collect_user_info
 from invenio.webpage import page
 from invenio.config import CFG_TMPSHAREDDIR, CFG_ETCDIR
@@ -32,7 +32,7 @@ from invenio.refextract_api import extract_references_from_file_xml, \
                                    extract_references_from_url_xml, \
                                    extract_references_from_string_xml
 from invenio.bibformat_engine import format_record
-from invenio.bibrecord import create_record
+
 try:
     from invenio.config import CFG_INSPIRE_SITE
 except ImportError:
@@ -67,7 +67,7 @@ def extract_from_pdf_string(pdf, inspire=CFG_INSPIRE_SITE):
     try:
         tf.write(pdf)
         tf.flush()
-        refs = extract_references_from_file_xml(tf.name)
+        refs = extract_references_from_file_xml(tf.name, inspire=inspire)
     finally:
         # Also deletes the file
         tf.close()
@@ -136,7 +136,7 @@ class WebInterfaceDocExtract(WebInterfaceDirectory):
 
     api = WebInterfaceAPIDocExtract()
 
-    def example_pdf(self, req, form):
+    def example_pdf(self, _req, _form):
         """Serve a test pdf for tests"""
         f = open("%s/docextract/example.pdf" % CFG_ETCDIR, 'rb')
         try:

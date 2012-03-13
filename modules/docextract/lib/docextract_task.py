@@ -120,7 +120,7 @@ def task_run_core(name, func, extra_vars=None):
     total = len(records)
     for recid, date in records:
         task_sleep_now_if_required(can_stop_too=True)
-        msg = "Extracting for %s (%d/%d)" % (recid, count + 1, total)
+        msg = "Extracting for %s (%d/%d)" % (recid, count, total)
         task_update_progress(msg)
         write_message(msg)
         if extra_vars:

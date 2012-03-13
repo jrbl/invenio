@@ -18,18 +18,13 @@
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 import unittest
-import urllib
-from StringIO import StringIO
 try:
     import requests
     HAS_REQUESTS = True
 except ImportError:
     HAS_REQUESTS = False
 
-from invenio.testutils import make_test_suite, \
-                              run_test_suite
-from invenio.config import CFG_SITE_URL, CFG_SITE_NAME, CFG_SITE_LANG, \
-    CFG_SITE_RECORD, CFG_SITE_LANGS, CFG_ETCDIR
+from invenio.config import CFG_SITE_URL, CFG_ETCDIR
 
 IGNORE_LINE = '      <subfield code="a">Invenio'
 EXPECTED_RESPONSE = """<record>

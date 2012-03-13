@@ -25,7 +25,7 @@ from invenio.config import CFG_VERSION, CFG_ETCDIR
 # pylint: disable=C0301
 
 # Version number:
-CFG_REFEXTRACT_VERSION = "Invenio/%s refextract/%s" % (CFG_VERSION, '1.2')
+CFG_REFEXTRACT_VERSION = "Invenio/%s refextract/%s" % (CFG_VERSION, '1.3')
 # Module config directory
 CFG_CONF_DIR = '%s/docextract' % CFG_ETCDIR
 
