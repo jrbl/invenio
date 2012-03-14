@@ -151,7 +151,7 @@ def get_citation_weight(rank_method_code, config):
     else:
         dic = {}
         write_message("No new records added since last time this rank method was executed")
-    return dic
+    return dic, index_update_time
 
 def get_bibrankmethod_lastupdate(rank_method_code):
     """return the last excution date of bibrank method
