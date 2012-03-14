@@ -62,7 +62,7 @@ from invenio.bibedit_utils import cache_exists, cache_expired, \
     revision_to_timestamp, timestamp_to_revision, \
     get_record_revision_timestamps, record_revision_exists, \
     can_record_have_physical_copies, extend_record_with_template, \
-    merge_record_with_template, clean_xml_characters
+    merge_record_with_template
 
 from invenio.bibrecord import create_record, print_rec, record_add_field, \
     record_add_subfield_into, record_delete_field, \
@@ -668,7 +668,8 @@ def perform_request_record(req, request_type, recid, uid, data, ln=CFG_SITE_LANG
                 record = tmp_result[2]
                 pending_changes = tmp_result[3]
 #                disabled_changes = tmp_result[4]
-                xml_record = clean_xml_characters(print_rec(record))
+
+                xml_record = print_rec(record)
                 record, status_code, list_of_errors = create_record(xml_record)
                 if status_code == 0:
                     response['resultCode'], response['errors'] = 110, \
@@ -1117,7 +1118,7 @@ def perform_request_autocomplete(request_type, recid, uid, data):
             #check that the values are not already contained in other
             #instances of this field
             record = get_cache_file_contents(recid, uid)[2]
-            xml_rec = clean_xml_characters(print_rec(record))
+            xml_rec = print_rec(record)
             record, status_code, dummy_errors = create_record(xml_rec)
             existing_values = []
             if (status_code != 0):
