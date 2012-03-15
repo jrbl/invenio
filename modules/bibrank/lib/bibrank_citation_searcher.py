@@ -55,7 +55,7 @@ class CitationDictsDataCacher(DataCacher):
             return alldicts
         def timestamp_verifier():
             res = run_sql("""SELECT DATE_FORMAT(last_updated, '%Y-%m-%d %H:%i:%s')
-                              FROM rnkMETHOD WHERE name='citation'""")
+                              FROM rnkCITATIONDATA WHERE object_name='citationdict'""")
             if res:
                 return res[0][0]
             else:
