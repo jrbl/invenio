@@ -4411,7 +4411,9 @@ class Template:
     def tmpl_citesummary_prologue(self, d_total_recs, l_colls, searchpattern, searchfield, ln=CFG_SITE_LANG):
         """HTML citesummary format, prologue. A part of HCS format suite."""
         _ = gettext_set_language(ln)
-        out = """<p><table id="citesummary">
+        out = """<p style="margin-left: 10px; color: red; font-weight: bold">Citation data is currently being re-processed. Numbers may be temporarily inaccurate.
+No correct citation will be lost in the process.</p>
+                 <table id="citesummary">
                   <tr><td><strong class="headline">%(msg_title)s</strong></td>""" % \
                {'msg_title': _("Citation summary results"), }
         for coll, colldef in l_colls:
