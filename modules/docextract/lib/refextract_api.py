@@ -117,19 +117,7 @@ def extract_references_from_record_xml(recid, inspire=CFG_INSPIRE_SITE):
     The single parameter is the document
     The result is given in marcxml.
     """
-    rec_info = BibRecDocs(recid)
-    docs = rec_info.list_bibdocs()
-
-    path = False
-    for doc in docs:
-        try:
-            path = doc.get_file('pdf').get_full_path()
-        except InvenioWebSubmitFileError:
-            try:
-                path = doc.get_file('pdfa').get_full_path()
-            except InvenioWebSubmitFileError:
-                continue
-
+    path = look_for_fulltext(recid)
     if not path:
         raise FullTextNotAvailable()
 
@@ -201,8 +189,7 @@ def update_references(recid, inspire=CFG_INSPIRE_SITE, overwrite=True):
                               '-z', temp_path)
 
 
-def record_has_fulltext(recid):
-    """Checks if we can access the fulltext for the given recid"""
+def look_for_fulltext(recid):
     rec_info = BibRecDocs(recid)
     docs = rec_info.list_bibdocs()
 
@@ -214,8 +201,17 @@ def record_has_fulltext(recid):
             try:
                 path = doc.get_file('pdfa').get_full_path()
             except InvenioWebSubmitFileError:
-                continue
+                try:
+                    path = doc.get_file('PDF').get_full_path()
+                except InvenioWebSubmitFileError:
+                    pass
 
+    return path
+
+
+def record_has_fulltext(recid):
+    """Checks if we can access the fulltext for the given recid"""
+    path = look_for_fulltext(recid)
     return path is not None
 
 
