@@ -4411,7 +4411,9 @@ class Template:
     def tmpl_citesummary_prologue(self, d_total_recs, l_colls, searchpattern, searchfield, ln=CFG_SITE_LANG):
         """HTML citesummary format, prologue. A part of HCS format suite."""
         _ = gettext_set_language(ln)
-        out = """<table id="citesummary">
+        out = """<p style="font-weight: bold; margin-left: 10px;">The citation data have been re-processed. You may see small changes due to an updated and now more accurate citation database. If
+you have any questions, please contact us (<a href="mailto:feedback@inspirehep.net">feedback@inspirehep.net</a>)</p>
+                <table id="citesummary">
                   <tr><td><strong class="headline">%(msg_title)s</strong></td>""" % \
                {'msg_title': _("Citation summary results"), }
         for coll, colldef in l_colls:
