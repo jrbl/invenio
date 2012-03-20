@@ -1288,13 +1288,14 @@ def perform_request_record_has_pdf(recid, uid):
         doc = docs[0]
     except IndexError:
         response['record_has_pdf'] = False
-    finally:
-        return response
+    return response
 
 def _get_formated_record(record, new_window):
     """Returns a record in a given format
 
     @param record: BibRecord object
+    @param new_window: Boolean, indicates if it is needed to add all the headers
+    to the page (used when clicking Preview button)
     """
     from invenio.config import CFG_WEBSTYLE_TEMPLATE_SKIN
 
@@ -1312,15 +1313,16 @@ def _get_formated_record(record, new_window):
                          'cssskin': CFG_WEBSTYLE_TEMPLATE_SKIN != 'default' and '_' + CFG_WEBSTYLE_TEMPLATE_SKIN or ''
                         }
         result += get_mathjax_header(True) + '<body>'
-    result += "<h2> Brief format preview </h2><br />"
-    result += bibformat.format_record(recID=None,
-                                     of="hb",
-                                     xml_record=xml_record)
     if new_window:
-        result += "<br /><h2> Detailed format preview </h2><br />"
+        result += "<h2> Brief format preview </h2><br />"
         result += bibformat.format_record(recID=None,
-                                         of="hd",
-                                         xml_record=xml_record)
+                                         of="hb",
+                                         xml_record=xml_record) + "<br />"
+
+    result += "<br /><h2> Detailed format preview </h2><br />"
+    result += bibformat.format_record(recID=None,
+                                      of="hd",
+                                      xml_record=xml_record)
     #Preview references
     result += "<br /><h2> References </h2><br />"
 
