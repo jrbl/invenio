@@ -930,7 +930,7 @@ def call_authorlist_extract(active_file, extracted_file, harvested_identifier_li
                     if CFG_INSPIRE_SITE and 'arXiv' in identifier:
                         # If INSPIRE, then append the arXiv id to the file of records having authorlists
                         # extracted
-                        filepath = "/afs/cern.ch/project/inspire/updates/has_authorlist.txt"
+                        filepath = "/afs/cern.ch/user/s/sul/public/has_authorlist.txt"
                         append_arxiv_id_to_file(filepath, identifier)
         updated_xml.append(record_xml_output(existing_record))
     updated_xml.append('</collection>')
