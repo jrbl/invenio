@@ -1228,30 +1228,51 @@ function onGetTemplateSuccess(json) {
   onGetRecordSuccess(json);
 }
 
+function onSubmitPreviewSuccess(dialogPreview, html_preview){
+  /*
+   * Confirm whether to submit the record
+   *
+   * dialog: object containing the different parts of the modal dialog
+   * html_preview: a formatted preview of the record content
+  */
+  addContentToDialog(dialogPreview, html_preview, "Do you want to submit the record?");
+  dialogPreview.dialogDiv.dialog({
+        title: "Confirm submit",
+        close: function() { updateStatus('ready'); },
+        buttons: {
+            "Submit changes": function() {
+                                    createReq({recID: gRecID, requestType: 'submit',
+                                        force: onSubmitClick.force}, function(json){
+                                            // Submission was successful.
+                                            changeAndSerializeHash({state: 'submit', recid: gRecID});
+                                            var resCode = json['resultCode'];
+                                            cleanUp(!gNavigatingRecordSet, '', null, true);
+                                            updateStatus('report', gRESULT_CODES[resCode]);
+                                            updateToolbar(false);
+                                            resetBibeditState();
+                                            displayMessage(resCode);
+                                            updateStatus('ready');
+                                    });
+                                    $( this ).remove();
+                                },
+            Cancel: function() {
+                        updateStatus('ready');
+                        $( this ).remove();
+                    }
+    }});
+  $(dialogPreview.dialogDiv).parent().find('button:nth-child(1)').focus();
+
+}
+
 function onSubmitClick(){
   /*
    * Handle 'Submit' button (submit record).
    */
   updateStatus('updating');
-  if (displayAlert('confirmSubmit')){
-    var preview = getPreview();
-    createReq({recID: gRecID, requestType: 'submit',
-         force: onSubmitClick.force}, function(json){
-       // Submission was successful.
-      changeAndSerializeHash({state: 'submit', recid: gRecID});
-      var resCode = json['resultCode'];
-      cleanUp(!gNavigatingRecordSet, '', null, true);
-      updateStatus('report', gRESULT_CODES[resCode]);
-      displayMessage(resCode);
-      $('#bibEditMessage').after(preview);
-      updateToolbar(false);
-      resetBibeditState()
-    }, false);
-    onSubmitClick.force = false;
-    resetBibeditState();
-  }
-  else
-    updateStatus('ready');
+  var dialogPreview = createDialog("Loading...", "Retrieving preview...", 750, 700);
+
+  // Get preview of the record and let the user confirm submit
+  getPreview(dialogPreview, onSubmitPreviewSuccess);
 }
 
 // Enable this flag to force the next submission even if cache is outdated.
@@ -1297,17 +1318,15 @@ function record_has_pdf() {
    return record_has_pdf;
 }
 
-function getPreview() {
+function getPreview(dialog, onSuccess) {
 
     var html_preview;
     createReq({'new_window': false, recID: gRecID, requestType: 'preview'
        }, function(json){
        // Preview was successful.
         html_preview = json['html_preview'];
-       }, false);
-    return html_preview;
-
-
+        onSuccess(dialog, html_preview);
+       });
 }
 
 /************* Reference extraction in BibEdit ***************/
@@ -1325,22 +1344,7 @@ function onRefExtractClick() {
     */
 
    /* Create the modal dialog that will contain the references */
-   var dialogReferences = $( '<div>' );
-   var contentParagraph = $('<p>'),
-       contentSpan = $('<span>'),
-       iconSpan = $('<span>');
-   
-   contentParagraph.addClass('dialog-box-centered');
-   contentSpan.html("Extracting references...<br /><br /> <img src='/img/ajax-loader.gif'>");
-   dialogReferences.append(contentParagraph.append(contentSpan));
-   dialogReferences.appendTo( $( 'body' ) );
-   dialogReferences.dialog({
-        title: "Loading...",
-        resizable: false,
-        modal: true,
-        height: 750,
-        width: 700
-    });
+   var dialogReferences = createDialog("Loading...", "Extracting references...", 750, 700);
 
     /* Create a request to extract references */
     var bibrecord, textmarc, xmlrecord;
@@ -1350,9 +1354,9 @@ function onRefExtractClick() {
             textmarc = json['ref_textmarc'];
             xmlrecord = json['ref_xmlrecord'];
             if (!xmlrecord) {
-                contentParagraph.css('margin-top', '50px');
-                contentSpan.html("The record does not have a PDF file ");
-                dialogReferences.dialog({
+                dialogReferences.contentParagraph.css('margin-top', '50px');
+                dialogReferences.contentSpan.html("The record does not have a PDF file ");
+                dialogReferences.dialogDiv.dialog({
                     title: "PDF not found",
                     height: '200',
                     width: '350',
@@ -1365,13 +1369,8 @@ function onRefExtractClick() {
             }
             /* References were extracted */
             else {
-                iconSpan.addClass('ui-icon').addClass('ui-icon-alert').addClass('dialog-icon');
-                contentParagraph.before(iconSpan);
-                contentParagraph.removeClass('dialog-box-centered');
-                /* Update the dialog with the content received from server */
-                contentSpan.html("Do you want to apply the following references?\n\
-                                 <br /><br />" + textmarc);
-                dialogReferences.dialog({
+                addContentToDialog(dialogReferences, textmarc, "Do you want to apply the following references?");
+                dialogReferences.dialogDiv.dialog({
                     title: "Apply references",
                     buttons: {
                         "Apply references": function() {
@@ -2510,7 +2509,6 @@ function convertFieldIntoEditable(cell, shouldSelect){
           convertFieldIntoEditable(cell, false);
         }
       }
-
       return newVal;
     }, {
       type: 'textarea',
@@ -2710,8 +2708,6 @@ function bulkUpdateSubfieldContent(tag, fieldPosition, subfieldIndex, subfieldCo
 
     redrawFields(tag);
     reColorFields();
-
-
 }
 
 function updateFieldTag(oldTag, newTag, oldInd1, oldInd2, ind1, ind2, fieldPosition,
@@ -3129,6 +3125,9 @@ function onContentChange(value, th){
   }
   addUndoOperation(urHandler);
 
+  // Save the scroll current position before updating the interface
+  var scrollPos = $("#bibEditContent").scrollTop();
+
   // Generate AJAX request
   switch (cellType) {
       case 'subfieldTag':
@@ -3155,6 +3154,9 @@ function onContentChange(value, th){
   else{
       idPrefix = '"#content_';
   }
+
+  /* Scroll to previous position */
+  $(idPrefix.replace(/\"/g,"") + tag + '_' + fieldPosition + '_' + subfieldIndex).scrollTo(scrollPos);
   /* Create fading effect to show the cell modified */
   setTimeout('$(' + idPrefix + tag + '_' + fieldPosition + '_' + subfieldIndex +
       '").effect("highlight", {color: gNEW_CONTENT_COLOR}, ' +
