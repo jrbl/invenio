@@ -563,6 +563,12 @@ def page_style():
                     width: 300px;
                 }
 
+                /* End of jQuery UI Theming */
+
+                div.refextracted {
+                    line-height:25px;
+                }
+
             """
     style += "</style>"
     return style

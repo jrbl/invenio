@@ -1241,7 +1241,7 @@ def perform_request_ref_extract(recid, uid):
     response['ref_xmlrecord'] = record_xml_output(ref_bibrecord)
 
     textmarc_references = [line.strip() for line in xmlmarc2textmarc.create_marc_record(ref_bibrecord,sysno,options).split('\n') if '999C5' in line]
-    response['ref_textmarc'] = '<br />'.join(textmarc_references)
+    response['ref_textmarc'] = '<div class="refextracted">' + '<br />'.join(textmarc_references) + "</div>"
 
     return response
 
