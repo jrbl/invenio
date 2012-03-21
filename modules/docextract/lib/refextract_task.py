@@ -31,8 +31,11 @@ from invenio.bibtask import task_init, task_set_option, \
                             task_get_option, write_message, \
                             task_sleep_now_if_required, \
                             task_update_progress
-from invenio.config import CFG_VERSION, CFG_INSPIRE_SITE
-
+from invenio.config import CFG_VERSION, \
+                           CFG_INSPIRE_SITE, \
+                           CFG_SITE_SECURE_URL, \
+                           CFG_BIBCATALOG_SYSTEM, \
+                           CFG_REFEXTRACT_TICKET_QUEUE
 from invenio.dbquery import run_sql
 # Used to obtain the fulltexts for a given collection
 from invenio.search_engine import get_collection_reclist
@@ -42,7 +45,10 @@ from invenio.refextract_api import update_references, \
                                    FullTextNotAvailable, \
                                    RecordHasReferences
 from invenio.docextract_task import task_run_core_wrapper, split_ids
-
+from invenio.bibcatalog_system_rt import BibCatalogSystemRT
+from invenio.bibedit_utils import get_bibrecord
+from invenio.bibrecord import record_get_field_instances, \
+                              field_get_subfield_values
 
 def check_options():
     """ Reimplement this method for having the possibility to check options
@@ -87,6 +93,8 @@ def parse_option(key, value, opts, args):
         task_set_option('kb-books', value)
     elif key in ('--kb-conferences'):
         task_set_option('kb-conferences', value)
+    elif key in ('--create-ticket'):
+        task_set_option('create-ticket', True)
     elif key in ('--no-overwrite'):
         task_set_option('no-overwrite', True)
     elif key in ('-c', '--collections'):
@@ -105,7 +113,34 @@ def parse_option(key, value, opts, args):
     return True
 
 
-def task_run_core(recid):
+def create_ticket(recid, bibcatalog_system, queue=CFG_REFEXTRACT_TICKET_QUEUE):
+    if bibcatalog_system and queue:
+
+        subject = "Refs for #%s" % recid
+
+        # Add report number in the subjecet
+        report_number = ""
+        record = get_bibrecord(recid)
+
+        for report_tag in record_get_field_instances(record, "037"):
+            for category in field_get_subfield_values(report_tag, 'c'):
+                if category in ['astro-ph']:
+                    # We do not curate astro-ph
+                    return
+
+            for report_number in field_get_subfield_values(report_tag, 'a'):
+                subject += " " + report_number
+                break
+
+        text = '%s/record/edit/#state=edit&recid=%s' % (CFG_SITE_SECURE_URL, \
+                                                        recid)
+        ticketid = bibcatalog_system.ticket_submit(subject=subject,
+                                                   queue=queue,
+                                                   text=text,
+                                                   recordid=recid)
+
+
+def task_run_core(recid, bibcatalog_system=None):
     if task_get_option('inspire'):
         inspire = True
     else:
@@ -121,20 +156,33 @@ def task_run_core(recid):
     except RecordHasReferences:
         write_message("Record %s has references, skipping" % recid)
 
+    # Create a RT ticket if necessary
+    if task_get_option('new') or task_get_option('create-ticket'):
+        create_ticket(recid, bibcatalog_system)
 
 def main():
     """Constructs the refextract bibtask."""
+    if CFG_BIBCATALOG_SYSTEM == 'RT':
+        bibcatalog_system = BibCatalogSystemRT()
+    else:
+        bibcatalog_system = None
+
+    extra_vars = {'bibcatalog_system': bibcatalog_system}
     # Build and submit the task
     task_init(authorization_action='runrefextract',
         authorization_msg="Refextract Task Submission",
         description=DESCRIPTION,
         # get the global help_message variable imported from refextract.py
         help_specific_usage=HELP_MESSAGE + """
-  Scheduled (daemon) Refextract options:
+
+  Scheduled (daemon) options:
   -a, --new          Run on all newly inserted records.
   -m, --modified     Run on all newly modified records.
   -r, --recids       Record id for extraction.
   -c, --collections  Entire Collection for extraction.
+
+  Special (daemon) options:
+  --create-ticket    Create a RT ticket for record references
 
   Examples:
    (run a daemon job)
@@ -162,7 +210,10 @@ def main():
                              "collections=",
                              "new",
                              "modified",
-                             "no-overwrite"]),
+                             "no-overwrite",
+                             "create-ticket"]),
         task_submit_elaborate_specific_parameter_fnc=parse_option,
         task_submit_check_options_fnc=check_options,
-        task_run_fnc=task_run_core_wrapper('refextract', task_run_core))
+        task_run_fnc=task_run_core_wrapper('refextract',
+                                           task_run_core,
+                                           extra_vars=extra_vars))
