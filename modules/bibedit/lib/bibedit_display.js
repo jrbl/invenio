@@ -1207,7 +1207,6 @@ function createDialog(title, LoadingText, height, width){
   dialogDiv.dialog({
        title: title,
        resizable: false,
-       modal: true,
        height: height,
        width: width
   });
