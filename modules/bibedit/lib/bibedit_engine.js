@@ -2319,7 +2319,9 @@ function addFieldSave(fieldTmpNo)
   reColorFields();
   // Scroll and color the new field for a short period.
   var rowGroup = $('#rowGroup_' + tag + '_' + fieldPosition);
-  $('#bibEditContent').scrollTop($(rowGroup).position().top);
+  if (insertPosition === undefined) {
+    $('#bibEditContent').scrollTop($(rowGroup).position().top);
+  }
   $(rowGroup).effect('highlight', {color: gNEW_CONTENT_COLOR},
          gNEW_CONTENT_COLOR_FADE_DURATION);
 }
