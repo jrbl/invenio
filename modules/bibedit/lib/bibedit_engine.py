@@ -814,8 +814,7 @@ def perform_request_record(req, request_type, recid, uid, data, ln=CFG_SITE_LANG
     return response
 
 def perform_request_update_record(request_type, recid, uid, cacheMTime, data, \
-                                  hpChanges, undoRedoOp, isBulk=False, \
-                                  ln=CFG_SITE_LANG):
+                                  hpChanges, undoRedoOp, isBulk=False):
     """
     Handle record update requests like adding, modifying, moving or deleting
     of fields or subfields. Possible common error situations::
@@ -1263,7 +1262,7 @@ def perform_request_preview_record(request_type, recid, uid, data):
 
     return response
 
-def perform_request_get_pdf_url(recid, uid):
+def perform_request_get_pdf_url(recid):
     """ Handle request to get the URL of the attached PDF
     """
     response = {}
