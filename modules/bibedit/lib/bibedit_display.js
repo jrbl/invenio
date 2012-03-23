@@ -137,8 +137,8 @@ function createRow(tag, ind1, ind2, subfieldCode, subfieldValue, fieldID,
   var autosuggest = false;
   var autocomplete = false;
   var autokeyword = false;
-  for (var i=0;i<gAUTOSUGGEST_TAGS.length;i++) { if (MARC == gAUTOSUGGEST_TAGS[i]) { autosuggest = true; }}
-  for (var i=0;i<gAUTOCOMPLETE_TAGS.length;i++) { if (MARC == gAUTOCOMPLETE_TAGS[i]) { autocomplete = true; }}
+  for (var i=0, n=gAUTOSUGGEST_TAGS.length; i<n; i++) { if (MARC == gAUTOSUGGEST_TAGS[i]) { autosuggest = true; }}
+  for (var i=0, n=gAUTOCOMPLETE_TAGS.length; i<n; i++) { if (MARC == gAUTOCOMPLETE_TAGS[i]) { autocomplete = true; }}
   if (MARC == gKEYWORD_TAG) { autokeyword = true; }
   if (!protectedField){
     // Enable features for unprotected fields.

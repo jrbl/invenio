@@ -2252,7 +2252,7 @@ function addFieldSave(fieldTmpNo)
   var subfieldsExtended = [];
   /* Loop through all subfields to look for new subfields in the format
    * $$aContent$$bMore content and split them accordingly */
-  for (var i=0; i<subfields.length;i++) {
+  for (var i=0, n=subfields.length; i<n ;i++) {
       if (valueContainsSubfields(subfields[i][1])) {
           var subfieldsToAdd = new Array(), subfieldCode = subfields[i][0];
           splitContentSubfields(subfields[i][1], subfieldCode, subfieldsToAdd);
@@ -2264,7 +2264,7 @@ function addFieldSave(fieldTmpNo)
   }
   if (typeof subfieldsExtended[0] != 'undefined') {
       /* We have split some subfields */
-      for (var i=0;i<subfieldsExtended.length;i++) {
+      for (var i=0, n=subfieldsExtended.length; i < n; i++) {
           subfields[i] = subfieldsExtended[i];
       }
   }
@@ -2852,7 +2852,7 @@ function onAutosuggest(event) {
                mytarget.value = replacement;
             }
             //for the rest, create new subfields
-            for (var i=1;i<suggestions.length;i++) {
+            for (var i=1, n=suggestions.length; i < n; i++) {
                 var valuein = suggestions[i];
                 var addhereID = maintag+"_"+fieldPosition; //an id to indicate where the new subfield goes
                 addSubfield(addhereID, subfieldcode, valuein);
@@ -2867,7 +2867,7 @@ function onAutosuggest(event) {
             //make a nice box..
             mysel = '<table width="400" border="0"><tr><td><span class="bibeditscrollArea"><ul>';
             //create the select items..
-            for (var i=0;i<suggestions.length;i++) {
+            for (var i=0, n=suggestions.length; i < n; i++) {
                tmpid = select_id+"-"+suggestions[i];
                mysel = mysel +'<li onClick="onAutosuggestSelect(\''+tmpid+'\');">'+suggestions[i]+"</li>";
             }
@@ -2969,13 +2969,13 @@ function splitContentSubfields(value, subfieldCode, subfieldsToAdd) {
      */
     var splitValue = value.split('$$');
     subfieldsToAdd.push(new Array(subfieldCode, splitValue[0]));
-    for (var i=1; i<splitValue.length; i++) {
+    for (var i=1, n=splitValue.length; i<n; i++) {
         subfieldsToAdd.push(new Array(splitValue[i][0], splitValue[i].substring(1)));
     }
 }
 
 function is_reference_manually_curated(field){
-    for (var i=0; i < field[0].length; i++) {
+    for (var i=0, n=field[0].length; i < n; i++) {
         if (field[0][i][0] == '9' && field[0][i][1] == "CURATOR")
             return true;
     }
@@ -3418,7 +3418,7 @@ function updateRevisionsHistory(){
 
 function encodeXml(str){
     var resultString = "";
-    for (var i=0;i<str.length;i++){
+    for (var i=0, n=str.length; i<n; i++){
         var c = str.charAt(i);
         switch (c){
         case '<':
@@ -4235,7 +4235,7 @@ function urPerformRemoveSubfields(tag, fieldPosition, subfields, isUndo){
   toDelete[tag] = {};
   toDelete[tag][fieldPosition] = []
   var startingPosition = gRecord[tag][fieldPosition][0].length - subfields.length;
-  for (var i=startingPosition; i<gRecord[tag][fieldPosition][0].length ; i++){
+  for (var i=startingPosition, n=gRecord[tag][fieldPosition][0].length; i<n ; i++){
     toDelete[tag][fieldPosition].push(i);
   }
 
