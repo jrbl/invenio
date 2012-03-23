@@ -605,6 +605,14 @@ def get_author_citations(updated_redic_list, citedbydict, initial_author_dict, c
     return author_cited_in
 
 
+def standardize_report_number(report_number):
+    # Remove category for arxiv papers
+    return re.sub(ur'(arXiv:\d{4}\.\d{4}) \[[a-z-]+\]',
+                  ur'\g<1>',
+                  report_number,
+                  re.I | re.U)
+
+
 def ref_analyzer(citation_informations, initialresult, initial_citationlist,
                  initial_referencelist,config, updated_rec_list ):
     """Analyze the citation informations and calculate the citation weight
@@ -619,7 +627,7 @@ def ref_analyzer(citation_informations, initialresult, initial_citationlist,
 
     pubrefntag = ""
     try:
-        pubrefntag  = config.get(function, "reference_via_report_number")
+        pubrefntag = config.get(function, "reference_via_report_number")
     except:
         register_exception(prefix="cfg section "+function+" has no attr reference_via_report_number", alert_admin=True)
         return {}
@@ -633,17 +641,20 @@ def ref_analyzer(citation_informations, initialresult, initial_citationlist,
 
     #pubrefntag is often 999C5r, pubreftag 999C5s
     if task_get_task_param('verbose') >= 9:
-        write_message("pubrefntag "+pubrefntag)
-        write_message("pubreftag "+pubreftag)
+        write_message("pubrefntag " + pubrefntag)
+        write_message("pubreftag " + pubreftag)
 
     citation_list = initial_citationlist
     reference_list = initial_referencelist
     result = initialresult
-    d_reports_numbers = citation_informations[0] #dict of recid -> institute_give_publ_id
-    d_references_report_numbers = citation_informations[1] #dict of recid -> ['astro-ph/xyz'..]
+    # dict of recid -> institute_give_publ_id
+    d_reports_numbers = citation_informations[0]
+    # dict of recid -> ['astro-ph/xyz'..]
+    d_references_report_numbers = citation_informations[1]
+    # dict of recid -> publication_infos_in_its_bibliography
     d_references_s = citation_informations[2]
-       #dict of recid -> publication_infos_in_its_bibliography
-    d_records_s = citation_informations[3] #recid -> its publication inf
+    # dict of recid -> its publication inf
+    d_records_s = citation_informations[3]
     t1 = os.times()[4]
 
     write_message("Phase 0: temporarily remove changed records from citation dictionaries; they will be filled later")
@@ -658,26 +669,26 @@ def ref_analyzer(citation_informations, initialresult, initial_citationlist,
             pass
 
     write_message("Phase 1: d_references_report_numbers")
-    #d_references_report_numbers: e.g 8 -> ([astro-ph/9889],[hep-ph/768])
-    #meaning: rec 8 contains these in bibliography
-
+    # d_references_report_numbers: e.g 8 -> ([astro-ph/9889],[hep-ph/768])
+    # meaning: rec 8 contains these in bibliography
     done = 0
     numrecs = len(d_references_report_numbers)
     for thisrecid, refnumbers in d_references_report_numbers.iteritems():
-        if (done % 1000 == 0):
-            mesg =  "d_references_report_numbers done "+str(done)+" of "+str(numrecs)
+        if done % 1000 == 0:
+            mesg =  "done %s of %s" % (done, numrecs)
             write_message(mesg)
-            task_update_progress(mesg)
+            task_update_progress("d_references_report_numbers " + mesg)
             task_sleep_now_if_required()
-        done = done+1
+        done += 1
 
         for refnumber in refnumbers:
             if refnumber:
                 p = refnumber
                 f = 'reportnumber'
-                #sanitise p
-                p.replace("\n",'')
-                #search for "hep-th/5644654 or such" in existing records
+                # Sanitise p
+                p.replace("\n", '')
+                p = standardize_report_number(p)
+                # Search for "hep-th/5644654 or such" in existing records
                 rec_ids = get_recids_matching_query(p, f)
                 if rec_ids and rec_ids[0]:
                     write_citer_cited(thisrecid, rec_ids[0])
@@ -709,33 +720,33 @@ def ref_analyzer(citation_informations, initialresult, initial_citationlist,
                     lines = rectext.split("\n")
                     rpart = p #to be used..
                     for l in lines:
-                        if (l.find(p) > 0): #the gfhgf/1254312 was found.. get the s-part of it
+                        if l.find(p) > 0: #the gfhgf/1254312 was found.. get the s-part of it
                             st = l.find('$s')
-                            if (st > 0):
+                            if st > 0:
                                 end = l.find('$', st)
-                                if (end == st):
+                                if end == st:
                                     end = len(l)
                                 rpart = l[st+2:end]
                     insert_into_missing(thisrecid, rpart)
 
-    mesg = "d_references_report_numbers done fully"
+    mesg = "done fully"
     write_message(mesg)
     task_update_progress(mesg)
 
     t2 = os.times()[4]
 
     #try to find references based on 999C5s, like Phys.Rev.Lett. 53 (1986) 2285
-    write_message("Phase 2: d_references_s")
+    write_message("Phase 2: d_references_s (journals)")
     done = 0
     numrecs = len(d_references_s)
     for thisrecid, refss in d_references_s.iteritems():
-        if (done % 1000 == 0):
-            mesg = "d_references_s done "+str(done)+" of "+str(numrecs)
+        if done % 1000 == 0:
+            mesg = "done "+str(done)+" of "+str(numrecs)
             write_message(mesg)
-            task_update_progress(mesg)
+            task_update_progress("d_references_s " + mesg)
             task_sleep_now_if_required()
 
-        done = done+1
+        done += 1
 
         for refs in refss:
             if refs:
@@ -773,7 +784,7 @@ def ref_analyzer(citation_informations, initialresult, initial_citationlist,
                         reference_list[thisrecid] = []
                     if not rec_ids[0] in reference_list[thisrecid]:
                         reference_list[thisrecid].append(rec_ids[0])
-    mesg = "d_references_s done fully"
+    mesg = "done fully"
     write_message(mesg)
     task_update_progress(mesg)
 
@@ -781,17 +792,17 @@ def ref_analyzer(citation_informations, initialresult, initial_citationlist,
     done = 0
     numrecs = len(d_reports_numbers)
     write_message("Phase 3: d_reports_numbers")
-
-    #search for stuff like CERN-TH-4859/87 in list of refs
+    # Search for stuff like CERN-TH-4859/87 in list of refs
     for thisrecid, reportcodes in d_reports_numbers.iteritems():
-        if (done % 1000 == 0):
-            mesg = "d_report_numbers done "+str(done)+" of "+str(numrecs)
+        if done % 1000 == 0:
+            mesg = "done %s of %s" % (done, numrecs)
             write_message(mesg)
-            task_update_progress(mesg)
-        done = done+1
+            task_update_progress("d_reports_numbers " + mesg)
+        done += 1
 
         for reportcode in reportcodes:
             if reportcode:
+                reportcode = standardize_report_number(reportcode)
                 rec_ids = []
                 try:
                     rec_ids = get_recids_matching_query(reportcode, pubrefntag)
@@ -815,7 +826,7 @@ def ref_analyzer(citation_informations, initialresult, initial_citationlist,
                         if not thisrecid in reference_list[recid]:
                             reference_list[recid].append(thisrecid)
 
-    mesg = "d_report_numbers done fully"
+    mesg = "done fully"
     write_message(mesg)
     task_update_progress(mesg)
 
@@ -825,10 +836,10 @@ def ref_analyzer(citation_informations, initialresult, initial_citationlist,
     numrecs = len(d_records_s)
     t4 = os.times()[4]
     for thisrecid, recs in d_records_s.iteritems():
-        if (done % 1000 == 0):
-            mesg = "d_records_s done "+str(done)+" of "+str(numrecs)
+        if done % 1000 == 0:
+            mesg = "done %s of %s" % (done, numrecs)
             write_message(mesg)
-            task_update_progress(mesg)
+            task_update_progress("d_records_s" + mesg)
         done = done+1
         p = recs.replace("\"","")
         #search the publication string like Phys. Lett., B 482 (2000) 417 in 999C5s
@@ -850,7 +861,7 @@ def ref_analyzer(citation_informations, initialresult, initial_citationlist,
                 if not thisrecid in reference_list[rec_id]:
                     reference_list[rec_id].append(thisrecid)
 
-    mesg = "d_records_s done fully"
+    mesg = "done fully"
     write_message(mesg)
     task_update_progress(mesg)
 
