@@ -129,8 +129,7 @@ def get_available_fields_templates():
     record
     """
     templates = get_field_templates()
-    #result = get_empty_fields_templates()
-    result = []
+    result = get_empty_fields_templates()
     for template in templates:
         tplTag = template[3].keys()[0]
         field = template[3][tplTag][0]
@@ -361,7 +360,7 @@ def perform_request_ajax(req, recid, uid, data, isBulk = False, \
         response.update(perform_request_update_record(request_type, recid, \
                                                       uid, cacheMTime, data, \
                                                       hpChanges, undo_redo, \
-                                                      isBulk, ln))
+                                                      isBulk))
     elif request_type in ('autosuggest', 'autocomplete', 'autokeyword'):
         response.update(perform_request_autocomplete(request_type, recid, uid, \
                                                      data))
@@ -386,7 +385,7 @@ def perform_request_ajax(req, recid, uid, data, isBulk = False, \
     elif request_type in ('preview', ):
         response.update(perform_request_preview_record(request_type, recid, uid, data))
     elif request_type in ('get_pdf_url', ):
-        response.update(perform_request_get_pdf_url(recid, uid))
+        response.update(perform_request_get_pdf_url(recid))
     elif request_type in ('record_has_pdf', ):
         response.update(perform_request_record_has_pdf(recid, uid))
     elif request_type in ('refextract', ):

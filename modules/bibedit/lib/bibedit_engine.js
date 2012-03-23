@@ -3233,7 +3233,7 @@ function onDeleteClick(event){
     updateStatus('ready');
     return;
   }
-    // register the undo Handler
+  // register the undo Handler
   var urHandler = prepareUndoHandlerDeleteFields(toDelete);
   addUndoOperation(urHandler);
   var ajaxData = deleteFields(toDelete, urHandler);
@@ -4722,8 +4722,9 @@ function deleteFields(toDeleteStruct, undoRedo){
 
   // If entire fields has been deleted, redraw all fields with the same tag
   // and recolor the full table.
-  for (tag in tagsToRedraw)
+  for (tag in tagsToRedraw) {
       redrawFields(tagsToRedraw[tag]);
+  }
   reColorFields();
 
   return ajaxData;
