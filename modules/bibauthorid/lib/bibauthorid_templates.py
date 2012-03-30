@@ -1720,7 +1720,7 @@ class Template:
     def tmpl_update_hep_name(self, full_name, display_name, email,
                              status, research_field_list,
                              institution_list, phd_advisor_list,
-                             experiment_list, web_page):
+                             experiment_list, web_page, keynumber):
         """
         Create form to update a hep name
         """
@@ -1951,7 +1951,7 @@ class Template:
                         type=hidden value=/spires/hepnames/hepnames_msgupd.file name=email_msg_file>
                         <INPUT type=hidden value=/spires/hepnames/hepnames_resp_msg.file
                         name=response_msg_file><INPUT type=hidden value=0 name=debug>
-                        <INPUT type=hidden value="1095498" name=key>
+                        <INPUT type=hidden value="%(keynumber)s" name=key>
                         <INPUT type=hidden value="" name=field>
                         <INPUT type=hidden value="" name=current1>
                         <INPUT type=hidden value="" name=inst2><INPUT type=hidden value="" name=rank2>
@@ -2100,7 +2100,8 @@ class Template:
                               'is_deceased': is_deceased,
                               'research_field_html': research_field_html,
                               'institutions_html': institutions_html,
-                              'experiments_html' : experiments_html
+                              'experiments_html' : experiments_html,
+                              'keynumber' : keynumber
                              })
         return "\n".join(html)
 
