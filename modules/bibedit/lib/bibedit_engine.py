@@ -1297,7 +1297,7 @@ def _get_formated_record(record, new_window):
     """
     from invenio.config import CFG_WEBSTYLE_TEMPLATE_SKIN
 
-    xml_record = bibrecord.record_xml_output(record)
+    xml_record = wash_for_xml(bibrecord.record_xml_output(record))
 
     result = ''
     if new_window:
