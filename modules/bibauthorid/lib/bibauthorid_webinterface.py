@@ -58,6 +58,11 @@ import invenio.bibauthorid_config as bconfig
 
 from invenio.bibauthorid_frontinterface import get_bibrefrec_name_string
 
+# Imports related to hepnames update form
+from invenio.bibedit_utils import get_bibrecord
+from invenio.bibrecord import record_get_field_value, record_get_field_values, \
+                              record_get_field_instances, field_get_subfield_values
+
 
 TEMPLATE = load('bibauthorid')
 
@@ -2383,6 +2388,11 @@ class WebInterfaceBibAuthorIDPages(WebInterfaceDirectory):
         display_name = record_get_field_value(hepname_bibrec, tag="880", ind1="", ind2="", code="a")
         email = record_get_field_value(hepname_bibrec, tag="371", ind1="", ind2="", code="m")
         status = record_get_field_value(hepname_bibrec, tag="100", ind1="", ind2="", code="g")
+        keynumber = record_get_field_value(hepname_bibrec, tag="970", ind1="", ind2="", code="a")
+        try:
+            keynumber = keynumber.split('-')[1]
+        except IndexError:
+            pass
         research_field_list = record_get_field_values(hepname_bibrec, tag="650", ind1="1", ind2="7", code="a")
         institution_list = []
         for instance in record_get_field_instances(hepname_bibrec, tag="371", ind1="", ind2=""):
@@ -2408,7 +2418,7 @@ class WebInterfaceBibAuthorIDPages(WebInterfaceDirectory):
         body = TEMPLATE.tmpl_update_hep_name(full_name, display_name, email,
                                              status, research_field_list,
                                              institution_list, phd_advisor_list,
-                                             experiment_list, web_page)
+                                             experiment_list, web_page, keynumber)
         title = "HEPNames"
         return page(title=title,
                     metaheaderadd = TEMPLATE.tmpl_update_hep_name_headers(),
