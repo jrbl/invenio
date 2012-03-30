@@ -2931,7 +2931,7 @@ function check_subjects_KB(value) {
      */
     /* If KB is not defined in the system, just return value*/
     if ($.inArray(gKBSubject,gAVAILABLE_KBS) == -1)
-        return value
+        return value;
     var response='';
     $.ajaxSetup({async:false});
     $.getJSON("/kb/export",
@@ -3040,6 +3040,7 @@ function onContentChange(value, th){
         /* If editing subject field, check KB */
         if (tag_ind == '65017' && field[0][subfieldIndex][0] == 'a') {
             value = check_subjects_KB(value);
+            newValue = value;
         }
         /* Check if there are subfields inside of the content value
          * e.g 999C5 $$mThis a test$$hThis is a second subfield */
