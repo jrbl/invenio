@@ -1825,13 +1825,14 @@ function addFieldAddSubfieldEditor(jQRowGroupID, fieldTmpNo, defaultCode, defaul
   $('#btnAddFieldRemove_' + fieldTmpNo + '_' + subfieldTmpNo).bind('click', function(){
     $('#rowAddField_' + this.id.slice(this.id.indexOf('_')+1)).remove();
   });
-  $('#txtAddFieldValue_' + fieldTmpNo + '_' + subfieldTmpNo).bind(
-    'focus', function(){
+  $('#txtAddFieldValue_' + fieldTmpNo + '_' + subfieldTmpNo).on(
+    'focus', function(e){
       if ($(this).hasClass('bibEditVolatileSubfield')){
         $(this).select();
         $(this).removeClass("bibEditVolatileSubfield");
       }
-    });
+    }
+  ).on("mouseup", function(e) { e.preventDefault(); });
   var contentEditorId = '#txtAddFieldValue_' + fieldTmpNo + '_' + subfieldTmpNo;
   $(contentEditorId).bind('keyup', function(e){
     onAddFieldValueKeyPressed(e, jQRowGroupID, fieldTmpNo, subfieldTmpNo);
@@ -1840,14 +1841,20 @@ function addFieldAddSubfieldEditor(jQRowGroupID, fieldTmpNo, defaultCode, defaul
 }
 
 function onAddFieldJumpToNextSubfield(jQRowGroupID, fieldTmpNo, subfieldTmpNo){
-  // checking, how many subfields are there and if last, submitting the form
-  var numberOfSubfields = $(jQRowGroupID).data('freeSubfieldTmpNo');
-  if (subfieldTmpNo < (numberOfSubfields - 1)){
-    var elementCode = "#txtAddFieldSubfieldCode_" + fieldTmpNo + "_" + (subfieldTmpNo + 1);
-    $(elementCode)[0].focus();
-  }
-  else{
+  /* Gets all the open text boxes for the current field and submits the changes
+   * if it is the last one.
+   */
+  var fieldOpenInputs = $('input[id^="txtAddFieldValue_' + fieldTmpNo + '"]');
+
+  var currentInputSelector = "#txtAddFieldValue_" + fieldTmpNo + "_" + subfieldTmpNo;
+  var currentInput = $(currentInputSelector);
+  var currentInputIndex = fieldOpenInputs.index(currentInput);
+
+  if (currentInputIndex === fieldOpenInputs.length-1) {
     addFieldSave(fieldTmpNo);
+  }
+  else {
+    fieldOpenInputs[currentInputIndex+1].focus();
   }
 }
 
