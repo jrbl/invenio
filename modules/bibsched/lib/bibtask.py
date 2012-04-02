@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##
 ## This file is part of Invenio.
-## Copyright (C) 2007, 2008, 2009, 2010, 2011 CERN.
+## Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012 CERN.
 ##
 ## Invenio is free software; you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
@@ -173,6 +173,51 @@ def task_low_level_submission(name, user, *argv):
                 special_name = opt[1]
         return special_name
 
+    def get_runtime(argv):
+        """Try to get the runtime by analysing the arguments."""
+        runtime = time.strftime("%Y-%m-%d %H:%M:%S")
+        argv = list(argv)
+        while True:
+            try:
+                opts, args = getopt.gnu_getopt(argv, 't:', ['runtime='])
+            except getopt.GetoptError, err:
+                ## We remove one by one all the non recognized parameters
+                if len(err.opt) > 1:
+                    argv = [arg for arg in argv if arg != '--%s' % err.opt and not arg.startswith('--%s=' % err.opt)]
+                else:
+                    argv = [arg for arg in argv if not arg.startswith('-%s' % err.opt)]
+            else:
+                break
+        for opt in opts:
+            if opt[0] in ('-t', '--runtime'):
+                try:
+                    runtime = get_datetime(opt[1])
+                except ValueError:
+                    pass
+        return runtime
+
+    def get_sleeptime(argv):
+        """Try to get the runtime by analysing the arguments."""
+        sleeptime = ""
+        argv = list(argv)
+        while True:
+            try:
+                opts, args = getopt.gnu_getopt(argv, 's:', ['sleeptime='])
+            except getopt.GetoptError, err:
+                ## We remove one by one all the non recognized parameters
+                if len(err.opt) > 1:
+                    argv = [arg for arg in argv if arg != '--%s' % err.opt and not arg.startswith('--%s=' % err.opt)]
+                else:
+                    argv = [arg for arg in argv if not arg.startswith('-%s' % err.opt)]
+            else:
+                break
+        for opt in opts:
+            if opt[0] in ('-s', '--sleeptime'):
+                try:
+                    sleeptime = opt[1]
+                except ValueError:
+                    pass
+        return sleeptime
 
     task_id = None
     try:
@@ -187,6 +232,8 @@ def task_low_level_submission(name, user, *argv):
         argv = new_argv
         priority = get_priority(argv)
         special_name = get_special_name(argv)
+        runtime = get_runtime(argv)
+        sleeptime = get_sleeptime(argv)
         argv = tuple([os.path.join(CFG_BINDIR, name)] + list(argv))
 
         if special_name:
@@ -197,8 +244,8 @@ def task_low_level_submission(name, user, *argv):
         ## submit task:
         task_id = run_sql("""INSERT INTO schTASK (proc,user,
             runtime,sleeptime,status,progress,arguments,priority)
-            VALUES (%s,%s,NOW(),'','WAITING',%s,%s,%s)""",
-            (name, user, verbose_argv, marshal.dumps(argv), priority))
+            VALUES (%s,%s,%s,%s,'WAITING',%s,%s,%s)""",
+            (name, user, runtime, sleeptime, verbose_argv, marshal.dumps(argv), priority))
 
     except Exception:
         register_exception(alert_admin=True)
