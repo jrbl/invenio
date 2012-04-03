@@ -626,9 +626,9 @@ function updateToolbar(enable) {
         if (record_has_pdf()) {
           $('#img_open_pdf').unbind('click', onOpenPDFClick).bind('click', onOpenPDFClick).removeClass(
           'bibEditImgCtrlDisabled').addClass('bibEditImgCtrlEnabled');
+          $('#img_run_refextract').unbind('click', onRefExtractClick).bind('click', onRefExtractClick).removeClass(
+          'bibEditImgCtrlDisabled').addClass('bibEditImgCtrlEnabled');
         }
-        $('#img_run_refextract').unbind('click', onRefExtractClick).bind('click', onRefExtractClick).removeClass(
-        'bibEditImgCtrlDisabled').addClass('bibEditImgCtrlEnabled');
         $('.revisionLine').show();
     }
     else {
