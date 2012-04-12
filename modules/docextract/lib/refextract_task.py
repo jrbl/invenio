@@ -151,14 +151,15 @@ def task_run_core(recid, bibcatalog_system=None):
                           inspire=inspire,
                           overwrite=not task_get_option('no-overwrite'))
         write_message("Extracted references for %s" % recid)
+
+        # Create a RT ticket if necessary
+        if task_get_option('new') or task_get_option('create-ticket'):
+            create_ticket(recid, bibcatalog_system)
     except FullTextNotAvailable:
         write_message("No full text available for %s" % recid)
     except RecordHasReferences:
         write_message("Record %s has references, skipping" % recid)
 
-    # Create a RT ticket if necessary
-    if task_get_option('new') or task_get_option('create-ticket'):
-        create_ticket(recid, bibcatalog_system)
 
 def main():
     """Constructs the refextract bibtask."""
