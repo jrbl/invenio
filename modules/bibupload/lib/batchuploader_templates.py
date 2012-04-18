@@ -115,8 +115,21 @@ class Template:
             width: 150px;
         }
 
-        span.highlight {
-            background-color: #FFFF00;
+        .batchuploader_error {
+            max-width: 650px;
+            max-height: 326px;
+            border:solid 1px #CC0000;
+            background:#F7CBCA;
+            overflow: auto;
+        }
+
+        #batchuploader_error_list{
+            list-style-type: none;
+            padding-left: 10px;
+        }
+
+        #batchuploader_error_list li{
+            margin-bottom: 10px;
         }
         </style>
 
@@ -476,15 +489,21 @@ class Template:
         
         priority_map = {'1' : 'Normal', '2': 'High'}
         display_schedule = (submit_date != '')
-        schedule_msg = """%(text_confirm6)s <span class="highlight">%(submit_date)s</span> at <span class="highlight">%(submit_time)s</span>
+        schedule_msg = """%(text_confirm6)s <strong>%(submit_date)s</strong> at <strong>%(submit_time)s</strong>
                             <br/><br/>""" % {'text_confirm6': _('The job is scheduled to run on'),
                                              'submit_date': submit_date,
                                              'submit_time': submit_time}
-        errors_textarea = """%(text_error1)s <br />
-                             <textarea style="background-color:#F6CECE" rows="20" cols="80"> %(error_msgs)s </textarea>
-                             <br /><br />
-                          """ % {'text_error1': '<div class="clean_error">Some errors have been found during the upload simulation</div>',
-                                 'error_msgs': errors_upload}
+
+        error_msgs = ['<ol id="batchuploader_error_list">']
+        for error in errors_upload.splitlines():
+            error_msgs.append("<li>%s</li>" % error)
+        error_msgs.append("</ol>")
+
+        errors_textarea = """%(text_error1)s
+                              <div class="batchuploader_error"> %(error_msgs)s </div>
+                              <br />
+                           """ % {'text_error1': '<div class="clean_error">Some errors have been found during the upload simulation</div>',
+                                  'error_msgs': '\n'.join(error_msgs)}
 
         body_content = """<form class="uploadform" method="post" action="%(site_url)s/batchuploader/metasubmit">""" \
                                        % {'site_url': CFG_SITE_URL}
@@ -496,13 +515,13 @@ class Template:
                         <input type="hidden" name="submit_time" value=%(submit_time)s>
                         <input type="hidden" name="filename" value=%(filename)s>
                         <input type="hidden" name="priority" value=%(priority)s>
-                        <div> %(errors_textarea)s %(text_confirm1)s <span class="highlight">%(filetype)s</span> %(text_confirm2)s <span class="highlight">%(filename)s</span> %(text_confirm3)s: <br /><br />
+                        <div> %(errors_textarea)s %(text_confirm1)s <strong>%(filetype)s</strong> %(text_confirm2)s <strong>%(filename)s</strong> %(text_confirm3)s: <br /><br />
                             <textarea style="background-color: lightyellow" name="metafile" rows="20" cols="80">%(filecontent)s</textarea>
                             <br /><br />
-                            %(text_confirm4)s <span class="highlight">%(priority)s</span> %(text_confirm5)s <span class="highlight">%(mode)s</span>.
+                            %(text_confirm4)s <strong>%(priority)s</strong> %(text_confirm5)s <strong>%(mode)s</strong>.
                             <br/><br/>
                             %(schedule_msg)s
-                            %(text_confirm7)s (<span class="highlight">%(num_rec)s</span> %(text_confirm8)s)
+                            %(text_confirm7)s (<strong>%(num_rec)s</strong> %(text_confirm8)s)
                             <table>
                             <tr>
                                 <td><input type="submit" value="Confirm" class="adminbutton" %(confirm_disabled)s></td>
