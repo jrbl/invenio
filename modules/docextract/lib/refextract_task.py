@@ -134,7 +134,7 @@ def create_ticket(recid, bibcatalog_system, queue=CFG_REFEXTRACT_TICKET_QUEUE):
 
         for report_tag in record_get_field_instances(record, "037"):
             for category in field_get_subfield_values(report_tag, 'c'):
-                if category in ['astro-ph']:
+                if category.startswith('astro-ph'):
                     # We do not curate astro-ph
                     return
 
