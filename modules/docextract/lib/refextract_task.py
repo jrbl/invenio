@@ -122,6 +122,16 @@ def create_ticket(recid, bibcatalog_system, queue=CFG_REFEXTRACT_TICKET_QUEUE):
         report_number = ""
         record = get_bibrecord(recid)
 
+        in_hep = False
+        for collection_tag in record_get_field_instances(record, "980"):
+            for collection in field_get_subfield_values(collection_tag, 'a'):
+                if collection == 'HEP':
+                    in_hep = True
+
+        # Only create tickets for HEP
+        if not in_hep:
+            return
+
         for report_tag in record_get_field_instances(record, "037"):
             for category in field_get_subfield_values(report_tag, 'c'):
                 if category in ['astro-ph']:
