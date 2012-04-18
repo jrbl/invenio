@@ -178,6 +178,7 @@ class Template:
         body_content += """
 <div id="content">
 <fieldset>
+<div id="error_div"></div>
 """
         if error != 0:
             if error == 1:
@@ -292,15 +293,6 @@ class Template:
              {'x_url1_open': "<a href=\"%s/batchuploader/history\">" % CFG_SITE_URL,
               'x_url1_close': "</a>",
               'x_url2_open': "<a href=\"%s/batchuploader/metadata\">" % CFG_SITE_URL,
-              'x_url2_close': "</a>"}
-        return body_content
-
-    def tmpl_invalid_marcxml(self, ln=CFG_SITE_LANG):
-        """ Displays message when the MARCXML is not valid """
-        _ = gettext_set_language(ln)
-        body_content = """<br/>"""
-        body_content += _("The MARCXML submitted is not valid. Please, review the file and %(x_url2_open)sresubmit it%(x_url2_close)s") %\
-             {'x_url2_open': "<a href=\"%s/batchuploader/metadata\">" % CFG_SITE_URL,
               'x_url2_close': "</a>"}
         return body_content
 
@@ -482,12 +474,13 @@ class Template:
 
     def tmpl_display_confirm_page(self, ln=CFG_SITE_LANG,
                 metafile=None, filetype=None, mode=None, submit_date=None,
-                submit_time=None, file_name=None, priority=None, errors_upload=''):
+                submit_time=None, file_name=None, priority=None,
+                errors_upload='', strong_tags=False):
         """ Display a confirmation page before uploading metadata
         """
         _ = gettext_set_language(ln)
         
-        priority_map = {'1' : 'Normal', '2': 'High'}
+        priority_map = {'1' : 'Normal', '5': 'High'}
         display_schedule = (submit_date != '')
         schedule_msg = """%(text_confirm6)s <strong>%(submit_date)s</strong> at <strong>%(submit_time)s</strong>
                             <br/><br/>""" % {'text_confirm6': _('The job is scheduled to run on'),
@@ -505,6 +498,9 @@ class Template:
                            """ % {'text_error1': '<div class="clean_error">Some errors have been found during the upload simulation</div>',
                                   'error_msgs': '\n'.join(error_msgs)}
 
+        strong_tags_html = """WARNING: Strong tags is set to <strong>replace
+                              </strong> so all tags will be replaced<br/><br/>"""
+
         body_content = """<form class="uploadform" method="post" action="%(site_url)s/batchuploader/metasubmit">""" \
                                        % {'site_url': CFG_SITE_URL}
         body_content += """
@@ -514,12 +510,14 @@ class Template:
                         <input type="hidden" name="submit_date" value=%(submit_date)s>
                         <input type="hidden" name="submit_time" value=%(submit_time)s>
                         <input type="hidden" name="filename" value=%(filename)s>
-                        <input type="hidden" name="priority" value=%(priority)s>
+                        <input type="hidden" name="priority" value=%(priority_num)s>
+                        <input type="hidden" name="strong_tags" value=%(strong_tags)s>
                         <div> %(errors_textarea)s %(text_confirm1)s <strong>%(filetype)s</strong> %(text_confirm2)s <strong>%(filename)s</strong> %(text_confirm3)s: <br /><br />
                             <textarea style="background-color: lightyellow" name="metafile" rows="20" cols="80">%(filecontent)s</textarea>
                             <br /><br />
-                            %(text_confirm4)s <strong>%(priority)s</strong> %(text_confirm5)s <strong>%(mode)s</strong>.
+                            %(text_confirm4)s <strong>%(priority_txt)s</strong> %(text_confirm5)s <strong>%(mode)s</strong>.
                             <br/><br/>
+                            %(strong_tags_txt)s
                             %(schedule_msg)s
                             %(text_confirm7)s (<strong>%(num_rec)s</strong> %(text_confirm8)s)
                             <table>
@@ -540,11 +538,14 @@ class Template:
                                'filetype': filetype,
                                'filename': file_name,
                                'filecontent': metafile.value,
-                               'priority': priority_map[priority],
+                               'priority_num': priority,
+                               'priority_txt': priority_map[priority],
+                               'strong_tags': strong_tags,
                                'mode': mode,
                                'num_rec': metafile.value.count('<record>'),
                                'submit_date': submit_date,
                                'submit_time': submit_time,
+                               'strong_tags_txt': strong_tags == "replace" and strong_tags_html or '',
                                'errors_textarea': errors_upload and errors_textarea or '<div class="clean_ok">No errors were found during the upload simulation</div><br/>',
                                'confirm_disabled': errors_upload and 'DISABLED style="background:grey;"' or ''}
         body_content += """</div></form> """

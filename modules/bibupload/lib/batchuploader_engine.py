@@ -169,7 +169,7 @@ def metadata_upload(req, metafile=None, filetype=None, mode=None, exec_date=None
     req.content_type = "text/html"
     req.send_http_header()
 
-    error_codes = {'not_authorized': 1, 'invalid_marc': 2}
+    error_codes = {'not_authorized': 1}
     # write temporary file:
     if filetype != 'marcxml':
         metafile = _transform_input_to_marcxml(file_input=metafile)
@@ -188,15 +188,6 @@ def metadata_upload(req, metafile=None, filetype=None, mode=None, exec_date=None
         allow = _check_client_can_submit_file(req=req, metafile=metafile, webupload=1, ln=ln)
         if allow[0] != 0:
             return (error_codes['not_authorized'], allow[1])
-
-    # check MARCXML validity
-    if filetype == 'marcxml':
-        # check validity of marcxml
-        xmlmarclint_path = CFG_BINDIR + '/xmlmarclint'
-        xmlmarclint_output, dummy1, dummy2 = run_shell_command('%s %s' % (xmlmarclint_path, filename))
-        if xmlmarclint_output != 0:
-            msg = "[ERROR] MARCXML is not valid."
-            return (error_codes['invalid_marc'], msg)
 
     # run upload command:
     params = [

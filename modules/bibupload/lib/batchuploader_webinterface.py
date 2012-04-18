@@ -23,6 +23,7 @@ __revision__ = "$Id$"
 
 __lastupdated__ = """$Date$"""
 
+from invenio.webinterface_handler_wsgi_utils import Field
 from invenio.config import CFG_SITE_SECURE_URL
 from invenio.urlutils import redirect_to_url
 from invenio.messages import gettext_set_language
@@ -181,7 +182,7 @@ class WebInterfaceBatchUploaderPages(WebInterfaceDirectory):
         # Check if the page is directly accessed
         if argd['metafile']  == None:
             redirect_to_url(req, "%s/batchuploader/metadata"
-            % (CFG_SITE_URL))
+            % (CFG_SITE_SECURE_URL))
         
         not_authorized = user_authorization(req, argd['ln'])
         if not_authorized:
@@ -209,12 +210,8 @@ class WebInterfaceBatchUploaderPages(WebInterfaceDirectory):
         else:
             uid = getUid(req)
             body = batchuploader_templates.tmpl_display_menu(argd['ln'])
-            if auth_code == 2: # invalid MARCXML
-                body += batchuploader_templates.tmpl_invalid_marcxml(argd['ln'])
-                title = _("Invalid MARCXML")
-            else:
-                body += batchuploader_templates.tmpl_upload_successful(argd['ln'])
-                title = _("Upload successful")
+            body += batchuploader_templates.tmpl_upload_successful(argd['ln'])
+            title = _("Upload successful")
             navtrail = '''<a class="navtrail" href="%s/batchuploader/metadata">%s</a>''' % \
                             (CFG_SITE_SECURE_URL, _("Metadata batch upload"))
             return page(title = title,
@@ -236,13 +233,14 @@ class WebInterfaceBatchUploaderPages(WebInterfaceDirectory):
                                    'submit_date': (str, None),
                                    'submit_time': (str, None),
                                    'filename': (str, None),
-                                   'priority': (str, None)})
+                                   'priority': (str, None),
+                                   'strong_tags': (str, None)})
         _ = gettext_set_language(argd['ln'])
 
         # Check if the page is directly accessed or no file selected
         if not argd['metafile'].value:
             redirect_to_url(req, "%s/batchuploader/metadata"
-            % (CFG_SITE_URL))
+            % (CFG_SITE_SECURE_URL))
 
         date = argd['submit_date'] not in ['yyyy-mm-dd', ''] \
                 and argd['submit_date'] or ''
@@ -253,11 +251,12 @@ class WebInterfaceBatchUploaderPages(WebInterfaceDirectory):
 
         body = batchuploader_templates.tmpl_display_confirm_page(argd['ln'],
                 argd['metafile'], argd['filetype'], argd['mode'], date,
-                time, argd['filename'], argd['priority'], errors_upload)
+                time, argd['filename'], argd['priority'], errors_upload,
+                argd['strong_tags'])
 
         uid = getUid(req)
         navtrail = '''<a class="navtrail" href="%s/batchuploader/metadata">%s</a>''' % \
-                    (CFG_SITE_URL, _("Metadata batch upload"))
+                    (CFG_SITE_SECURE_URL, _("Metadata batch upload"))
         title = 'Confirm your actions'
         return page(title = title,
                     body = body,
