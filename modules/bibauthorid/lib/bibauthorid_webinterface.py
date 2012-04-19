@@ -1010,6 +1010,18 @@ class WebInterfaceBibAuthorIDPages(WebInterfaceDirectory):
             return bibref_check_required
 
         for t in ticket:
+            #FIXME: Net to catch a bug! It happens that self._ticket_review_bibref_check(req) return ""
+            #even if a ticket exists such that bibref is not table:ref,rec but only rec.
+            #Did not manage to reproduce in controlled conditions and exception dump does not include
+            #enough information, needs debug info dump in order to be fixable. This performs the dump,
+            #so we know what to look for.
+            if not webapi.is_valid_bibref(t['bibref']):
+                import pickle,datetime
+                date=str(datetime.datetime.now()).replace(" ",'.')
+                o = open("/tmp/BibAuthorID-temporary-dbg-%s" %date,'w')
+                pickle.dump(session,o)
+                o.close()
+
             t['status'] = webapi.check_transaction_permissions(uid,
                                                                t['bibref'],
                                                                t['pid'],
