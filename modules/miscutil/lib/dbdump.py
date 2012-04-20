@@ -81,7 +81,7 @@ def _dump_database(dirname, filename):
         sys.exit(1)
     cmd += " --skip-opt --add-drop-table --add-locks --create-options " \
            " --quick --extended-insert --set-charset --disable-keys " \
-           " --host=%s --user=%s --password=%s %s" % \
+           " --host=%s --user=%s --password=%s %s | /bin/gzip -c " % \
            (escape_shell_arg(CFG_DATABASE_HOST),
             escape_shell_arg(CFG_DATABASE_USER),
             escape_shell_arg(CFG_DATABASE_PASS),
@@ -136,7 +136,7 @@ def _dbdump_run_task_core():
     output_dir = task_get_option('output', CFG_LOGDIR)
     output_num = task_get_option('number', 5)
     output_fil_prefix = CFG_DATABASE_NAME + '-dbdump-'
-    output_fil_suffix = task_get_task_param('task_starting_time').replace(' ','_') + '.sql'
+    output_fil_suffix = task_get_task_param('task_starting_time').replace(' ','_') + '.sql.gz'
     output_fil = output_fil_prefix + output_fil_suffix
     write_message("Reading parameters ended")
     # make dump:
