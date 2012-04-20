@@ -65,7 +65,7 @@ function displayRecord(){
   }
   // Close and display table.
   table += '</table>';
-  $('#bibEditContent').append(table);
+  $('#bibEditContentTable').append(table);
   // now displaying the remaining controls
   for (changeNr in gHoldingPenChanges){
       addChangeControl(changeNr, false);
@@ -399,7 +399,7 @@ function addFieldAddedControl(changeNo){
       applyButton + rejectButton +
       "</div></div>";
 
-  $('#bibEditContent').append(content);
+  $('#bibEditContentTable').append(content);
 }
 
 function removeAllChangeControls(){
@@ -584,12 +584,13 @@ function createGeneralControlsPanel(){
   return result;
 }
 
+/// end of the Holding Pen Connected functions
+
 function createTopToolbar(){
   /* Generate BibEdit top toolbar */
 
-  $('.headline_div').after('<div class="revisionLine"></div>');
-  // When Special modes are available there will be a loop through all of
-  // them and the appropriate icons will be added
+  $('.headline_div').remove();
+
   var icon_doc_preview = "<img id='img_preview' class='bibEditImgCtrlDisabled' \n\
                           src='/img/document-preview.png' width='40px' \n\
                           height='40px' title='Preview record' />";
@@ -597,15 +598,14 @@ function createTopToolbar(){
                           src='/img/application_pdf.png' width='40px' \n\
                           height='40px' title='Open PDF file' />";
   var icon_run_refextract = "<img id='img_run_refextract' class='bibEditImgCtrlDisabled' \n\
-                             src='/img/ref_extract.png' width='40px' \n\
-                             height='37px' title='Run reference extractor on this record' />";
+                             src='/img/ref_extract.png' width='42px' \n\
+                             height='40px' title='Run reference extractor on this record' />";
 
 
-  var toolbar_html = "<div id='topToolbarRight'>" +  icon_open_pdf + icon_doc_preview + "</div>";
-  toolbar_html += "<div id='topToolbarLeft'>" + icon_run_refextract + "</div>";
-  toolbar_html += "<div id='top_toolbar_hr'><hr></div>"
+  var toolbar_html = "<div class='floatRight'>" + icon_doc_preview + "</div>" + "<div class='floatRight'>" + icon_open_pdf + "</div>";
+  toolbar_html += "<div class='floatLeft'>" + icon_run_refextract + "</div>";
+  $('#Toptoolbar').html(toolbar_html);
 
-  $('.headline_div').html(toolbar_html);
   $('#img_preview').bind('click', onPreviewClick);
   $('#img_open_pdf').bind('click', onOpenPDFClick);
   $('#img_run_refextract').bind('click', onRefExtractClick);
@@ -641,8 +641,6 @@ function updateToolbar(enable) {
         $('.revisionLine').hide();
     }
 }
-
-/// end of the Holding Pen Connected functions
 
 function createAddFieldForm(fieldTmpNo, fieldTemplateNo, def_field_tag, def_ind1, def_ind2){
   /*
@@ -854,9 +852,9 @@ function displayMessage(msgCode, keepContent, args){
       msg = 'Result code: <b>' + msgCode + '</b>';
   }
   if (!keepContent)
-    $('#bibEditContent').html('<div id="bibEditMessage">' + msg + '</div>');
+    $('#bibEditContentTable').html('<div id="bibEditMessage">' + msg + '</div>');
   else
-    $('#bibEditContent').prepend('<div id="bibEditMessage">' + msg + '</div>');
+    $('#bibEditMessage').html(msg).slideDown('slow');
 }
 
 function displayNewRecordScreen(){
@@ -882,7 +880,7 @@ function displayNewRecordScreen(){
   '<td>' + gRECORD_TEMPLATES[i][2] + '</td></tr>';
   }
   msg += '</table></li>';
-  $('#bibEditContent').html(msg);
+  $('#bibEditContentTable').html(msg);
 }
 
 function displayCacheOutdatedScreen(requestType){
@@ -891,13 +889,13 @@ function displayCacheOutdatedScreen(requestType){
    * during editing). Options differ depending on wether the situation was
    * discovered when fetching or when submitting the record.
    */
-  $('#bibEditMessage').remove();
+  $('#bibEditMessage').html('');
   var recordURL = gSITE_URL + '/'+ gSITE_RECORD +'/' + gRecID + '/';
   var viewMARCURL = recordURL + '?of=hm';
   var viewMARCXMLURL = recordURL + '?of=xm';
   var msg = '';
   if (requestType == 'submit')
-    msg = 'Someone has changed this record while you were editing. ' +
+    msg = '<div class="warningMsg">Someone has changed this record while you were editing. ' +
       'You can:<br /><ul>' +
       '<li>View (<b><a href="' + recordURL + '" target="_blank">HTML</a></b>,' +
       ' <b><a href="' + viewMARCURL + '" target="_blank">MARC</a></b>,' +
@@ -907,11 +905,11 @@ function displayCacheOutdatedScreen(requestType){
     'with the latest version by using the merge interface</li>' +
     '<li><a href="#" id="lnkForceSubmit"><b>Force your changes</b></a> ' +
     '(<b>Warning: </b>overwrites the latest version)</li>' +
-    '<li><a href="#" id="lnkDiscardChanges><b>Discard your changes</b></a> ' +
+    '<li><a href="#" id="lnkDiscardChanges"><b>Discard your changes</b></a> ' +
     '(keep the latest version)</li>' +
-    '</ul>';
+    '</ul></div>';
   else if (requestType == 'getRecord')
-    msg = 'You have unsubmitted changes to this record, but someone has ' +
+    msg = '<div class="warningMsg">You have unsubmitted changes to this record, but someone has ' +
       'changed the record while you were editing. You can:<br /><ul>' +
       '<li>View (<b><a href="' + recordURL + '" target="_blank">HTML</a></b>,' +
       ' <b><a href="' + viewMARCURL + '" target="_blank">MARC</a></b>,' +
@@ -924,8 +922,8 @@ function displayCacheOutdatedScreen(requestType){
       '<li>Keep editing. When submitting you will be offered to overwrite ' +
       'the latest version. Click <a href="#" id="lnkRemoveMsg">here' +
       '</a> to remove this message.</li>' +
-      '</ul>';
-  $('#bibEditContent').prepend('<div id="bibEditMessage">' + msg + '</div>');
+      '</ul></div>';
+  $('#bibEditMessage').html(msg).slideDown("slow");
 }
 
 function displayAlert(msgType, args){
@@ -1168,14 +1166,6 @@ function createTemplateList(){
   msg += '</table></li>';
   $('#bibEditTemplateList').html(msg);
 }
-
-jQuery.fn.extend({
-    scrollTo : function(scrollPos) {
-        return this.each(function() {
-            $('#bibEditContent').scrollTop(scrollPos);
-        });
-    }
-});
 
 /*
  * **************************** Functions related to jquery UI dialog ****************************************

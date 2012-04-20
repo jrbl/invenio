@@ -391,11 +391,8 @@ function onAjaxSuccess(json, onSuccess){
       : gSITE_URL + '/'+ gSITE_RECORD +'/edit/';
     return;
   }
-  else if ($.inArray(resCode, [101, 102, 103, 104, 105, 106, 107, 108, 109])
-     != -1){
+  else if ($.inArray(resCode, [101, 102, 103, 104, 105, 106, 107, 108, 109]) != -1) {
     cleanUp(!gNavigatingRecordSet, null, null, true, true);
-    if ($.inArray(resCode, [108, 109]) == -1)
-      $('.headline').text('Record Editor: Record #' + recID);
     displayMessage(resCode);
     if (resCode == 107)
       return;
@@ -542,7 +539,6 @@ function initStateFromHash(){
         if (isNaN(recID)){
           // Invalid record ID.
           cleanUp(true, tmpRecID, 'recID', true);
-          $('.headline').text('Record Editor: Record #' + tmpRecID);
           displayMessage(102);
           updateStatus('error', gRESULT_CODES[102]);
         }
@@ -558,14 +554,12 @@ function initStateFromHash(){
       break;
     case 'newRecord':
       cleanUp(true, '', null, null, true);
-      $('.headline').text('Record Editor: Create new record');
       displayNewRecordScreen();
       bindNewRecordHandlers();
       updateStatus('ready');
       break;
     case 'submit':
       cleanUp(true, '', null, true);
-      $('.headline').text('Record Editor: Record #' + tmpRecID);
       displayMessage(4);
       updateStatus('ready');
       break;
@@ -575,7 +569,6 @@ function initStateFromHash(){
       break;
     case 'deleteRecord':
       cleanUp(true, '', null, true);
-      $('.headline').text('Record Editor: Record #' + tmpRecID);
       displayMessage(10);
       updateStatus('ready');
         break;
@@ -1087,7 +1080,6 @@ function onNewRecordClick(event){
   }
   changeAndSerializeHash({state: 'newRecord'});
   cleanUp(true, '');
-  $('.headline').text('Record Editor: Create new record');
   displayNewRecordScreen();
   bindNewRecordHandlers();
   updateStatus('ready');
@@ -1188,7 +1180,7 @@ function onGetRecordSuccess(json){
       event.preventDefault();
     });
     $('#lnkRemoveMsg').bind('click', function(event){
-      $('#bibEditMessage').remove();
+      $('#bibEditMessage').html('');
       event.preventDefault();
     });
   }
@@ -1551,9 +1543,7 @@ function cleanUp(disableRecBrowser, searchPattern, searchType,
     gNavigatingRecordSet = false;
   }
   // Clear main content area.
-  /*if (resetHeadline)
-    $('.headline').text('Record Editor');*/
-  $('#bibEditContent').empty();
+  $('#bibEditContentTable').empty();
   // Clear search area.
   if (typeof(searchPattern) == 'string' || typeof(searchPattern) == 'number')
     $('#txtSearchPattern').val(searchPattern);
@@ -2319,13 +2309,13 @@ function addFieldSave(fieldTmpNo)
   reColorFields();
   // Scroll and color the new field for a short period.
   var rowGroup = $('#rowGroup_' + tag + '_' + fieldPosition);
+  var newContent = $('#fieldTag_' + tag + '_' + fieldPosition);
   if (insertPosition === undefined) {
-    $('#bibEditContent').scrollTop($(rowGroup).position().top);
+    $(newContent).focus();
   }
   $(rowGroup).effect('highlight', {color: gNEW_CONTENT_COLOR},
          gNEW_CONTENT_COLOR_FADE_DURATION);
 }
-
 
 function onAddSubfieldsClick(img){
   /*
@@ -2535,6 +2525,8 @@ function convertFieldIntoEditable(cell, shouldSelect){
         var tag = tmpArray[1], fieldPosition = tmpArray[2],
         subfieldIndex = tmpArray[3];
 
+        /* Focus on field recently changed */
+        $("#fieldTag_" + tag + "_" + fieldPosition).focus();
         for (changeNum in gHoldingPenChanges){
           change =  gHoldingPenChanges[changeNum];
           if (change.tag == tag &&
@@ -3144,9 +3136,6 @@ function onContentChange(value, th){
   }
   addUndoOperation(urHandler);
 
-  // Save the scroll current position before updating the interface
-  var scrollPos = $("#bibEditContent").scrollTop();
-
   // Generate AJAX request
   switch (cellType) {
       case 'subfieldTag':
@@ -3174,9 +3163,6 @@ function onContentChange(value, th){
       idPrefix = '"#content_';
   }
 
-  /* Scroll to previous position */
-  $(idPrefix.replace(/\"/g,"") + tag + '_' + fieldPosition + '_' + subfieldIndex).scrollTo(scrollPos);
-  /* Create fading effect to show the cell modified */
   setTimeout('$(' + idPrefix + tag + '_' + fieldPosition + '_' + subfieldIndex +
       '").effect("highlight", {color: gNEW_CONTENT_COLOR}, ' +
       'gNEW_CONTENT_COLOR_FADE_DURATION)', gNEW_CONTENT_HIGHLIGHT_DELAY);
