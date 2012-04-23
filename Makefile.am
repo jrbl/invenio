@@ -151,6 +151,9 @@ install-jquery-plugins:
 	wget http://www.uploadify.com/wp-content/uploads/uploadify-v2.1.4.zip -O uploadify.zip && \
 	wget http://www.datatables.net/download/build/jquery.dataTables.min.js && \
 	wget http://keith-wood.name/zip/jquery.bookmark.package-1.4.0.zip && \
+	wget http://labs.abeautifulsite.net/archived/jquery-fileTree/jquery.fileTree-1.01.zip \
+	unzip jquery.fileTree-1.01.zip && \
+	rm jquery.fileTree-1.01.zip && \
 	unzip jquery.tablesorter.zip && \
 	rm jquery.tablesorter.zip && \
 	rm -rf uploadify && \

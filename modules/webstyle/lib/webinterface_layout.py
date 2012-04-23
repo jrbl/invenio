@@ -177,6 +177,13 @@ except:
     WebInterfaceDocumentationPages = WebInterfaceDumbPages
 
 try:
+    from invenio.webdoc_info_webinterface import WebInterfaceInfoPages
+except:
+    register_exception(alert_admin=True, subject='EMERGENCY')
+    WebInterfaceInfoPages = WebInterfaceDumbPages
+
+
+try:
     from invenio.bibexport_method_fieldexporter_webinterface import \
          WebInterfaceFieldExporterPages
 except:
@@ -286,6 +293,7 @@ class WebInterfaceInvenio(WebInterfaceSearchInterfacePages):
         'person',
         'bibsword',
         'author',
+        'info',
         ] + test_exports + openaire_exports
 
     def __init__(self):
@@ -310,6 +318,7 @@ class WebInterfaceInvenio(WebInterfaceSearchInterfacePages):
     stats = WebInterfaceStatsPages()
     journal = WebInterfaceJournalPages()
     help = WebInterfaceDocumentationPages()
+    info = WebInterfaceInfoPages()
     unapi = WebInterfaceUnAPIPages()
     exporter = WebInterfaceFieldExporterPages()
     kb = WebInterfaceBibKnowledgePages()
