@@ -100,7 +100,7 @@ def citation_exec(rank_method_code, name, config):
                 # user have asked to citation-index specific records
                 # only, so we should not update citation indexer's
                 # last run time stamp information
-                begin_date = None
+                index_update_time = None
             intoDB(dic, index_update_time, rank_method_code)
         else:
             write_message("No need to update the indexes for citations.")
