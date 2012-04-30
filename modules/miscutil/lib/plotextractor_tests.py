@@ -31,6 +31,8 @@ from invenio.plotextractor import put_it_together, \
 from invenio.plotextractor_output_utils import remove_dups, \
                                                get_converted_image_name
 
+from plotextractor_getter import harvest_single
+
 from invenio.config import CFG_TMPDIR, CFG_SITE_URL
 from invenio.testutils import make_test_suite, run_test_suite
 from invenio.shellutils import run_shell_command
@@ -318,9 +320,17 @@ class TestGetConvertedImageName(unittest.TestCase):
         converted_image = get_converted_image_name(image)
         self.assertTrue(converted_image == '/path/to/image.png', 'didn\'t change extension')
 
+class TestGetter(unittest.TestCase):
+
+    def test_harvest_single(self):
+        """plotextractor - check harvest_single"""
+        tarball, pdf = harvest_single('arXiv:1204.6260', '/tmp', ('pdf', 'tarball'))
+        self.assertTrue(pdf != None, "PDF is of unknown type")
+        self.assertTrue(tarball != None, "Tarball is of unknown type")
+
 TEST_SUITE = make_test_suite(PutItTogetherTest, TestFindOpenAndCloseBraces, \
                              TestIntelligentlyFindFilenames, TestAssembleCaption, TestRemoveDups, \
-                             TestGetConvertedImageName) # FIXME
+                             TestGetConvertedImageName, TestGetter) # FIXME
 
 if __name__ == "__main__":
     run_test_suite(TEST_SUITE)

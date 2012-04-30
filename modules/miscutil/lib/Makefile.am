@@ -64,7 +64,9 @@ pylib_DATA = __init__.py \
              remote_debugger.py \
              remote_debugger_config.py \
              remote_debugger_wsgi_reload.py \
-             jsonutils.py
+             jsonutils.py \
+             downloadutils.py \
+             downloadutils_tests.py
 
 noinst_DATA = testimport.py \
               kwalitee.py \
