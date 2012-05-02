@@ -597,22 +597,30 @@ function createTopToolbar(){
   var icon_open_pdf = "<img id='img_open_pdf' class='bibEditImgCtrlDisabled' \n\
                           src='/img/application_pdf.png' width='40px' \n\
                           height='40px' title='Open PDF file' />";
+  var icon_print = "<img id='img_print' class='bibEditImgCtrlDisabled' \n\
+                          src='/img/document-print.png' width='40px' \n\
+                          height='40px' title='Print page' />";
   var icon_run_refextract = "<img id='img_run_refextract' class='bibEditImgCtrlDisabled' \n\
                              src='/img/ref_extract.png' width='42px' \n\
                              height='40px' title='Run reference extractor on this record' />";
 
 
-  var toolbar_html = "<div class='floatRight'>" + icon_doc_preview + "</div>" + "<div class='floatRight'>" + icon_open_pdf + "</div>";
+  var toolbar_html = "<div class='floatRight'>" + icon_doc_preview + "</div>" +
+                     "<div class='floatRight'>" + icon_open_pdf + "</div>" +
+                     "<div class='floatRight'>" + icon_print + "</div>";
   toolbar_html += "<div class='floatLeft'>" + icon_run_refextract + "</div>";
   $('#Toptoolbar').html(toolbar_html);
 
   $('#img_preview').bind('click', onPreviewClick);
   $('#img_open_pdf').bind('click', onOpenPDFClick);
+  $('#img_print').bind('click', onPrintClick);
   $('#img_run_refextract').bind('click', onRefExtractClick);
 
   $('#img_preview').unbind('click').removeClass(
     'bibEditImgCtrlEnabled').addClass('bibEditImgCtrlDisabled');
   $('#img_open_pdf').unbind('click').removeClass(
+    'bibEditImgCtrlEnabled').addClass('bibEditImgCtrlDisabled');
+  $('#img_print').unbind('click').removeClass(
     'bibEditImgCtrlEnabled').addClass('bibEditImgCtrlDisabled');
   $('#img_run_refextract').unbind('click').removeClass(
     'bibEditImgCtrlEnabled').addClass('bibEditImgCtrlDisabled');
@@ -622,6 +630,8 @@ function updateToolbar(enable) {
     if (enable === true) {
         /* Unbind first to avoid double binding when changing record */
         $('#img_preview').unbind('click', onPreviewClick).bind('click', onPreviewClick).removeClass(
+        'bibEditImgCtrlDisabled').addClass('bibEditImgCtrlEnabled');
+        $('#img_print').unbind('click', onPrintClick).bind('click', onPrintClick).removeClass(
         'bibEditImgCtrlDisabled').addClass('bibEditImgCtrlEnabled');
         if (record_has_pdf()) {
           $('#img_open_pdf').unbind('click', onOpenPDFClick).bind('click', onOpenPDFClick).removeClass(
@@ -635,6 +645,8 @@ function updateToolbar(enable) {
         $('#img_preview').unbind('click', onPreviewClick).removeClass(
         'bibEditImgCtrlEnabled').addClass('bibEditImgCtrlDisabled');
         $('#img_open_pdf').unbind('click', onOpenPDFClick).removeClass(
+        'bibEditImgCtrlEnabled').addClass('bibEditImgCtrlDisabled');
+        $('#img_print').unbind('click', onPrintClick).removeClass(
         'bibEditImgCtrlEnabled').addClass('bibEditImgCtrlDisabled');
         $('#img_run_refextract').unbind('click', onRefExtractClick).removeClass(
         'bibEditImgCtrlEnabled').addClass('bibEditImgCtrlDisabled');
