@@ -990,7 +990,7 @@ def begin_extraction(config, files):
 
     # Read the authors knowledge base, creating the search
     # and replace terms
-    kbs = get_kbs(inspire=config.inspire, kbs_files={
+    kbs = get_kbs(custom_kbs_files={
         'authors'       : config.kb_authors,
         'journals'      : config.kb_journals,
         'report-numbers': config.kb_report_numbers,
@@ -1152,7 +1152,7 @@ def parse_references(reference_lines, recid=1,
     output the MARC-XML content extracted version
     """
     # RefExtract knowledge bases
-    kbs = get_kbs(kbs_files=kbs_files, inspire=inspire)
+    kbs = get_kbs(custom_kbs_files=kbs_files)
     # Identify journal titles, report numbers, URLs, DOIs, and authors...
     (processed_references, counts, dummy_bad_titles_count) = \
                                 parse_references_elements(reference_lines, kbs)

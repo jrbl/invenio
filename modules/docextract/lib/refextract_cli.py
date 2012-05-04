@@ -26,6 +26,7 @@
 
 __revision__ = "$Id$"
 
+import traceback
 import optparse
 import sys
 
@@ -188,5 +189,11 @@ def main(config, args, run):
         # no files provided for reference extraction - error message
         usage("Error: No valid input file specified (file1 [file2 ...])")
 
-    run(config, args)
-    write_message("Extraction complete", verbose=2)
+    try:
+        run(config, args)
+        write_message("Extraction complete", verbose=2)
+    except StandardError, e:
+        # Remove extra '\n'
+        write_message(traceback.format_exc()[:-1], verbose=9)
+        write_message("Error: %s" % e, verbose=0)
+        halt(exit_code=1)

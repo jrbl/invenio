@@ -41,8 +41,6 @@ CFG_REFEXTRACT_KBS = {
    'special-journals': "%s/special-journals.kb" % CFG_CONF_DIR,
 }
 
-CFG_REFEXTRACT_JOURNALS_INSPIRE = "%s/journal-titles-inspire.kb" % CFG_CONF_DIR
-
 # Prefix for temp files
 CFG_REFEXTRACT_FILENAME = "refextract"
 

@@ -212,7 +212,9 @@ class SearchTest(unittest.TestCase):
     def test_journal(self):
         field, pattern = search_from_reference('[1] J. Mars, oh hello, Nucl.Phys. B76 (1974) 477-482')
         self.assertEqual(field, 'journal')
-        self.assertEqual(pattern, 'Nucl.Phys.,B76,477')
+        self.assert_('Nucl' in pattern)
+        self.assert_('B76' in pattern)
+        self.assert_('477' in pattern)
 
 
 if __name__ == '__main__':

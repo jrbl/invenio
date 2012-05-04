@@ -133,7 +133,8 @@ def convert_conf_option(option_name, option_value):
                        'CFG_BIBUPLOAD_FFT_ALLOWED_EXTERNAL_URLS',
                        'CFG_BIBSCHED_NODE_TASKS',
                        'CFG_BIBEDIT_EXTEND_RECORD_WITH_COLLECTION_TEMPLATE',
-                       'CFG_OAI_METADATA_FORMATS']:
+                       'CFG_OAI_METADATA_FORMATS',
+                       'CFG_REFEXTRACT_KBS_OVERRIDE']:
         option_value = option_value[1:-1]
 
     ## 3cbis) very special cases: dicts with backward compatible string

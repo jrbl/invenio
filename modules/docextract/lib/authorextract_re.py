@@ -18,7 +18,9 @@
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 import re
-
+import sys
+from invenio.docextract_utils import write_message
+from invenio.refextract_cli import halt
 from invenio.refextract_config import CFG_REFEXTRACT_KBS
 
 

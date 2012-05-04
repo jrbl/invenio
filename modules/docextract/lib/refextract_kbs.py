@@ -20,19 +20,17 @@
 import re
 import sys
 import csv
-import os
 
 try:
-    # pylint: disable=E0611
-    from hashlib import md5
-    # pylint: enable=E0611
+    import hashlib
+    md5 = hashlib.md5
 except ImportError:
     from md5 import new as md5
 
 from invenio.refextract_cli import halt
-from invenio.refextract_config import CFG_REFEXTRACT_KBS, \
-                                      CFG_REFEXTRACT_JOURNALS_INSPIRE
-from invenio.data_cacher import DataCacher
+from invenio.refextract_config import CFG_REFEXTRACT_KBS
+from invenio.bibknowledge import get_kbr_items
+from invenio.config import CFG_REFEXTRACT_KBS_OVERRIDE
 from invenio.refextract_re import re_kb_line, \
                                   re_regexp_character_class, \
                                   re_report_num_chars_to_escape, \
@@ -43,52 +41,64 @@ from invenio.docextract_utils import write_message
 from invenio.docextract_text import re_group_captured_multiple_space
 
 
-try:
-    from invenio.config import CFG_INSPIRE_SITE
-except ImportError:
-    CFG_INSPIRE_SITE = False
+def get_kbs(custom_kbs_files=None, cache=None):
+    """Load kbs (with caching)
 
-
-def load_kbs(kbs_files):
-    """Load kbs from specified files"""
-    return {
-        'journals_re'   : build_journals_re_kb(kbs_files['journals-re']),
-        'journals'      : build_journals_kb(kbs_files['journals']),
-        'report-numbers': build_reportnum_kb(kbs_files['report-numbers']),
-        'authors'       : build_authors_kb(kbs_files['authors']),
-        'books'         : build_books_kb(kbs_files['books']),
-        'publishers'    : build_publishers_kb(kbs_files['publishers']),
-        'special_journals': build_special_journals_kb(kbs_files['special-journals']),
-    }
-
-
-class RefExtractKBsDataCacher(DataCacher):
+    This function stores the loaded kbs into the cache variable
+    For the caching to work, it needs to receive an empty dictionary
+    as "cache" paramater.
     """
-    Cache holding refextract knowledge bases
-    """
-    def __init__(self, custom_kbs_files=None, inspire=CFG_INSPIRE_SITE):
+    if not cache:
+        cache = {}
+
+    cache_key = make_cache_key(custom_kbs_files)
+    if cache_key not in cache:
+        # Build paths from defaults and specified ones
         kbs_files = CFG_REFEXTRACT_KBS.copy()
-        # On inspire sites, use inspire journals kb by default
-        if inspire:
-            kbs_files['journals'] = CFG_REFEXTRACT_JOURNALS_INSPIRE
+        for key, path in CFG_REFEXTRACT_KBS_OVERRIDE.items():
+            kbs_files[key] = path
         if custom_kbs_files:
             for key, path in custom_kbs_files.items():
                 if path:
                     kbs_files[key] = path
-
-        def cache_filler():
-            return load_kbs(kbs_files)
-
-        def timestamp_verifier():
-            """Checks all the knowledge bases modification times"""
-            files_paths = kbs_files.values()
-            modification_times = (os.stat(p).st_mtime for p in files_paths)
-            return max(modification_times)
-
-        DataCacher.__init__(self, cache_filler, timestamp_verifier)
+        # Loads kbs from those paths
+        cache[cache_key] = load_kbs(kbs_files)
+    return cache[cache_key]
 
 
-def make_cache_key(custom_kbs_files=None, inspire=CFG_INSPIRE_SITE):
+def load_kbs(kbs_files):
+    """Load kbs (without caching)
+
+    Args:
+    - kb_files: list of custom paths you can specify to override the
+                 default values
+    If path starts with "kb:", the kb will be loaded from the database
+    """
+    return {
+        'journals_re': build_journals_re_kb(kbs_files['journals-re']),
+        'journals': load_kb(kbs_files['journals'], build_journals_kb),
+        'report-numbers': build_reportnum_kb(kbs_files['report-numbers']),
+        'authors': build_authors_kb(kbs_files['authors']),
+        'books': build_books_kb(kbs_files['books']),
+        'publishers': load_kb(kbs_files['publishers'], build_publishers_kb),
+        'special_journals': build_special_journals_kb(kbs_files['special-journals']),
+    }
+
+
+def load_kb(path, builder):
+    try:
+        path.startswith
+    except AttributeError:
+        return load_kb_from_iterable(path, builder)
+    else:
+        kb_start = 'kb:'
+        if path.startswith(kb_start):
+            return load_kb_from_db(path[len(kb_start):], builder)
+        else:
+            return load_kb_from_file(path, builder)
+
+
+def make_cache_key(custom_kbs_files=None):
     """Create cache key for kbs caches instances
 
     This function generates a unique key for a given set of arguments.
@@ -101,26 +111,12 @@ def make_cache_key(custom_kbs_files=None, inspire=CFG_INSPIRE_SITE):
     Then _inspire is appended if we are an INSPIRE site.
     """
     if custom_kbs_files:
-        serialized_args = ('%s=%s' % (k, v) for k, v in custom_kbs_files.items())
+        serialized_args = ('%s=%s' % v for v in custom_kbs_files.iteritems())
         serialized_args = ';'.join(serialized_args)
     else:
         serialized_args = "default"
     cache_key = md5(serialized_args).digest()
-    if inspire:
-        cache_key += '_inspire'
     return cache_key
-
-
-def get_kbs(kbs_files=None, inspire=CFG_INSPIRE_SITE, cache={}):
-    """Create kbs caching instance
-
-    This function makes sure only one cache instance for one given set of
-    arguments is created.
-    """
-    cache_key = make_cache_key(kbs_files, inspire)
-    if cache_key not in cache:
-        cache[cache_key] = RefExtractKBsDataCacher(kbs_files, inspire)
-    return cache[cache_key].cache
 
 
 def order_reportnum_patterns_bylen(numeration_patterns):
@@ -325,7 +321,7 @@ def build_reportnum_kb(fpath):
                                                           classification[0])] =\
                                                           classification[1]
 
-    preprint_reference_search_regexp_patterns  = {}  # a dictionary of patterns
+    preprint_reference_search_regexp_patterns = {}  # a dictionary of patterns
                                                      # used to recognise
                                                      # categories of preprints
                                                      # as used by various
@@ -349,7 +345,7 @@ def build_reportnum_kb(fpath):
                 re.compile(r'^\s*(\w.*)\s*---\s*(\w.*)\s*$', re.UNICODE)
 
     # pattern to recognise a preprint numeration-style line in KB
-    re_numeration_pattern      = re.compile(r'^\<(.+)\>$', re.UNICODE)
+    re_numeration_pattern = re.compile(r'^\<(.+)\>$', re.UNICODE)
 
     kb_line_num = 0    # when making the dictionary of patterns, which is
                        # keyed by the category search string, this counter
@@ -436,7 +432,7 @@ def build_reportnum_kb(fpath):
         emsg = """Error: Could not build knowledge base containing """ \
                """institute preprint referencing patterns - failed """ \
                """to read from KB %(kb)s.""" \
-               % { 'kb' : fpath }
+               % {'kb' : fpath}
         write_message(emsg, sys.stderr, verbose=0)
         halt(err=IOError,
              msg="Error: Unable to open report number kb '%s'" % fpath,
@@ -563,7 +559,7 @@ def build_authors_kb(fpath):
         except IOError:
             # problem opening KB for reading, or problem while reading from it:
             emsg = "Error: Could not build list of authors - failed " \
-                   "to read from KB %(kb)s." % { 'kb' : fpath }
+                   "to read from KB %(kb)s." % {'kb' : fpath}
             write_message(emsg, sys.stderr, verbose=0)
             halt(err=IOError,
                  msg="Error: Unable to open authors kb '%s'" % fpath,
@@ -628,7 +624,52 @@ def build_journals_re_kb(fpath):
     return kb
 
 
-def build_journals_kb(fpath):
+def load_kb_from_iterable(kb, builder):
+    return builder(kb)
+
+
+def load_kb_from_file(path, builder):
+    try:
+        fh = open(path, "r")
+    except IOError, e:
+        raise StandardError("Unable to open kb '%s': %s" % (path, e))
+
+    def lazy_parser(fh):
+        for rawline in fh:
+            if rawline.startswith('#'):
+                continue
+
+            try:
+                rawline = rawline.decode("utf-8").rstrip("\n")
+            except UnicodeError:
+                raise StandardError("Unicode problems in kb %s at line %s" \
+                                                             % (path, rawline))
+
+            # Test line to ensure that it is a correctly formatted
+            # knowledge base line:
+            # Extract the seek->replace terms from this KB line
+            m_kb_line = re_kb_line.search(rawline)
+            if m_kb_line:  # good KB line
+                yield m_kb_line.group('seek'), m_kb_line.group('repl')
+            else:
+                raise StandardError("Badly formatted kb '%s' at line %s" \
+                                                            % (path, rawline))
+
+    try:
+        return builder(lazy_parser(fh))
+    finally:
+        fh.close()
+
+
+def load_kb_from_db(kb_name, builder):
+    def lazy_parser(kb):
+        for mapping in kb:
+            yield mapping['key'], mapping['value']
+
+    return builder(lazy_parser(get_kbr_items(kb_name)))
+
+
+def build_journals_kb(knowledgebase):
     """Given the path to a knowledge base file, read in the contents
        of that file into a dictionary of search->replace word phrases.
        The search phrases are compiled into a regex pattern object.
@@ -667,93 +708,42 @@ def build_journals_kb(fpath):
     # by the KB:
     repl_terms = {}
 
-    try:
-        if isinstance(fpath, basestring):
-            write_message('Loading journals kb', verbose=3)
-            fh = open(fpath, "r")
-            fpath_needs_closing = True
-        else:
-            fpath_needs_closing = False
-            fh = fpath
+    write_message('Processing journals kb', verbose=3)
+    for seek_phrase, repl in knowledgebase:
+        # good KB line
+        # Add the 'replacement term' into the dictionary of
+        # replacement terms:
+        repl_terms[repl] = None
 
-        for rawline in fh:
-            if rawline.startswith('#'):
-                continue
-            # Test line to ensure that it is a correctly formatted
-            # knowledge base line:
-            try:
-                rawline = rawline.decode("utf-8").rstrip("\n")
-            except UnicodeError:
-                msg = "*** Unicode problems in %s for line %s" \
-                                                        % (fpath, rawline)
-                write_message(msg, verbose=1)
-                continue
+        # add the phrase from the KB if the 'seek' phrase is longer
+        # compile the seek phrase into a pattern:
+        seek_ptn = re.compile(ur'(?<!\w)(%s)\W' % re.escape(seek_phrase),
+                              re.UNICODE)
 
-            # Extract the seek->replace terms from this KB line:
-            m_kb_line = re_kb_line.search(rawline)
-            if m_kb_line:
-                # good KB line
-                # Add the 'replacement term' into the dictionary of
-                # replacement terms:
-                repl_terms[m_kb_line.group('repl')] = None
+        kb[seek_phrase] = seek_ptn
+        standardised_titles[seek_phrase] = repl
+        seek_phrases.append(seek_phrase)
 
-                # Get the "seek term":
-                seek_phrase = m_kb_line.group('seek')
-                # add the phrase from the KB if the 'seek' phrase is longer
-                # compile the seek phrase into a pattern:
-                seek_ptn = re.compile(ur'(?<!\w)(' + \
-                                       re.escape(seek_phrase) + \
-                                       ur')\W', re.UNICODE)
+    # Now, for every 'replacement term' found in the KB, if it is
+    # not already in the KB as a "search term", add it:
+    for repl_term in repl_terms.keys():
+        raw_repl_phrase = repl_term.upper()
+        raw_repl_phrase = re_punctuation.sub(u' ', raw_repl_phrase)
+        raw_repl_phrase = \
+             re_group_captured_multiple_space.sub(u' ', raw_repl_phrase)
+        raw_repl_phrase = raw_repl_phrase.strip()
+        if raw_repl_phrase not in kb:
+            # The replace-phrase was not in the KB as a seek phrase
+            # It should be added.
+            seek_ptn = re.compile(r'(?<!\/)\b(' + \
+                                   re.escape(raw_repl_phrase) + \
+                                   r')[^A-Z0-9]', re.UNICODE)
+            kb[raw_repl_phrase] = seek_ptn
+            standardised_titles[raw_repl_phrase] = repl_term
+            seek_phrases.append(raw_repl_phrase)
 
-                kb[seek_phrase] = seek_ptn
-                standardised_titles[seek_phrase] = m_kb_line.group('repl')
-                seek_phrases.append(seek_phrase)
-            else:
-                # KB line was not correctly formatted - die with error
-                emsg = "Error: Could not build list of journal titles\n" \
-                       "- KB %(kb)s has errors.\n" \
-                       "- Mapping: %(mapping)s\n" \
-                       % { 'kb' : fpath , 'mapping' : rawline}
-                write_message(emsg, sys.stderr, verbose=0)
-                halt(msg="Error: Badly formatted journal kb '%s'" % rawline,
-                     exit_code=1)
-
-        if fpath_needs_closing:
-            write_message('Loaded journals kb', verbose=3)
-            fh.close()
-
-        write_message('Processing journals kb', verbose=3)
-        # Now, for every 'replacement term' found in the KB, if it is
-        # not already in the KB as a "search term", add it:
-        for repl_term in repl_terms.keys():
-            raw_repl_phrase = repl_term.upper()
-            raw_repl_phrase = re_punctuation.sub(u' ', raw_repl_phrase)
-            raw_repl_phrase = \
-                 re_group_captured_multiple_space.sub(u' ', \
-                                                       raw_repl_phrase)
-            raw_repl_phrase = raw_repl_phrase.strip()
-            if raw_repl_phrase not in kb:
-                # The replace-phrase was not in the KB as a seek phrase
-                # It should be added.
-                seek_ptn = re.compile(r'(?<!\/)\b(' + \
-                                       re.escape(raw_repl_phrase) + \
-                                       r')[^A-Z0-9]', re.UNICODE)
-                kb[raw_repl_phrase] = seek_ptn
-                standardised_titles[raw_repl_phrase] = \
-                                                 repl_term
-                seek_phrases.append(raw_repl_phrase)
-
-        # Sort the titles by string length (long - short)
-        seek_phrases.sort(_cmp_bystrlen_reverse)
-    except IOError:
-        # problem opening KB for reading, or problem while reading from it:
-        emsg = "Error: Could not build list of journal titles - failed " \
-               "to read from KB %(kb)s." \
-               % { 'kb' : fpath }
-        write_message(emsg, sys.stderr, verbose=0)
-        halt(err=IOError,
-             msg="Error: Unable to open journal kb '%s'" % fpath,
-             exit_code=1)
+    # Sort the titles by string length (long - short)
+    seek_phrases.sort(_cmp_bystrlen_reverse)
 
     write_message('Processed journals kb', verbose=3)
 

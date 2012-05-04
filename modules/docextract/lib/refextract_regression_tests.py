@@ -73,7 +73,7 @@ class RefextractInvenioTest(unittest.TestCase):
         self.maxDiff = 2000
         self.kb_journals = None
         self.kb_journals_re = None
-        self.kb_reports = None
+        self.kb_report_numbers = None
         self.kb_authors = None
         self.kb_books = None
         self.kb_conferences = None
@@ -85,7 +85,7 @@ class RefextractInvenioTest(unittest.TestCase):
    <datafield tag="999" ind1="C" ind2="5">
       <subfield code="o">2</subfield>
       <subfield code="h">S. Weinberg, A Model of Leptons</subfield>
-      <subfield code="s">Phys. Rev. Lett. 19 (1967) 1264</subfield>
+      <subfield code="s">Phys.Rev.Lett. 19 (1967) 1264</subfield>
    </datafield>
 </record>""")
 
@@ -96,6 +96,7 @@ class RefextractInvenioTest(unittest.TestCase):
    <datafield tag="999" ind1="C" ind2="5">
       <subfield code="o">137</subfield>
       <subfield code="h">M. Papakyriacou, H. Mayer, C. Pypen, H. P. Jr., and S. Stanzl-Tschegg</subfield>
+      <subfield code="t">Influence of loading frequency on high cycle fatigue properties of b.c.c. and h.c.p. metals</subfield>
       <subfield code="s">Mat.Sci.Eng. A308 (2001) 143</subfield>
    </datafield>
 </record>""")
@@ -108,6 +109,7 @@ class RefextractInvenioTest(unittest.TestCase):
    <datafield tag="999" ind1="C" ind2="5">
       <subfield code="o">138</subfield>
       <subfield code="h">Y.-B. Park, R. Mnig, and C. A. Volkert</subfield>
+      <subfield code="t">Frequency effect on thermal fatigue damage in Cu interconnects</subfield>
       <subfield code="s">Thin Solid Films 515 (2007) 3253</subfield>
    </datafield>
 </record>""")
@@ -122,37 +124,37 @@ class RefextractTest(unittest.TestCase):
             ('Griffiths, David', 'Introduction to elementary particles', '2008')
         ]
         self.kb_journals = [
-            "PHYSICAL REVIEW SPECIAL TOPICS ACCELERATORS AND BEAMS---Phys.Rev.ST Accel.Beams",
-            "PHYS REV D---Phys.Rev.;D",
-            "PHYS REV---Phys.Rev.",
-            "PHYS REV LETT---Phys.Rev.Lett.",
-            "J PHYS---J.Phys.",
-            "JOURNAL OF PHYSICS---J.Phys.",
-            "J PHYS G---J.Phys.;G",
-            "PHYSICAL REVIEW---Phys.Rev.",
-            "ADV THEO MATH PHYS---Adv.Theor.Math.Phys.",
-            "MATH PHYS---Math.Phys.",
-            "J MATH PHYS---J.Math.Phys.",
-            "JHEP---JHEP",
-            "SITZUNGSBER PREUSS AKAD WISS PHYS MATH KL---Sitzungsber.Preuss.Akad.Wiss.Berlin (Math.Phys.)",
-            "PHYS LETT---Phys.Lett.",
-            "NUCL PHYS---Nucl.Phys.",
-            "JINST---JINST",
-            "THE EUROPEAN PHYSICAL JOURNAL C PARTICLES AND FIELDS---Eur.Phys.J.;C",
-            "COMMUN MATH PHYS---Commun.Math.Phys.",
-            "COMM MATH PHYS---Commun.Math.Phys.",
-            "REV MOD PHYS---Rev.Mod.Phys.",
-            "ANN PHYS U S---Ann.Phys.",
-            "AM J PHYS---Am.J.Phys.",
-            "PROC R SOC LONDON SER---Proc.Roy.Soc.Lond.",
-            "CLASS QUANT GRAVITY---Class.Quant.Grav.",
-            "FOUND PHYS---Found.Phys.",
-            "IEEE TRANS NUCL SCI---IEEE Trans.Nucl.Sci.",
-            "SCIENCE---Science",
-            "ACTA MATERIALIA---Acta Mater.",
-            "REVIEWS OF MODERN PHYSICS---Rev.Mod.Phys.",
-            "NUCL INSTRUM METHODS---Nucl.Instrum.Meth.",
-            "Z PHYS---Z.Phys.",
+            ("PHYSICAL REVIEW SPECIAL TOPICS ACCELERATORS AND BEAMS", "Phys.Rev.ST Accel.Beams"),
+            ("PHYS REV D", "Phys.Rev.;D"),
+            ("PHYS REV", "Phys.Rev."),
+            ("PHYS REV LETT", "Phys.Rev.Lett."),
+            ("J PHYS", "J.Phys."),
+            ("JOURNAL OF PHYSICS", "J.Phys."),
+            ("J PHYS G", "J.Phys.;G"),
+            ("PHYSICAL REVIEW", "Phys.Rev."),
+            ("ADV THEO MATH PHYS", "Adv.Theor.Math.Phys."),
+            ("MATH PHYS", "Math.Phys."),
+            ("J MATH PHYS", "J.Math.Phys."),
+            ("JHEP", "JHEP"),
+            ("SITZUNGSBER PREUSS AKAD WISS PHYS MATH KL", "Sitzungsber.Preuss.Akad.Wiss.Berlin (Math.Phys.)"),
+            ("PHYS LETT", "Phys.Lett."),
+            ("NUCL PHYS", "Nucl.Phys."),
+            ("JINST", "JINST"),
+            ("THE EUROPEAN PHYSICAL JOURNAL C PARTICLES AND FIELDS", "Eur.Phys.J.;C"),
+            ("COMMUN MATH PHYS", "Commun.Math.Phys."),
+            ("COMM MATH PHYS", "Commun.Math.Phys."),
+            ("REV MOD PHYS", "Rev.Mod.Phys."),
+            ("ANN PHYS U S", "Ann.Phys."),
+            ("AM J PHYS", "Am.J.Phys."),
+            ("PROC R SOC LONDON SER", "Proc.Roy.Soc.Lond."),
+            ("CLASS QUANT GRAVITY", "Class.Quant.Grav."),
+            ("FOUND PHYS", "Found.Phys."),
+            ("IEEE TRANS NUCL SCI", "IEEE Trans.Nucl.Sci."),
+            ("SCIENCE", "Science"),
+            ("ACTA MATERIALIA", "Acta Mater."),
+            ("REVIEWS OF MODERN PHYSICS", "Rev.Mod.Phys."),
+            ("NUCL INSTRUM METHODS", "Nucl.Instrum.Meth."),
+            ("Z PHYS", "Z.Phys."),
         ]
         self.kb_journals_re = [
             "DAN---Dokl.Akad.Nauk Ser.Fiz.",
