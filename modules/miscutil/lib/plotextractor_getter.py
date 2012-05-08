@@ -367,12 +367,15 @@ def harvest_single(single, to_dir, selection=("tarball", "pdf")):
             if "tarball" in selection:
                 write_message('downloading ' + url_for_file + ' to ' + tarball)
                 tarball = download_file(url_for_file, tarball, 'tar')
+        except InvenioDownloadError:
+            tarball = None
 
+        try:
             if "pdf" in selection:
                 write_message('downloading ' + url_for_pdf + ' to ' + pdf)
                 pdf = download_file(url_for_pdf, pdf, 'pdf')
         except InvenioDownloadError:
-            pass
+            pdf = None
 
         return (tarball, pdf)
 
@@ -401,7 +404,10 @@ def harvest_single(single, to_dir, selection=("tarball", "pdf")):
             url_for_file = CFG_PLOTEXTRACTOR_SOURCE_BASE_URL + single
             individual_file = os.path.join(to_dir, single)
             abs_path = os.path.join(to_dir, individual_file)
-            abs_path = download_file(url_for_file, abs_path, 'tar')
+            try:
+                abs_path = download_file(url_for_file, abs_path, 'tar')
+            except InvenioDownloadError:
+                abs_path = None
             return (abs_path, None)
 
         # well, I don't know what to do with it
@@ -429,7 +435,10 @@ def harvest_single(single, to_dir, selection=("tarball", "pdf")):
         individual_file = id_no
         abs_path = os.path.join(individual_dir, individual_file)
         write_message('download ' + url_for_file + ' to ' + abs_path)
-        abs_path = download_file(url_for_file, abs_path, 'pdf')
+        try:
+            abs_path = download_file(url_for_file, abs_path, 'pdf')
+        except InvenioDownloadError:
+            abs_path = None
         return (None, abs_path)
     write_message('END')
     return (None, None)
