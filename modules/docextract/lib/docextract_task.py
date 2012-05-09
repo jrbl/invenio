@@ -26,7 +26,11 @@ from invenio.bibtask import task_get_option, write_message, \
                             task_sleep_now_if_required, \
                             task_update_progress
 from invenio.dbquery import run_sql
+from invenio.search_engine import get_record
 from invenio.search_engine import get_collection_reclist
+from invenio.bibrecord import record_get_field_instances, \
+                              field_get_subfield_values
+
 
 def task_run_core_wrapper(name, core_func, extra_vars=None):
     """
@@ -54,7 +58,7 @@ def fetch_last_updated(name):
         row = run_sql(select_sql, (name,))
 
     # Fallback in case we receive None instead of a valid date
-    last_id   = row[0][0] or 0
+    last_id = row[0][0] or 0
     last_date = row[0][1] or datetime(year=1, month=1, day=1)
 
     return last_id, last_date
@@ -97,25 +101,54 @@ def fetch_concerned_records(name):
             "LIMIT 5000"
         records = run_sql(sql, (last_date.isoformat(), last_id))
     else:
-        recids = task_get_option('recids')
+        given_recids = task_get_option('recids')
         for collection in task_get_option('collections'):
-            recids.add(get_collection_reclist(collection))
-        format_strings = ','.join(['%s'] * len(recids))
-        records = run_sql("SELECT `id`, NULL FROM `bibrec` " \
-            "WHERE `id` IN (%s) ORDER BY `id`" % format_strings,
-                list(recids))
+            given_recids.add(get_collection_reclist(collection))
+
+        if given_recids:
+            format_strings = ','.join(['%s'] * len(given_recids))
+            records = run_sql("SELECT `id`, NULL FROM `bibrec` " \
+                "WHERE `id` IN (%s) ORDER BY `id`" % format_strings,
+                    list(given_recids))
+        else:
+            records = []
 
     task_update_progress("Done fetching record ids")
 
     return records
 
 
-def task_run_core(name, func, extra_vars=None):
-    """Calls extract_references in refextract"""
-    write_message("Starting")
+def fetch_concerned_arxiv_records(name):
+    task_update_progress("Fetching arxiv record ids")
+    name = "%s:arxiv" % name
 
-    records = fetch_concerned_records(name)
+    last_id, last_date = fetch_last_updated(name)
 
+    # Fetch all records inserted since last run
+    sql = "SELECT `id`, `modification_date` FROM `bibrec` " \
+        "WHERE `modification_date` >= %s " \
+        "AND `modification_date` > NOW() - INTERVAL 7 DAY " \
+        "ORDER BY `modification_date`" \
+        "LIMIT 5000"
+    records = run_sql(sql, [last_date.isoformat()])
+    records = [(2856, None)]
+
+    def check_arxiv(recid):
+        record = get_record(recid)
+
+        for report_tag in record_get_field_instances(record, "037"):
+            for category in field_get_subfield_values(report_tag, 'a'):
+                if category.startswith('arXiv'):
+                    return True
+        return False
+
+    records = [(r, mod_date) for r, mod_date in records if check_arxiv(r)]
+    write_message("recids %s" % repr(records))
+    task_update_progress("Done fetching arxiv record ids")
+    return records
+
+
+def process_records(name, records, func, extra_vars):
     count = 1
     total = len(records)
     for recid, date in records:
@@ -130,6 +163,24 @@ def task_run_core(name, func, extra_vars=None):
         if date:
             store_last_updated(recid, date, name)
         count += 1
+
+
+def task_run_core(name, func, extra_vars=None):
+    """Calls extract_references in refextract"""
+    if task_get_option('task_specific_name'):
+        name = "%s:%s" % (name, task_get_option('task_specific_name'))
+    write_message("Starting %s" % name)
+
+    if not extra_vars:
+        extra_vars = {}
+
+    records = fetch_concerned_records(name)
+    process_records(name, records, func, extra_vars)
+
+    if task_get_option('arxiv'):
+        extra_vars['_arxiv'] = True
+        records = fetch_concerned_arxiv_records(name)
+        process_records(name, records, func, extra_vars)
 
     write_message("Complete")
     return True
@@ -158,4 +209,3 @@ def split_ids(value):
             ret = [int(el)]
         return ret
     return chain(*(parse(c) for c in value.split(',') if c.strip()))
-

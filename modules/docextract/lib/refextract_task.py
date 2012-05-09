@@ -52,8 +52,9 @@ def check_options():
     if not task_get_option('new') \
             and not task_get_option('modified') \
             and not task_get_option('recids') \
-            and not task_get_option('collections'):
-        print >>sys.stderr, 'Error: No input file specified, you need' \
+            and not task_get_option('collections') \
+            and not task_get_option('arxiv'):
+        print >>sys.stderr, 'Error: No records specified, you need' \
             ' to specify which files to run on'
         return False
 
@@ -73,24 +74,26 @@ def parse_option(key, value, opts, args):
     elif key in ('-m', '--modified'):
         task_set_option('modified', True)
         task_set_option('no-overwrite', True)
-    elif key in ('-i', '--inspire'):
+    elif key in ('-i', '--inspire', ):
         task_set_option('inspire', True)
-    elif key in ('--kb-reports'):
+    elif key in ('--kb-reports', ):
         task_set_option('kb-reports', value)
-    elif key in ('--kb-journals'):
+    elif key in ('--kb-journals', ):
         task_set_option('kb-journals', value)
-    elif key in ('--kb-journals-re'):
+    elif key in ('--kb-journals-re', ):
         task_set_option('kb-journals-re', value)
-    elif key in ('--kb-authors'):
+    elif key in ('--kb-authors', ):
         task_set_option('kb-authors', value)
-    elif key in ('--kb-books'):
+    elif key in ('--kb-books', ):
         task_set_option('kb-books', value)
-    elif key in ('--kb-conferences'):
+    elif key in ('--kb-conferences', ):
         task_set_option('kb-conferences', value)
-    elif key in ('--create-ticket'):
+    elif key in ('--create-ticket', ):
         task_set_option('create-ticket', True)
-    elif key in ('--no-overwrite'):
+    elif key in ('--no-overwrite', ):
         task_set_option('no-overwrite', True)
+    elif key in ('--arxiv'):
+        task_set_option('arxiv', True)
     elif key in ('-c', '--collections'):
         collections = task_get_option('collections')
         if not collections:
@@ -144,20 +147,30 @@ def create_ticket(recid, bibcatalog_system, queue=CFG_REFEXTRACT_TICKET_QUEUE):
                                         recordid=recid)
 
 
-def task_run_core(recid, bibcatalog_system=None):
+def task_run_core(recid, bibcatalog_system=None, _arxiv=False):
     if task_get_option('inspire'):
         inspire = True
     else:
         inspire = CFG_INSPIRE_SITE
 
+    if _arxiv:
+        overwrite = True
+    else:
+        overwrite = not task_get_option('no-overwrite')
+
     try:
         update_references(recid,
                           inspire=inspire,
-                          overwrite=not task_get_option('no-overwrite'))
-        write_message("Extracted references for %s" % recid)
+                          overwrite=overwrite)
+        msg = "Extracted references for %s" % recid
+        if overwrite:
+            write_message("%s (overwrite)" % msg)
+        else:
+            write_message(msg)
 
         # Create a RT ticket if necessary
-        if task_get_option('new') or task_get_option('create-ticket'):
+        if not _arxiv and task_get_option('new') \
+                                    or task_get_option('create-ticket'):
             create_ticket(recid, bibcatalog_system)
     except FullTextNotAvailable:
         write_message("No full text available for %s" % recid)
@@ -185,6 +198,7 @@ def main():
   -m, --modified     Run on all newly modified records.
   -r, --recids       Record id for extraction.
   -c, --collections  Entire Collection for extraction.
+  --arxiv            All arxiv modified records within last week
 
   Special (daemon) options:
   --create-ticket    Create a RT ticket for record references
@@ -216,6 +230,7 @@ def main():
                              "new",
                              "modified",
                              "no-overwrite",
+                             "arxiv",
                              "create-ticket"]),
         task_submit_elaborate_specific_parameter_fnc=parse_option,
         task_submit_check_options_fnc=check_options,
