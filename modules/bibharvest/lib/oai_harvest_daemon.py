@@ -909,7 +909,7 @@ def call_authorlist_extract(active_file, extracted_file, harvested_identifier_li
     file_fd.close()
 
     if len(all_err_msg) > 0:
-        return exitcode, all_err_msg
+        return exitcode, "\n".join(all_err_msg)
     return exitcode, ""
 
 def call_fulltext(active_file, extracted_file, harvested_identifier_list,
@@ -1062,11 +1062,9 @@ def plotextractor_harvest(identifier, active_file, selection=["pdf", "tarball"])
     if tarball == None and "tarball" in selection:
         all_err_msg.append("Error harvesting tarball from id: %s %s" % \
                      (identifier, extract_path))
-        exitcode = 1
     if pdf == None and "pdf" in selection:
         all_err_msg.append("Error harvesting full-text from id: %s %s" % \
                      (identifier, extract_path))
-        exitcode = 1
     return exitcode, "\n".join(all_err_msg), tarball, pdf
 
 def find_matching_files(basedir, filetypes):
@@ -1597,10 +1595,12 @@ def append_arxiv_id_to_file(filepath, identifier):
     Only a temporary function until SPIRES shutoff.
     """
     id_arxiv = "arXiv:%s" % (re.findall('[a-zA-Z\\-]+/\\d+|\\d+\\.\\d+', identifier)[0],)
-    fd_authorlist = open(filepath, 'a')
-    fd_authorlist.write("%s\n" % (id_arxiv,))
-    fd_authorlist.close()
-
+    try:
+        fd_authorlist = open(filepath, 'a')
+        fd_authorlist.write("%s\n" % (id_arxiv,))
+        fd_authorlist.close()
+    except IOError:
+        pass
 ### okay, here we go:
 if __name__ == '__main__':
     main()
