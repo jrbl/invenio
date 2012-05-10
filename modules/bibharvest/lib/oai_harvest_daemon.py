@@ -708,7 +708,6 @@ def call_plotextractor(active_file, extracted_file, harvested_identifier_list, \
             current_exitcode, err_msg, tarball, dummy = \
                         plotextractor_harvest(identifier, active_file, selection=["tarball"])
             if current_exitcode != 0:
-                exitcode = current_exitcode
                 all_err_msg.append(err_msg)
             else:
                 downloaded_files[identifier]["tarball"] = tarball
@@ -775,7 +774,6 @@ def call_refextract(active_file, extracted_file, harvested_identifier_list,
             current_exitcode, err_msg, dummy, pdf = \
                         plotextractor_harvest(identifier, active_file, selection=["pdf"])
             if current_exitcode != 0:
-                exitcode = current_exitcode
                 all_err_msg.append(err_msg)
             else:
                 downloaded_files[identifier]["pdf"] = pdf
@@ -851,7 +849,6 @@ def call_authorlist_extract(active_file, extracted_file, harvested_identifier_li
             current_exitcode, err_msg, tarball, dummy = \
                         plotextractor_harvest(identifier, active_file, selection=["tarball"])
             if current_exitcode != 0:
-                exitcode = current_exitcode
                 all_err_msg.append(err_msg)
             else:
                 downloaded_files[identifier]["tarball"] = tarball
@@ -957,7 +954,6 @@ def call_fulltext(active_file, extracted_file, harvested_identifier_list,
             current_exitcode, err_msg, dummy, pdf = \
                         plotextractor_harvest(identifier, active_file, selection=["pdf"])
             if current_exitcode != 0:
-                exitcode = current_exitcode
                 all_err_msg.append(err_msg)
             else:
                 downloaded_files[identifier]["pdf"] = pdf
@@ -1062,9 +1058,11 @@ def plotextractor_harvest(identifier, active_file, selection=["pdf", "tarball"])
     if tarball == None and "tarball" in selection:
         all_err_msg.append("Error harvesting tarball from id: %s %s" % \
                      (identifier, extract_path))
+        exitcode = 1
     if pdf == None and "pdf" in selection:
         all_err_msg.append("Error harvesting full-text from id: %s %s" % \
                      (identifier, extract_path))
+        exitcode = 1
     return exitcode, "\n".join(all_err_msg), tarball, pdf
 
 def find_matching_files(basedir, filetypes):
