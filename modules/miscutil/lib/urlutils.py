@@ -29,6 +29,7 @@ import base64
 import hmac
 import re
 import sys
+import os
 import inspect
 from urllib import urlencode, quote_plus, quote
 from urlparse import urlparse
@@ -43,7 +44,8 @@ except ImportError:
 from invenio import webinterface_handler_config as apache
 from invenio.config import \
      CFG_SITE_URL, \
-     CFG_WEBSTYLE_EMAIL_ADDRESSES_OBFUSCATION_MODE
+     CFG_WEBSTYLE_EMAIL_ADDRESSES_OBFUSCATION_MODE, \
+     CFG_WEBDIR
 
 def wash_url_argument(var, new_type):
     """
@@ -695,3 +697,12 @@ class _MySHA256(_MyHashlibAlgo):
 class _MySHA1(_MyHashlibAlgo):
     "A _MyHashlibAlgo subsclass for sha1"
     new = lambda d = '': sha1()
+
+def auto_version_url(file_path):
+    """ Appends modification time of the file to the request URL in order for the
+        browser to refresh the cache when file changes
+
+        @param file_path: path to the file, e.g js/foo.js
+        @return: file_path with modification time appended to URL
+    """
+    return file_path + "?%s" % int(os.path.getmtime(CFG_WEBDIR + os.sep + file_path))
