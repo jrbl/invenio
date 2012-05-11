@@ -50,6 +50,8 @@ except ImportError:
 # make refextract runnable without requiring the full Invenio installation:
 from invenio.config import CFG_PATH_GFILE
 
+from invenio.refextract_find import get_reference_section_beginning
+from invenio.refextract_text import rebuild_reference_lines
 from invenio.refextract_tag import tag_reference_line, \
     sum_2_dictionaries, identify_and_tag_DOI, identify_and_tag_URLs
 from invenio.refextract_text import extract_references_from_fulltext
@@ -924,6 +926,8 @@ def extract_one(config, kbs, num, pdf_path):
     if config.treat_as_reference_section:
         # don't search for citations in the document body:
         # treat it as a reference section:
+        refs_info = get_reference_section_beginning(docbody)
+        docbody = rebuild_reference_lines(docbody, refs_info['marker_pattern'])
         reflines = docbody
         how_found_start = 1
     else:

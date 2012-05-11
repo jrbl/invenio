@@ -42,6 +42,8 @@ from invenio.bibtask import task_low_level_submission
 from invenio.bibrecord import record_delete_fields, record_xml_output, \
     create_record, record_get_field_instances, record_add_fields, \
     record_has_field
+from invenio.refextract_find import get_reference_section_beginning
+from invenio.refextract_text import rebuild_reference_lines
 from invenio.refextract_config import CFG_REFEXTRACT_FILENAME
 from invenio.config import CFG_TMPSHAREDDIR
 
@@ -107,6 +109,8 @@ def extract_references_from_string_xml(source, inspire=CFG_INSPIRE_SITE):
     The result is given in marcxml.
     """
     docbody = source.split('\n')
+    refs_info = get_reference_section_beginning(docbody)
+    docbody = rebuild_reference_lines(docbody, refs_info['marker_pattern'])
     reflines, dummy, dummy = extract_references_from_fulltext(docbody)
     return parse_references(reflines, inspire=inspire)
 
