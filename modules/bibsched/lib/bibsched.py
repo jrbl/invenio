@@ -48,7 +48,8 @@ from invenio.config import \
      CFG_BIBSCHED_GC_TASKS_TO_ARCHIVE, \
      CFG_BIBSCHED_MAX_NUMBER_CONCURRENT_TASKS, \
      CFG_SITE_URL, \
-     CFG_BIBSCHED_NODE_TASKS
+     CFG_BIBSCHED_NODE_TASKS, \
+     CFG_BIBSCHED_MAX_ARCHIVED_ROWS_DISPLAY
 from invenio.dbquery import run_sql, real_escape_string
 from invenio.textutils import wrap_text_in_a_box
 from invenio.errorlib import register_exception, register_emergency
@@ -359,7 +360,7 @@ class Manager:
                 self.display_in_footer("only archived processes are displayed")
             elif chr in (ord("q"), ord("Q")):
                 if self.curses.panel.top_panel() == self.panel:
-                    self.panel.bottom()
+                    self.panel = None
                     self.curses.panel.update_panels()
                 else:
                     self.running = 0
@@ -458,6 +459,7 @@ class Manager:
         self.win.refresh()
         while self.win.getkey() != 'q':
             pass
+        self.panel = None
 
     def count_processes(self, status):
         out = 0
@@ -662,7 +664,8 @@ class Manager:
         if status not in ('RUNNING', 'CONTINUING', 'SLEEPING', 'SCHEDULED', 'ABOUT TO STOP', 'ABOUT TO SLEEP'):
             bibsched_set_status(task_id, "%s_DELETED" % status, status)
             self.display_in_footer("process deleted")
-            self.selected_line = max(self.selected_line, self.header_lines)
+            self.update_rows()
+            self.repaint()
         else:
             self.display_in_footer("Cannot delete running processes")
 
@@ -818,7 +821,7 @@ class Manager:
                 self.curses.beep()
             self.auto_mode = 0
         self.y = 0
-        self.stdscr.clear()
+        self.stdscr.erase()
         self.height, self.width = self.stdscr.getmaxyx()
         maxy = self.height - 2
         #maxx = self.width
@@ -851,6 +854,34 @@ class Manager:
             self.display_in_footer(footer2, 1)
         self.stdscr.refresh()
 
+    def update_rows(self):
+        if self.display == 1:
+            table = "schTASK"
+            where = "and (status='DONE' or status LIKE 'ACK%')"
+            order = "runtime DESC"
+            limit = ""
+        elif self.display == 2:
+            table = "schTASK"
+            where = "and (status<>'DONE' and status NOT LIKE 'ACK%')"
+            order = "runtime ASC"
+            limit = "limit %s" % CFG_BIBSCHED_MAX_ARCHIVED_ROWS_DISPLAY
+        else:
+            table = "hstTASK"
+            order = "runtime DESC"
+            where = ""
+            limit = ""
+        self.rows = run_sql("""SELECT id, proc, user, runtime, sleeptime,
+                               status, progress, arguments, priority, host,
+                               sequenceid
+                               FROM %s
+                               WHERE status NOT LIKE '%%_DELETED' %s
+                               ORDER BY %s
+                               %s""" % (table, where, order, limit))
+        # Make sure we are not selecting a line that disappeared
+        self.selected_line = min(self.selected_line,
+                                 len(self.rows) + self.header_lines - 1)
+
+
     def start(self, stdscr):
         os.environ['BIBSCHED_MODE'] = 'manual'
         if self.curses.has_colors():
@@ -868,7 +899,7 @@ class Manager:
         self.base_panel.bottom()
         self.curses.panel.update_panels()
         self.height, self.width = stdscr.getmaxyx()
-        self.stdscr.clear()
+        self.stdscr.erase()
         if server_pid():
             self.auto_mode = 1
         ring = 4
@@ -876,19 +907,7 @@ class Manager:
             self._display_message_box(self.motd + "\nPress any key to close")
         while self.running:
             if ring == 4:
-                if self.display == 1:
-                    table = "schTASK"
-                    where = "and (status='DONE' or status LIKE 'ACK%')"
-                    order = "runtime DESC"
-                elif self.display == 2:
-                    table = "schTASK"
-                    where = "and (status<>'DONE' and status NOT LIKE 'ACK%')"
-                    order = "runtime ASC"
-                else:
-                    table = "hstTASK"
-                    order = "runtime DESC"
-                    where = ''
-                self.rows = run_sql("""SELECT id,proc,user,runtime,sleeptime,status,progress,arguments,priority,host,sequenceid FROM %s WHERE status NOT LIKE '%%_DELETED' %s ORDER BY %s""" % (table, where, order))
+                self.update_rows()
                 ring = 0
                 self.repaint()
             ring += 1
@@ -1229,9 +1248,14 @@ def Log(message):
 def redirect_stdout_and_stderr():
     "This function redirects stdout and stderr to bibsched.log and bibsched.err file."
     old_stdout = sys.stdout
+    old_stderr = sys.stderr
     sys.stdout = open(CFG_LOGDIR + "/bibsched.log", "a")
     sys.stderr = open(CFG_LOGDIR + "/bibsched.err", "a")
-    return old_stdout
+    return old_stdout, old_stderr
+
+def restore_stdout_and_stderr(stdout, stderr):
+    sys.stdout = stdout
+    sys.stderr = stderr
 
 def usage(exitcode=1, msg=""):
     """Prints usage info."""
@@ -1378,10 +1402,14 @@ def halt(verbose=True, soft=False):
     os.unlink(pidfile)
     return
 
+
 def monitor(verbose = True):
-    old_stdout = redirect_stdout_and_stderr()
-    manager = Manager(old_stdout)
-    return
+    old_stdout, old_stderr = redirect_stdout_and_stderr()
+    try:
+        Manager(old_stdout)
+    finally:
+        restore_stdout_and_stderr(old_stdout, old_stderr)
+
 
 def write_message(msg, stream=None, verbose=1):
     """Write message and flush output stream (may be sys.stdout or sys.stderr).
