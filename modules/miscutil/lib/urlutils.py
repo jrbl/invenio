@@ -34,6 +34,7 @@ import inspect
 from urllib import urlencode, quote_plus, quote
 from urlparse import urlparse
 from cgi import parse_qs, escape
+from md5 import md5
 
 try:
     from hashlib import sha256, sha1
@@ -705,4 +706,4 @@ def auto_version_url(file_path):
         @param file_path: path to the file, e.g js/foo.js
         @return: file_path with modification time appended to URL
     """
-    return file_path + "?%s" % int(os.path.getmtime(CFG_WEBDIR + os.sep + file_path))
+    return file_path + "?%s" % md5(open(CFG_WEBDIR + os.sep + file_path).read()).hexdigest()
