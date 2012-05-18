@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##
 ## This file is part of Invenio.
-## Copyright (C) 2010, 2011 CERN.
+## Copyright (C) 2010, 2011, 2012 CERN.
 ##
 ## Invenio is free software; you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License as
@@ -28,6 +28,7 @@ from invenio.config import CFG_SITE_LANG
 from invenio.config import CFG_SITE_URL
 from invenio.dbquery import run_sql
 from invenio.messages import gettext_set_language
+from invenio.urlutils import auto_version_url
 
 
 class Template:
@@ -115,6 +116,10 @@ class Template:
             width: 150px;
         }
 
+        label.nowidth {
+            width: auto;
+        }
+
         .batchuploader_error {
             max-width: 650px;
             max-height: 326px;
@@ -150,12 +155,13 @@ class Template:
             }
         </script>
         <script type="text/javascript" src="%(site_url)s/js/jquery-ui.min.js"></script>
-        <script type="text/javascript" src="%(site_url)s/js/batchuploader.js"></script>
-        """ % {'site_url':CFG_SITE_URL}
+        <script type="text/javascript" src="%(site_url)s/%(script)s"></script>
+        """ % {'site_url':CFG_SITE_URL,
+               'script': auto_version_url("js/batchuploader.js")}
 
         return styles
 
-    def tmpl_display_web_metaupload_form(self, ln=CFG_SITE_LANG, error=0, filetype="marcxml", mode="--insert",
+    def tmpl_display_web_metaupload_form(self, ln=CFG_SITE_LANG, filetype="marcxml", mode="--insert",
                                         submit_date="yyyy-mm-dd", submit_time="hh:mm:ss"):
         """ Displays Metadata upload form
             @param error: defines the type of error to be displayed
@@ -165,8 +171,7 @@ class Template:
             @return: the form in HTML format
         """
         _ = gettext_set_language(ln)
-        body_content = ""
-        body_content += """
+        body_content = """
         <script type="text/javascript">
             $(function() {
                 $("#datepicker").datepicker({dateFormat: 'yy-mm-dd'});
@@ -176,27 +181,11 @@ class Template:
         body_content += """<form class="uploadform" method="post" action="%(site_url)s/batchuploader/confirm" enctype="multipart/form-data">""" \
                                        % {'site_url': CFG_SITE_URL}
         body_content += """
-<div id="content">
-<fieldset>
-<div id="error_div"></div>
-"""
-        if error != 0:
-            if error == 1:
-                body_content += """
-                <div><b>%(msg)s</b></div>
-                """ % {'msg':_("Warning: Please, select a valid time")}
-            elif error == 2:
-                body_content += """
-                <div><b>%(msg)s</b></div>
-                """ % {'msg':_("Warning: Please, select a valid file")}
-            elif error == 3:
-                body_content += """
-                <div><b>%(msg)s</b></div>
-                """ % {'msg': _("Warning: The date format is not correct")}
-            elif error == 4:
-                body_content += """
-                <div><b>%(msg)s</b></div>
-                """ % {'msg': _("Warning: Please, select a valid date")}
+    <div id="content">
+        <fieldset>
+        <div id="error_div"></div>
+        """
+
         body_content += """
     <div>
         <label for="metafile">
@@ -254,7 +243,7 @@ class Template:
     <input type="text" id="datepicker" name="submit_date" value=%(submit_date)s onBlur="defText(this)" onFocus="clearText(this)" style="width:100px" >
     &nbsp;&nbsp;<span class="italics">%(txt_time)s:</span>
     <input type="text" name="submit_time" id="submit_time" value=%(submit_time)s onBlur="defText(this)" onFocus="clearText(this)" style="width:100px" >
-    <span class="italics">%(txt_example)s: 2009-12-20 19:22:18</span>
+    <span class="italics">%(txt_example)s: 2012-12-20 19:22:18</span>
     </div>
     <div><i>%(txt_mandatory)s</i></div>
     <div> <input type="submit" value="Upload" class="adminbutton"> </div>
@@ -426,33 +415,61 @@ class Template:
         body_content += """<form id="docuploadform" method="post" action="%(site_url)s/batchuploader/docsubmit" enctype="multipart/form-data">""" \
                            % {'site_url': CFG_SITE_URL}
         body_content += """
-        <div id="content">
+    <div id="content">
         <fieldset>
         <div id="error_div"></div>
-        <div><span class="mandatory_field""> * </span> %(txt1)s:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="text" name="docfolder" size="30" />
-        <span class="italics">%(txt2)s: /afs/cern.ch/user/j/user/public/foo/</span></div>
-        <div><span class="mandatory_field""> * </span> %(txt3)s:
-        <select name="matching">
-            <option value="reportnumber">reportnumber</option>
-            <option value="recid">recid</option>
-        </select>
+        <div>
+            <label for="docfolder">
+                <span class="mandatory_field""> * </span>
+                %(txt1)s:
+            </label>
+            <input type="text" name="docfolder" size="30" />
+            <span class="italics"> %(txt2)s: /afs/cern.ch/user/j/user/public/foo/
+            </span>
         </div>
-        <div><span class="mandatory_field""> * </span> %(txt4)s:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="radio" name="mode" value="append" "checked" id="appendcheckbox"/><label for="appendcheckbox">append</label>
-                                                                <input type="radio" name="mode" value="correct" id="revisecheckbox"/><label for="revisecheckbox">revise</label>
+        <div>
+            <label for="matching">
+                <span class="mandatory_field""> * </span>
+                %(txt3)s:
+            </label>
+            <select name="matching">
+                <option value="reportnumber">reportnumber</option>
+                <option value="recid">recid</option>
+            </select>
         </div>
-        <div>&nbsp;&nbsp;%(txt_priority)s:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <select name="priority">
-            <option value="1">normal</option>
-            <option value="5">high</option>
-        </select>
-        <br/>
-        <div>%(txt5)s&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="italics">%(txt6)s:</span>
-        <input type="text" id="datepicker" name="submit_date" value=%(submit_date)s onBlur="defText(this)" onFocus="clearText(this)" style="width:100px" >
-        &nbsp;&nbsp;<span class="italics">%(txt7)s:</span>
-        <input type="text" name="submit_time" id="submit_time" value=%(submit_time)s onBlur="defText(this)" onFocus="clearText(this)" style="width:100px" >
-        <span class="italics">%(txt8)s: 2009-12-20 19:22:18</span>
-        <br/>
-        <div><i>%(txt9)s</i></div>
+        <div>
+            <label for="mode">
+                <span class="mandatory_field""> * </span>
+                %(txt4)s:
+            </label>
+            <input type="radio" name="mode" value="append" "checked" id="appendcheckbox"/>
+            append
+        </div>
+        <div>
+            <label for="mode">&nbsp;</label>
+            <input type="radio" name="mode" value="correct" id="revisecheckbox"/>
+            revise
+        </div>
+        <div>
+            <label for="priority">
+                &nbsp;&nbsp;%(txt_priority)s:
+            </label>
+            <select name="priority">
+                <option value="1">normal</option>
+                <option value="5">high</option>
+            </select>
+            <br/>
+        </div>
+        <div>
+            %(txt5)s&nbsp;&nbsp;&nbsp;
+            <span class="italics">%(txt6)s:</span>
+            <input type="text" id="datepicker" name="submit_date" value=%(submit_date)s onBlur="defText(this)" onFocus="clearText(this)" style="width:100px" >
+            &nbsp;&nbsp;<span class="italics">%(txt7)s:</span>
+            <input type="text" name="submit_time" id="submit_time" value=%(submit_time)s onBlur="defText(this)" onFocus="clearText(this)" style="width:100px" >
+            <span class="italics">%(txt8)s: 2009-12-20 19:22:18</span>
+            <br/>
+            <div><i>%(txt9)s</i></div>
+        </div>
         <div> <input type="submit" value="Upload" class="adminbutton"> </div>
         </fieldset>
         </form></div>

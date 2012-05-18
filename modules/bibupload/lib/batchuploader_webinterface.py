@@ -56,8 +56,7 @@ class WebInterfaceBatchUploaderPages(WebInterfaceDirectory):
 
     def metadata(self, req, form):
         """ Display Metadata file upload form """
-        argd = wash_urlargd(form, {'error': (int, 0),
-                                    'filetype': (str, ""),
+        argd = wash_urlargd(form, { 'filetype': (str, ""),
                                     'mode': (str, ""),
                                     'submit_date': (str, "yyyy-mm-dd"),
                                     'submit_time': (str, "hh:mm:ss")})
@@ -70,8 +69,8 @@ class WebInterfaceBatchUploaderPages(WebInterfaceDirectory):
         body = batchuploader_templates.tmpl_display_menu(argd['ln'],
                                                          ref="metadata")
         body += batchuploader_templates.tmpl_display_web_metaupload_form(argd['ln'],
-                argd['error'], argd['filetype'], argd['mode'],
-                argd['submit_date'], argd['submit_time'])
+                argd['filetype'], argd['mode'], argd['submit_date'],
+                argd['submit_time'])
 
         title = _("Metadata batch upload")
         return page(title = title,
@@ -238,7 +237,7 @@ class WebInterfaceBatchUploaderPages(WebInterfaceDirectory):
         _ = gettext_set_language(argd['ln'])
 
         # Check if the page is directly accessed or no file selected
-        if not argd['metafile'].value:
+        if not argd['metafile']:
             redirect_to_url(req, "%s/batchuploader/metadata"
             % (CFG_SITE_SECURE_URL))
 
