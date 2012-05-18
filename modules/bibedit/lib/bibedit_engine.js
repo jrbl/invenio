@@ -3052,14 +3052,9 @@ function onContentChange(value, th){
     else {
         var subfieldsToAdd = new Array(), bulkOperation = false, subfield_offset;
         /* Edit subfield value */
-        /* If editing subject field, check KB */
-        if (tag_ind == '65017' && field[0][subfieldIndex][0] == 'a') {
-            value = check_subjects_KB(value);
-            newValue = value;
-        }
         /* Check if there are subfields inside of the content value
          * e.g 999C5 $$mThis a test$$hThis is a second subfield */
-        else if (valueContainsSubfields(value)) {
+        if (valueContainsSubfields(value)) {
             bulkOperation = true;
             splitContentSubfields(value, oldSubfieldCode, subfieldsToAdd);
             if (tag_ind == '999C5' && !is_reference_manually_curated(field)){
@@ -3085,6 +3080,11 @@ function onContentChange(value, th){
             subfield_offset = subfieldsToAdd.length - 1;
         }
         else {
+            /* If editing subject field, check KB */
+            if (tag_ind == '65017' && field[0][subfieldIndex][0] == 'a') {
+              value = check_subjects_KB(value);
+              newValue = value;
+            }
             oldValue = field[0][subfieldIndex][1]; // get old subfield value from gRecord
             field[0][subfieldIndex][1] = value; // update gRecord
         }
