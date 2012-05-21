@@ -48,7 +48,9 @@ from invenio.bibupload import xml_marc_to_records, bibupload
 
 import invenio.bibupload as bibupload_module
 
-from invenio.bibrecord import create_records
+from invenio.bibrecord import create_records, \
+                              record_strip_empty_volatile_subfields, \
+                              record_strip_empty_fields
 
 
 try:
@@ -473,6 +475,8 @@ def perform_upload_check(xml_record, mode):
             upload_mode = "replace_or_insert"
         for record in recs:
             if record:
+                record_strip_empty_volatile_subfields(record)
+                record_strip_empty_fields(record)
                 bibupload(record, opt_mode=upload_mode, pretend=True)
     finally:
         bibupload_module.write_message = orig_writer
