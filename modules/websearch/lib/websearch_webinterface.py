@@ -746,7 +746,8 @@ class WebInterfaceAuthorPages(WebInterfaceDirectory):
                 return page_end(req, 'hb', ln)
 
         #get most frequent authors of these pubs
-        popular_author_tuples = get_most_popular_field_values(pubs, (AUTHOR_TAG, COAUTHOR_TAG))
+        # popular_author_tuples = get_most_popular_field_values(pubs, (AUTHOR_TAG, COAUTHOR_TAG))
+        popular_author_tuples = ()
         coauthors = {}
 
         for (coauthor, frequency) in popular_author_tuples:
