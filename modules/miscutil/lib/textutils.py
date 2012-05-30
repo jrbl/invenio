@@ -673,3 +673,10 @@ def strip_accents(x):
     y = re_unicode_uppercase_n.sub("N", y)
     # return UTF-8 representation of the Unicode string:
     return y.encode("utf-8")
+
+def remove_control_characters(text):
+    """
+    Strips control characters from a given string
+    (except \n (10) ), and returns it.
+    """
+    return ''.join(c for c in text if ord(c) >= 32 or ord(c) == 10)
