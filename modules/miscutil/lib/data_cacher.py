@@ -67,7 +67,7 @@ class DataCacher:
         """
         # We empty the cache first to force freeing of the variable
         # this is useful when it is really big like our citations dictionary
-        del self.cache
+        self.cache = None
 
         self.cache = self.cache_filler()
         self.timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
