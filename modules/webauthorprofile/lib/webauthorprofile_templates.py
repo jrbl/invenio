@@ -429,7 +429,7 @@ class Template:
                 for (kw, freq) in kwtuples:
                     if keywstr:
                         keywstr += '<br>'
-                    rec_query = baid_query + 'keyword:"' + kw + '"'
+                    rec_query = baid_query + ' keyword:"' + kw + '" '
                     searchstr = kw + ' (' + create_html_link(websearch_templates.build_search_url(p=rec_query),
                                                                        {}, str(freq),) + ')'
                     keywstr = keywstr + " " + searchstr
