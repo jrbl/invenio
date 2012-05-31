@@ -34,7 +34,7 @@ from invenio.config import \
      CFG_BIBINDEX_CHARS_PUNCTUATION, \
      CFG_WEBSEARCH_WILDCARD_LIMIT
 
-CFG_HEPNAMES_EMAIL = 'info@invenio-software.org'
+CFG_HEPNAMES_EMAIL = 'authors@inspirehep.net'
 MAX_ITEM_BEFORE_COLLAPSE = 10
 
 from invenio.messages import gettext_set_language
