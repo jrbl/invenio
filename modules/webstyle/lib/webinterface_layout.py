@@ -215,6 +215,13 @@ except:
     register_exception(alert_admin=True, subject='EMERGENCY')
     WebInterfaceDocExtract = WebInterfaceDumbPages
 
+try:
+    from invenio.webauthorprofile_webinterface import WebAuthorPages
+    WebInterfaceWebAuthorPages = WebAuthorPages
+except:
+    register_exception(alert_admin=True, subject='EMERGENCY')
+    WebInterfaceWebAuthorPages = WebInterfaceDumbPages
+
 if CFG_OPENAIRE_SITE:
     try:
         from invenio.openaire_deposit_webinterface import \
@@ -230,7 +237,7 @@ if CFG_INSPIRE_SITE:
     try:
         from invenio.inspireproject_webinterface import WebInterfaceInspirePages
     except:
-        register_exception(stream='warning', 
+        register_exception(stream='warning',
                 prefix="""
 CFG_INSPIRE_SITE set, but I couldn't load inspireproject_webinterface; have
 you installed the inspire repository master branch?  Until this is corrected,
@@ -278,6 +285,7 @@ class WebInterfaceInvenio(WebInterfaceSearchInterfacePages):
         'inspire',
         'person',
         'bibsword',
+        'author',
         ] + test_exports + openaire_exports
 
     def __init__(self):
@@ -287,7 +295,6 @@ class WebInterfaceInvenio(WebInterfaceSearchInterfacePages):
         if CFG_OPENAIRE_SITE:
             self.deposit = WebInterfaceOpenAIREDepositPages()
 
-    author = WebInterfaceAuthorPages()
     submit = WebInterfaceSubmitPages()
     youraccount = WebInterfaceYourAccountPages()
     youralerts = WebInterfaceYourAlertsPages()
@@ -311,6 +318,9 @@ class WebInterfaceInvenio(WebInterfaceSearchInterfacePages):
     person = WebInterfaceBibAuthorIDPages()
     if CFG_INSPIRE_SITE:
         inspire = WebInterfaceInspirePages()
+    #redirects author to the new webauthor
+    author = WebInterfaceWebAuthorPages()
+    #author = WebInterfaceAuthorPages()
 
 # This creates the 'handler' function, which will be invoked directly
 # by mod_python.

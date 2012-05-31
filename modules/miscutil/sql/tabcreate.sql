@@ -4083,4 +4083,24 @@ CREATE TABLE IF NOT EXISTS collection_bsrMETHOD (
   PRIMARY KEY (id_collection, id_bsrMETHOD)
 ) ENGINE=MyISAM;
 
+-- tables for sequence storage
+CREATE TABLE IF NOT EXISTS seqSTORE (
+  id int(15) NOT NULL auto_increment,
+  seq_name varchar(15),
+  seq_value varchar(20),
+  PRIMARY KEY (id),
+  UNIQUE KEY seq_name_value (seq_name, seq_value)
+) ENGINE=MyISAM;
+
+CREATE TABLE IF NOT EXISTS `wapCACHE` (
+  `object_name` varchar(120) NOT NULL,
+  `object_key` vobject_keyobject_keyarchar(120) NOT NULL,
+  `object_value` longtext,
+  `object_status` varchar(120),
+  `last_updated` datetime NOT NULL,
+  PRIMARY KEY  (`object_name`,`object_key`),
+  INDEX `name-b` (`object_name`),
+  INDEX `key-b` (`object_key`),
+  INDEX `last_updated-b` (`last_updated`)
+) ENGINE=MyISAM;
 -- end of file

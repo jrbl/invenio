@@ -40,6 +40,7 @@ pylib_DATA = bibauthorid_backinterface.py \
              bibauthorid_merge.py \
              bibauthorid_rabbit.py \
              bibauthorid_tortoise.py \
+             bibauthorid_webauthorprofileinterface.py \
              __init__.py
 
 jsdir=$(localstatedir)/www/js

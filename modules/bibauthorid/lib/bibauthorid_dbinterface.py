@@ -33,6 +33,7 @@ except ImportError:
 
 from itertools import groupby, count, ifilter, chain
 from operator import itemgetter
+
 from invenio.access_control_engine import acc_authorize_action
 from invenio.search_engine import perform_request_search
 
@@ -159,11 +160,13 @@ def get_new_pesonid():
     else:
         return 0
 
-
-def get_existing_personids():
-    try:
-        pids_data = set(zip(*run_sql("select distinct personid from aidPERSONIDDATA"))[0])
-    except IndexError:
+def get_existing_personids(with_papers_only=False):
+    if not with_papers_only:
+        try:
+            pids_data = set(zip(*run_sql("select distinct personid from aidPERSONIDDATA"))[0])
+        except IndexError:
+            pids_data = set()
+    else:
         pids_data = set()
 
     try:
@@ -370,7 +373,7 @@ def get_persons_from_recids(recids, return_alt_names=False,
         #This condition cannot hold in case claims or update daemons are run in parallel
         #with this, as it can happen that a person with papers exists for wich a canonical name
         #has not been computed yet. Hence, it will be indexed next time, so it learns.
-        #Each person should have at most one canonical name, so: 
+        #Each person should have at most one canonical name, so:
         assert len(canonical) <= 1
 
         if len(canonical) == 1:
@@ -491,7 +494,7 @@ def get_personids_from_bibrec(bibrec):
     Returns all the personids associated to a bibrec.
     '''
 
-    pids = run_sql("select distinct personid from aidPERSONIDPAPERS where bibrec=%s", (bibrec,))
+    pids = run_sql("select distinct personid from aidPERSONIDPAPERS where bibrec=%s and flag >-2", (bibrec,))
 
     if pids:
         return zip(*pids)[0]
@@ -529,8 +532,7 @@ def get_person_bibrecs(pid):
     @param pid: integer personid
     @return [bibrec1,...,bibrecN]
     '''
-    papers = run_sql("select bibrec from aidPERSONIDPAPERS where personid=%s", (str(pid),))
-
+    papers = run_sql("select bibrec from aidPERSONIDPAPERS where personid=%s and flag > -2", (str(pid),))
     if papers:
         return list(set(zip(*papers)[0]))
     else:
@@ -746,9 +748,6 @@ def confirm_papers_to_person(pid, papers, user_level=0):
     @type pid: ('2',)
     @param papers: list of papers to confirm
     @type papers: (('100:7531,9024',),)
-    @param gather_list: list to store the pids to be updated rather than
-    calling update_personID_names_string_set
-    @typer gather_list: set([('2',), ('3',)])
     '''
     for p in papers:
         bibref, rec = p[0].split(",")
@@ -795,9 +794,6 @@ def reset_papers_flag(pid, papers):
     Resets the flag associated to the papers to '0'
     @param papers: list of papers to confirm
     @type papers: (('100:7531,9024',),)
-    @param gather_list: list to store the pids to be updated rather than
-    calling update_personID_names_string_set
-    @typer gather_list: set([('2',), ('3',)])
     '''
     for p in papers:
         bibref, rec = p[0].split(",")
@@ -1020,7 +1016,6 @@ def get_user_log(transactionid='', userinfo='', personID='', action='', tag='', 
     if only_most_recent:
         sql_query += ' order by timestamp desc limit 0,1'
     return run_sql(sql_query)
-
 
 def list_2_SQL_str(items, f=lambda x: x):
     """
@@ -1275,7 +1270,6 @@ def get_all_authors(bibrec):
         authors_7 = []
 
     return [a[0] for a in authors_1] + [a[0] for a in authors_7]
-
 
 def get_bib10x():
     return run_sql("select id, value from bib10x where tag like %s", ("100__a",))
@@ -1773,32 +1767,26 @@ def copy_personids():
             "SELECT * "
             "FROM `aidPERSONIDPAPERS")
 
+def get_coauthor_pids(pid, exclude_bibrecs=None):
+    papers = get_person_bibrecs(pid)
+    if exclude_bibrecs:
+        papers = set(papers) - set(exclude_bibrecs)
 
-def get_possible_personids_from_paperlist_old(bibrecreflist):
-    '''
-    @param bibrecreflist: list of bibrecref couples, (('100:123,123',),) or bibrecs (('123',),)
-    returns a list of pids and connected bibrefs in order of number of bibrefs per pid
-    [ [['1'],['123:123.123','123:123.123']] , [['2'],['123:123.123']] ]
-    '''
+    if not papers:
+        return []
 
-    pid_bibrecref_dict = {}
-    for b in bibrecreflist:
-        pids = []
+    papers_s = list_2_SQL_str(papers)
 
-        try:
-            pids = run_sql("select personid from aidPERSONID "
-                    "use index (`tdf-b`) where tag=%s and data=%s", ('paper', str(b[0])))
-        except (OperationalError, ProgrammingError):
-            pids = run_sql("select personid from aidPERSONID "
-                    "where tag=%s and data=%s", ('paper', str(b[0])))
+    pids = run_sql("select personid,bibrec from aidPERSONIDPAPERS "
+                   "where bibrec in %s and flag > -2" % papers_s)
 
-        for pid in pids:
-            if pid[0] in pid_bibrecref_dict:
-                pid_bibrecref_dict[pid[0]].append(str(b[0]))
-            else:
-                pid_bibrecref_dict[pid[0]] = [str(b[0])]
 
-    pid_list = [[i, pid_bibrecref_dict[i]] for i in pid_bibrecref_dict]
+    pids = set((int(p[0]), int(p[1])) for p in pids)
+    pids = sorted([p[0] for p in pids])
+    pids = groupby(pids)
+    pids = [(key, len(list(val))) for key, val in pids if key != pid]
+    pids = sorted(pids, key=lambda x: x[1], reverse=True)
 
-    return sorted(pid_list, key=lambda k: len(k[2]), reverse=True)
+    return pids
+
 
