@@ -851,6 +851,7 @@ AC_CONFIG_FILES([config.nice  \
      modules/webstyle/Makefile \
      modules/webstyle/bin/Makefile \
      modules/webstyle/bin/webdoc \
+     modules/webstyle/bin/citationstats \
      modules/webstyle/css/Makefile \
      modules/webstyle/doc/Makefile \
      modules/webstyle/doc/admin/Makefile \

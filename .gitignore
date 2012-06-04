@@ -81,6 +81,7 @@ modules/websession/bin/inveniogc
 modules/webstat/bin/webstat
 modules/webstat/bin/webstatadmin
 modules/webstyle/bin/webdoc
+modules/webstyle/bin/citationstats
 modules/websubmit/bin/bibdocfile
 modules/websubmit/bin/inveniounoconv
 tags

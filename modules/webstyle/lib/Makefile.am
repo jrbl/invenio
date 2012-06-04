@@ -35,7 +35,8 @@ pylib_DATA = webdoc.py \
              webinterface_handler_wsgi.py \
              webinterface_handler_wsgi_utils.py \
              webinterface_handler_config.py \
-             httptest_webinterface.py
+             httptest_webinterface.py \
+             citation_stats_task.py
 
 wsgiweb_DATA = invenio.wsgi
 
