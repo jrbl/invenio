@@ -95,19 +95,18 @@ def get_citation_weight(rank_method_code, config, chunk_size=20000):
     if last_modified_records or task_get_option("id"):
         if task_get_option("id"):
             # construct a range of records to index
-            taskid = task_get_option("id")
-            first = taskid[0][0]
-            last = taskid[0][1]
-            # Make range, last+1 so that
-            # e.g. -i 1-2 really means [1,2] not [1]
-            updated_recid_list = range(first, last+1)
+            updated_recid_list = []
+            for first, last in task_get_option("id"):
+                updated_recid_list += range(first, last+1)
+            write_message('Records to process: %s' % \
+                                                      str(updated_recid_list))
         else:
             updated_recid_list = create_recordid_list(last_modified_records)
 
-        write_message("Last update %s records: %s updates: %s" % \
-                                                (last_update_time,
-                                                 len(last_modified_records),
-                                                 len(updated_recid_list)))
+            write_message("Last update %s records: %s updates: %s" % \
+                                                   (last_update_time,
+                                                    len(last_modified_records),
+                                                    len(updated_recid_list)))
 
         # result_intermediate should be warranted to exists!
         # but if the user entered a "-R" (do all) option, we need to
@@ -139,7 +138,7 @@ def get_citation_weight(rank_method_code, config, chunk_size=20000):
         # Process recent records first
         # The older records were most likely added by the above steps
         # to be reprocessed so they only have minor changes
-        updated_recid_iter = sorted(updated_recid_list_set, reverse=True)
+        updated_recid_iter = iter(sorted(updated_recid_list_set, reverse=True))
 
         # Split records to process into chunks so that we do not
         # fill up too much memory
@@ -147,6 +146,12 @@ def get_citation_weight(rank_method_code, config, chunk_size=20000):
             task_sleep_now_if_required()
             chunk = list(islice(updated_recid_iter, chunk_size))
             if not chunk:
+                if not quick:
+                    insert_cit_ref_list_intodb(cites,
+                                               refs,
+                                               selfcites,
+                                               selfrefs,
+                                               authorcites)
                 break
             write_message("Processing chunk #%s to #%s" % (chunk[0], chunk[-1]))
             cites_weight, cites, refs, selfcites, selfrefs, authorcites \
@@ -157,7 +162,8 @@ def get_citation_weight(rank_method_code, config, chunk_size=20000):
                                         refs,
                                         selfcites,
                                         selfrefs,
-                                        authorcites)
+                                        authorcites,
+                                        do_catchup=quick)
 
             if quick:
                 # Store partial result as it is just an update and not
@@ -180,13 +186,14 @@ def get_citation_weight(rank_method_code, config, chunk_size=20000):
     return cites_weight, index_update_time
 
 
-def process_chunk(recids, config, cites_weight, cites,
-                                refs, selfcites, selfrefs, authorcites):
+def process_chunk(recids, config, cites_weight, cites, refs, selfcites,
+                                       selfrefs, authorcites, do_catchup=True):
     tags = get_tags_config(config)
     # call the procedure that does the hard work by reading fields of
     # citations and references in the updated_recid's (but nothing else)!
     write_message("Entering get_citation_informations", verbose=9)
-    citation_informations = get_citation_informations(recids, tags)
+    citation_informations = get_citation_informations(recids, tags,
+                                                 fetch_catchup_info=do_catchup)
     # write_message("citation_informations: "+str(citation_informations))
     # create_analysis_tables() #temporary..
                               #test how much faster in-mem indexing is
@@ -202,7 +209,8 @@ def process_chunk(recids, config, cites_weight, cites,
                        authorcites,
                        config,
                        recids,
-                       tags)
+                       tags,
+                       do_catchup=do_catchup)
     # dic is docid-numberofreferences like {1: 2, 2: 0, 3: 1}
     # write_message("Docid-number of known references "+str(dic))
 
@@ -411,14 +419,14 @@ def get_journal_info(recid, tags):
 
 def get_alt_volume(volume):
     alt_volume = None
-    if re.match(ur'\w\d+', volume, re.U|re.I):
+    if re.match(ur'[a-zA-Z]\d+', volume, re.U|re.I):
         alt_volume = volume[1:] + volume[0]
-    elif re.match(ur'\d+\w', volume, re.U|re.I):
+    elif re.match(ur'\d+[a-zA-Z]', volume, re.U|re.I):
         alt_volume = volume[-1] + volume[:-1]
     return alt_volume
 
 
-def get_citation_informations(recid_list, tags):
+def get_citation_informations(recid_list, tags, fetch_catchup_info=True):
     """scans the collections searching references (999C5x -fields) and
        citations for items in the recid_list
        returns a 4 list of dictionaries that contains the citation information
@@ -476,13 +484,17 @@ def get_citation_informations(recid_list, tags):
 
             if tags['refs_report_number']:
                 references_info['report-numbers'][recid] \
-                        = get_fieldvalues(recid, tags['refs_report_number'])
+                        = get_fieldvalues(recid,
+                                          tags['refs_report_number'],
+                                          sort=False)
                 msg = "references_info['report-numbers'][%s] = %r" \
                             % (recid, references_info['report-numbers'][recid])
                 write_message(msg, verbose=9)
             if tags['refs_journal']:
                 references_info['journals'][recid] = []
-                for ref in get_fieldvalues(recid, tags['refs_journal']):
+                for ref in get_fieldvalues(recid,
+                                           tags['refs_journal'],
+                                           sort=False):
                     try:
                         # Inspire specific parsing
                         journal, volume, page = ref.split(',')
@@ -499,20 +511,28 @@ def get_citation_informations(recid_list, tags):
                 write_message(msg, verbose=9)
             if tags['refs_doi']:
                 references_info['doi'][recid] \
-                        = get_fieldvalues(recid, tags['refs_doi'])
+                        = get_fieldvalues(recid, tags['refs_doi'], sort=False)
                 msg = "references_info['doi'][%s] = %r" \
                                        % (recid, references_info['doi'][recid])
                 write_message(msg, verbose=9)
+
+            if not fetch_catchup_info:
+                # We do not need the extra info
+                continue
 
             if tags['record_pri_number'] or tags['record_add_number']:
                 records_info['report-numbers'][recid] = []
 
                 if tags['record_pri_number']:
                     records_info['report-numbers'][recid] \
-                        += get_fieldvalues(recid, tags['record_pri_number'])
+                        += get_fieldvalues(recid,
+                                           tags['record_pri_number'],
+                                           sort=False)
                 if tags['record_add_number']:
                     records_info['report-numbers'][recid] \
-                        += get_fieldvalues(recid, tags['record_add_number'])
+                        += get_fieldvalues(recid,
+                                           tags['record_add_number'],
+                                           sort=False)
 
                 msg = "records_info[%s]['report-numbers'] = %r" \
                             % (recid, records_info['report-numbers'][recid])
@@ -521,7 +541,9 @@ def get_citation_informations(recid_list, tags):
             if tags['doi']:
                 records_info['doi'][recid] = []
                 for tag in tags['doi']:
-                    records_info['doi'][recid] += get_fieldvalues(recid, tag)
+                    records_info['doi'][recid] += get_fieldvalues(recid,
+                                                                  tag,
+                                                                  sort=False)
                 msg = "records_info[%s]['doi'] = %r" \
                                           % (recid, records_info['doi'][recid])
                 write_message(msg, verbose=9)
@@ -749,7 +771,7 @@ def get_author_citations(updated_redic_list, citedbydict,
 
 def standardize_report_number(report_number):
     # Remove category for arxiv papers
-    report_number = re.sub(ur'(?:arXiv:)?(\d{4}\.\d{4}) \[[a-z-]+\]',
+    report_number = re.sub(ur'(?:arXiv:)?(\d{4}\.\d{4}) \[[a-zA-Z\.-]+\]',
                   ur'arXiv:\g<1>',
                   report_number,
                   re.I | re.U)
@@ -758,12 +780,12 @@ def standardize_report_number(report_number):
 
 def ref_analyzer(citation_informations, citations_weight, citations,
                  references, selfcites, selfrefs, authorcites,
-                 config, updated_recids, tags):
+                 config, updated_recids, tags, do_catchup=True):
     """Analyze the citation informations and calculate the citation weight
        and cited by list dictionary.
     """
 
-    def step(msg_prefix, done, total):
+    def step(msg_prefix, recid, done, total):
         if done % 30 == 0:
             task_sleep_now_if_required()
 
@@ -772,14 +794,20 @@ def ref_analyzer(citation_informations, citations_weight, citations,
             write_message(mesg)
             task_update_progress(mesg)
 
+        write_message("Processing: %s" % recid, verbose=9)
+
     def add_to_dicts(citer, cited):
+        # Make sure we don't add ourselves
+        # Workaround till we know why we are adding ourselves.
+        if citer == cited:
+            return
         if cited not in citations_weight:
             citations_weight[cited] = 0
-
-        # Append unless this key already has the item
+        # Citations and citations weight
         if citer not in citations.setdefault(cited, []):
-            citations[cited].append(thisrecid)
+            citations[cited].append(citer)
             citations_weight[cited] += 1
+        # References
         if cited not in references.setdefault(citer, []):
             references[citer].append(cited)
 
@@ -790,11 +818,14 @@ def ref_analyzer(citation_informations, citations_weight, citations,
 
     write_message("Phase 0: temporarily remove changed records from " \
                   "citation dictionaries; they will be filled later")
+    if do_catchup:
+        for somerecid in updated_recids:
+            try:
+                del citations[somerecid]
+            except KeyError:
+                pass
+
     for somerecid in updated_recids:
-        try:
-            del citations[somerecid]
-        except KeyError:
-            pass
         try:
             del references[somerecid]
         except KeyError:
@@ -806,7 +837,7 @@ def ref_analyzer(citation_informations, citations_weight, citations,
     write_message("Phase 1: Report numbers references")
     done = 0
     for thisrecid, refnumbers in references_info['report-numbers'].iteritems():
-        step("Report numbers references", done, \
+        step("Report numbers references", thisrecid, done,
                                         len(references_info['report-numbers']))
         done += 1
 
@@ -816,20 +847,18 @@ def ref_analyzer(citation_informations, citations_weight, citations,
             # Search for "hep-th/5644654 or such" in existing records
             recids = get_recids_matching_query(p=refnumber, f=field)
             write_message("These match searching %s in %s: %s" % \
-                                        (refnumber, field, recids), verbose=9)
+                                   (refnumber, field, list(recids)), verbose=9)
+
+            if not recids:
+                insert_into_missing(thisrecid, refnumber)
+            else:
+                remove_from_missing(refnumber)
 
             # TODO: if we match more than one record
             # either duplicate record or something else
             # Maybe we should alert admins selectively
-            if len(recids) == 1:
-                # the refered publication is in our collection, remove
-                # from missing
-                remove_from_missing(refnumber)
-                recid = recids.pop()
+            for recid in recids:
                 add_to_dicts(thisrecid, recid)
-            else:
-                # it was not found so add in missing
-                insert_into_missing(thisrecid, refnumber)
 
     mesg = "done fully"
     write_message(mesg)
@@ -842,7 +871,8 @@ def ref_analyzer(citation_informations, citations_weight, citations,
     write_message("Phase 2: Journal references")
     done = 0
     for thisrecid, refs in references_info['journals'].iteritems():
-        step("Journal references", done, len(references_info['journals']))
+        step("Journal references", thisrecid, done,
+                                              len(references_info['journals']))
         done += 1
 
         for reference in (r for r in refs if r):
@@ -851,15 +881,15 @@ def ref_analyzer(citation_informations, citations_weight, citations,
 
             recids = search_unit(p, field) - INTBITSET_OF_DELETED_RECORDS
             write_message("These match searching %s in %s: %s" \
-                                      % (reference, field, recids), verbose=9)
+                                 % (reference, field, list(recids)), verbose=9)
 
-            # check citation and reference for this..
-            if len(recids) == 1:
-                recid = recids.pop()
-                remove_from_missing(p)
-                add_to_dicts(thisrecid, recid)
-            else:
+            if not recids:
                 insert_into_missing(thisrecid, p)
+            else:
+                remove_from_missing(p)
+
+            for recid in recids:
+                add_to_dicts(thisrecid, recid)
 
     mesg = "done fully"
     write_message(mesg)
@@ -872,7 +902,7 @@ def ref_analyzer(citation_informations, citations_weight, citations,
     write_message("Phase 3: DOI references")
     done = 0
     for thisrecid, refs in references_info['doi'].iteritems():
-        step("DOI references", done, len(references_info['doi']))
+        step("DOI references", thisrecid, done, len(references_info['doi']))
         done += 1
 
         for reference in (r for r in refs if r):
@@ -881,15 +911,15 @@ def ref_analyzer(citation_informations, citations_weight, citations,
 
             recids = get_recids_matching_query(p, field)
             write_message("These match searching %s in %s: %s" \
-                                      % (reference, field, recids), verbose=9)
+                                 % (reference, field, list(recids)), verbose=9)
 
-            # check citation and reference for this..
-            if len(recids) == 1:
-                recid = recids.pop()
-                remove_from_missing(p)
-                add_to_dicts(thisrecid, recid)
-            else:
+            if not recids:
                 insert_into_missing(thisrecid, p)
+            else:
+                remove_from_missing(p)
+
+            for recid in recids:
+                add_to_dicts(thisrecid, recid)
 
     mesg = "done fully"
     write_message(mesg)
@@ -901,7 +931,7 @@ def ref_analyzer(citation_informations, citations_weight, citations,
     write_message("Phase 4: report numbers catchup")
     done = 0
     for thisrecid, reportcodes in records_info['report-numbers'].iteritems():
-        step("Report numbers catchup", done, \
+        step("Report numbers catchup", thisrecid, done,
                                            len(records_info['report-numbers']))
         done += 1
 
@@ -929,7 +959,8 @@ def ref_analyzer(citation_informations, citations_weight, citations,
     done = 0
     t5 = os.times()[4]
     for thisrecid, rec_journals in records_info['journals'].iteritems():
-        step("Journals catchup", done, len(records_info['journals']))
+        step("Journals catchup", thisrecid, done,
+                                                 len(records_info['journals']))
         done += 1
 
         for journal in rec_journals:
@@ -939,7 +970,7 @@ def ref_analyzer(citation_informations, citations_weight, citations,
             recids = search_unit(p=journal, f=tags['refs_journal'], m='a') \
                                                 - INTBITSET_OF_DELETED_RECORDS
             write_message("These records match %s in %s: %s" \
-                          % (journal, tags['refs_journal'], recids), verbose=9)
+                    % (journal, tags['refs_journal'], list(recids)), verbose=9)
 
             for recid in recids:
                 add_to_dicts(recid, thisrecid)
@@ -952,16 +983,16 @@ def ref_analyzer(citation_informations, citations_weight, citations,
     done = 0
     t6 = os.times()[4]
     for thisrecid, dois in records_info['doi'].iteritems():
-        step("DOI catchup", done, len(records_info['doi']))
+        step("DOI catchup", thisrecid, done, len(records_info['doi']))
         done += 1
 
         for doi in dois:
             # Search the publication string like
-            # Phys. Lett., B 482 (2000) 417 in 999C5s
-            recids = search_unit(p=doi, f='doi', m='a') \
+            # Phys. Lett., B 482 (2000) 417 in 999C5a
+            recids = search_unit(p=doi, f=tags['refs_doi'], m='a') \
                                                 - INTBITSET_OF_DELETED_RECORDS
             write_message("These records match %s in %s: %s" \
-                                  % (doi, tags['refs_doi'], recids), verbose=9)
+                            % (doi, tags['refs_doi'], list(recids)), verbose=9)
 
             for recid in recids:
                 add_to_dicts(recid, thisrecid)
