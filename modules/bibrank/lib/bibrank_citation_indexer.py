@@ -139,7 +139,7 @@ def get_citation_weight(rank_method_code, config, chunk_size=20000):
         # Process recent records first
         # The older records were most likely added by the above steps
         # to be reprocessed so they only have minor changes
-        updated_recid_iter = sorted(updated_recid_list_set, reverse=True)
+        updated_recid_iter = iter(sorted(updated_recid_list_set, reverse=True))
 
         # Split records to process into chunks so that we do not
         # fill up too much memory
