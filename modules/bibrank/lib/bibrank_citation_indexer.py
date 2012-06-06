@@ -778,7 +778,7 @@ def ref_analyzer(citation_informations, citations_weight, citations,
 
         # Append unless this key already has the item
         if citer not in citations.setdefault(cited, []):
-            citations[cited].append(thisrecid)
+            citations[cited].append(citer)
             citations_weight[cited] += 1
         if cited not in references.setdefault(citer, []):
             references[citer].append(cited)
