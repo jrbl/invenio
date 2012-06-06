@@ -147,6 +147,12 @@ def get_citation_weight(rank_method_code, config, chunk_size=20000):
             task_sleep_now_if_required()
             chunk = list(islice(updated_recid_iter, chunk_size))
             if not chunk:
+                if not quick:
+                    insert_cit_ref_list_intodb(cites,
+                                               refs,
+                                               selfcites,
+                                               selfrefs,
+                                               authorcites)
                 break
             write_message("Processing chunk #%s to #%s" % (chunk[0], chunk[-1]))
             cites_weight, cites, refs, selfcites, selfrefs, authorcites \
