@@ -417,9 +417,9 @@ def get_journal_info(recid, tags):
 
 def get_alt_volume(volume):
     alt_volume = None
-    if re.match(ur'\w\d+', volume, re.U|re.I):
+    if re.match(ur'[a-zA-Z]\d+', volume, re.U|re.I):
         alt_volume = volume[1:] + volume[0]
-    elif re.match(ur'\d+\w', volume, re.U|re.I):
+    elif re.match(ur'\d+[a-zA-Z]', volume, re.U|re.I):
         alt_volume = volume[-1] + volume[:-1]
     return alt_volume
 
