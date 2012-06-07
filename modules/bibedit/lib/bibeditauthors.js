@@ -37,7 +37,7 @@ $(document).ready(
         // startup behaviors
         // $('<link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.11/themes/redmond/jquery-ui.css" />').appendTo("head"); 
         $('<link rel="stylesheet" type="text/css" href="/img/jquery-ui.css" />').appendTo("head"); // XXX: This version is ugly.
-        $.ajax({ url: "/img/editauthor.css", success: function(results) {
+        $.ajax({ url: "/img/bibeditauthors.css", success: function(results) {
             $("<style></style>").appendTo("head").html(results);
             }}); 
         $('#submit_button').css('display', 'inline'); // jQuery parses so make the button live

@@ -5,7 +5,7 @@ import invenio.template
 from invenio.config import CFG_SITE_URL, CFG_SITE_RECORD
 from invenio.webinterface_handler import WebInterfaceDirectory, wash_urlargd
 
-import invenio.editauthor_engine as engine
+import invenio.bibeditauthors_engine as engine
 import invenio.bibedit_utils as utils
 import invenio.webuser as webuser
 import invenio.access_control_engine as webuser_access

@@ -22,9 +22,9 @@ pylib_DATA = bibrecord_config.py \
              bibrecord_tests.py \
              xmlmarc2textmarc.py \
              textmarc2xmlmarc.py \
-			 editauthor_engine.py \
-			 editauthor_templates.py \
-			 editauthor_webinterface.py \
+			 bibeditauthors_engine.py \
+			 bibeditauthors_templates.py \
+			 bibeditauthors_webinterface.py \
              bibedit_config.py \
              bibedit_dblayer.py \
              bibedit_engine.py \
@@ -40,7 +40,7 @@ pylib_DATA = bibrecord_config.py \
 
 jsdir=$(localstatedir)/www/js
 
-js_DATA = editauthor.js \
+js_DATA = bibeditauthors.js \
 		  bibedit_display.js \
           bibedit_engine.js \
           bibedit_keys.js \
@@ -59,7 +59,7 @@ install-data-hook:
 
 cssdir=$(localstatedir)/www/img
 
-css_DATA = editauthor.css 
+css_DATA = bibeditauthors.css 
 
 EXTRA_DIST = $(pylib_DATA) \
              $(js_DATA) \

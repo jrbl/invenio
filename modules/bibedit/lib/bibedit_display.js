@@ -611,7 +611,8 @@ function createTopToolbar(){
   var toolbar_html = "<div class='floatRight'>" + icon_doc_preview + "</div>" +
                      "<div class='floatRight'>" + icon_open_pdf + "</div>" +
                      "<div class='floatRight'>" + icon_print + "</div>";
-  toolbar_html += "<div class='floatLeft'>" + icon_run_refextract + "</div>";
+  toolbar_html += "<div class='floatLeft'>" + icon_run_asm +"</div>" +
+                  "<div class='floatLeft'>" + icon_run_refextract + "</div>";
   //var toolbar_html = "<div class='floatRight'>" + icon_doc_preview + "</div>" + "<div class='floatRight'>" + icon_open_pdf + "</div>";
   //toolbar_html += "<div class='floatLeft'>" + icon_run_asm +"</div>" + "<div class='floatLeft'>" + icon_run_refextract + "</div>";
   $('#Toptoolbar').html(toolbar_html);

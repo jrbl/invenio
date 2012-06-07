@@ -21,7 +21,7 @@ class Template:
                            #'https://github.com/jeresig/jquery.hotkeys/raw/master/jquery.hotkeys.js',
                            # we include this in the root Makefile.am too, but it's also not clear if it's a good idea
                            'jquery.hotkeys.js',
-                           'editauthor.js'
+                           'bibeditauthors.js'
                           ]
 
     def setup_scripts(self):
