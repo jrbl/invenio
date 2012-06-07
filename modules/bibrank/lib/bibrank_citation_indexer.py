@@ -971,8 +971,8 @@ def ref_analyzer(citation_informations, citations_weight, citations,
 
         for doi in dois:
             # Search the publication string like
-            # Phys. Lett., B 482 (2000) 417 in 999C5s
-            recids = search_unit(p=doi, f='doi', m='a') \
+            # Phys. Lett., B 482 (2000) 417 in 999C5a
+            recids = search_unit(p=doi, f=tags['refs_doi'], m='a') \
                                                 - INTBITSET_OF_DELETED_RECORDS
             write_message("These records match %s in %s: %s" \
                             % (doi, tags['refs_doi'], list(recids)), verbose=9)
