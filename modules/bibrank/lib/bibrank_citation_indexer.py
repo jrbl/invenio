@@ -779,13 +779,17 @@ def ref_analyzer(citation_informations, citations_weight, citations,
             task_update_progress(mesg)
 
     def add_to_dicts(citer, cited):
+        # Make sure we don't add ourselves
+        # Workaround till we know why we are adding ourselves.
+        if citer == cited:
+            return
         if cited not in citations_weight:
             citations_weight[cited] = 0
-
-        # Append unless this key already has the item
+        # Citations and citations weight
         if citer not in citations.setdefault(cited, []):
             citations[cited].append(citer)
             citations_weight[cited] += 1
+        # References
         if cited not in references.setdefault(citer, []):
             references[citer].append(cited)
 
