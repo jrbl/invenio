@@ -769,7 +769,7 @@ def ref_analyzer(citation_informations, citations_weight, citations,
        and cited by list dictionary.
     """
 
-    def step(msg_prefix, done, total):
+    def step(msg_prefix, recid, done, total):
         if done % 30 == 0:
             task_sleep_now_if_required()
 
@@ -777,6 +777,8 @@ def ref_analyzer(citation_informations, citations_weight, citations,
             mesg = "%s done %s of %s" % (msg_prefix, done, total)
             write_message(mesg)
             task_update_progress(mesg)
+
+        write_message("Processing: %s" % recid, verbose=9)
 
     def add_to_dicts(citer, cited):
         # Make sure we don't add ourselves
@@ -816,7 +818,7 @@ def ref_analyzer(citation_informations, citations_weight, citations,
     write_message("Phase 1: Report numbers references")
     done = 0
     for thisrecid, refnumbers in references_info['report-numbers'].iteritems():
-        step("Report numbers references", done, \
+        step("Report numbers references", thisrecid, done,
                                         len(references_info['report-numbers']))
         done += 1
 
@@ -826,7 +828,7 @@ def ref_analyzer(citation_informations, citations_weight, citations,
             # Search for "hep-th/5644654 or such" in existing records
             recids = get_recids_matching_query(p=refnumber, f=field)
             write_message("These match searching %s in %s: %s" % \
-                                        (refnumber, field, recids), verbose=9)
+                                   (refnumber, field, list(recids)), verbose=9)
 
             # TODO: if we match more than one record
             # either duplicate record or something else
@@ -852,7 +854,8 @@ def ref_analyzer(citation_informations, citations_weight, citations,
     write_message("Phase 2: Journal references")
     done = 0
     for thisrecid, refs in references_info['journals'].iteritems():
-        step("Journal references", done, len(references_info['journals']))
+        step("Journal references", thisrecid, done,
+                                              len(references_info['journals']))
         done += 1
 
         for reference in (r for r in refs if r):
@@ -861,7 +864,7 @@ def ref_analyzer(citation_informations, citations_weight, citations,
 
             recids = search_unit(p, field) - INTBITSET_OF_DELETED_RECORDS
             write_message("These match searching %s in %s: %s" \
-                                      % (reference, field, recids), verbose=9)
+                                 % (reference, field, list(recids)), verbose=9)
 
             # check citation and reference for this..
             if len(recids) == 1:
@@ -882,7 +885,7 @@ def ref_analyzer(citation_informations, citations_weight, citations,
     write_message("Phase 3: DOI references")
     done = 0
     for thisrecid, refs in references_info['doi'].iteritems():
-        step("DOI references", done, len(references_info['doi']))
+        step("DOI references", thisrecid, done, len(references_info['doi']))
         done += 1
 
         for reference in (r for r in refs if r):
@@ -891,7 +894,7 @@ def ref_analyzer(citation_informations, citations_weight, citations,
 
             recids = get_recids_matching_query(p, field)
             write_message("These match searching %s in %s: %s" \
-                                      % (reference, field, recids), verbose=9)
+                                 % (reference, field, list(recids)), verbose=9)
 
             # check citation and reference for this..
             if len(recids) == 1:
@@ -911,7 +914,7 @@ def ref_analyzer(citation_informations, citations_weight, citations,
     write_message("Phase 4: report numbers catchup")
     done = 0
     for thisrecid, reportcodes in records_info['report-numbers'].iteritems():
-        step("Report numbers catchup", done, \
+        step("Report numbers catchup", thisrecid, done,
                                            len(records_info['report-numbers']))
         done += 1
 
@@ -939,7 +942,8 @@ def ref_analyzer(citation_informations, citations_weight, citations,
     done = 0
     t5 = os.times()[4]
     for thisrecid, rec_journals in records_info['journals'].iteritems():
-        step("Journals catchup", done, len(records_info['journals']))
+        step("Journals catchup", thisrecid, done,
+                                                 len(records_info['journals']))
         done += 1
 
         for journal in rec_journals:
@@ -949,7 +953,7 @@ def ref_analyzer(citation_informations, citations_weight, citations,
             recids = search_unit(p=journal, f=tags['refs_journal'], m='a') \
                                                 - INTBITSET_OF_DELETED_RECORDS
             write_message("These records match %s in %s: %s" \
-                          % (journal, tags['refs_journal'], recids), verbose=9)
+                    % (journal, tags['refs_journal'], list(recids)), verbose=9)
 
             for recid in recids:
                 add_to_dicts(recid, thisrecid)
@@ -962,7 +966,7 @@ def ref_analyzer(citation_informations, citations_weight, citations,
     done = 0
     t6 = os.times()[4]
     for thisrecid, dois in records_info['doi'].iteritems():
-        step("DOI catchup", done, len(records_info['doi']))
+        step("DOI catchup", thisrecid, done, len(records_info['doi']))
         done += 1
 
         for doi in dois:
@@ -971,7 +975,7 @@ def ref_analyzer(citation_informations, citations_weight, citations,
             recids = search_unit(p=doi, f='doi', m='a') \
                                                 - INTBITSET_OF_DELETED_RECORDS
             write_message("These records match %s in %s: %s" \
-                                  % (doi, tags['refs_doi'], recids), verbose=9)
+                            % (doi, tags['refs_doi'], list(recids)), verbose=9)
 
             for recid in recids:
                 add_to_dicts(recid, thisrecid)
