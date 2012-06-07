@@ -170,8 +170,6 @@ def display_webdoc_page(webdocname, categ="help", ln=CFG_SITE_LANG, req=None):
     if not webdocname:
         webdocname = 'info'
 
-    ln_link = (ln != CFG_SITE_LANG and '?ln=' + ln) or ''
-
     # get page parts in given language:
     if webdocname != 'contents':
         page_parts = get_webdoc_parts(webdocname, parts=['title', 'body',
@@ -179,7 +177,7 @@ def display_webdoc_page(webdocname, categ="help", ln=CFG_SITE_LANG, req=None):
                                                          'description', 'keywords'],
                                       categ=categ,
                                       update_cache_mode=0,
-                                      ln=ln,
+                                      ln=CFG_SITE_LANG,
                                       req=req)
     else:
         # Print Table of Contents
@@ -214,7 +212,7 @@ def display_webdoc_page(webdocname, categ="help", ln=CFG_SITE_LANG, req=None):
                 description=page_description,
                 keywords=page_keywords,
                 uid=uid,
-                language=ln,
+                language=CFG_SITE_LANG,
                 req=req,
                 navmenuid=categ)
 
