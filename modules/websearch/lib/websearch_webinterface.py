@@ -95,6 +95,7 @@ from invenio.webuser import getUid, page_not_authorized, get_user_preferences, \
 from invenio.websubmit_webinterface import WebInterfaceFilesPages
 from invenio.webcomment_webinterface import WebInterfaceCommentsPages
 from invenio.bibcirculation_webinterface import WebInterfaceHoldingsPages
+from invenio.bibeditauthors_webinterface import WebInterfaceEditAuthorPages
 from invenio.webpage import page, pageheaderonly, create_error_box
 from invenio.messages import gettext_set_language
 from invenio.search_engine import check_user_can_view_record, \
@@ -1431,6 +1432,9 @@ class WebInterfaceSearchInterfacePages(WebInterfaceDirectory):
 
         elif component == CFG_SITE_RECORD and path and path[0] == 'edit':
             return WebInterfaceEditPages(), path[1:]
+
+        elif component == CFG_SITE_RECORD and path and path[0] == 'editauthors':
+            return WebInterfaceEditAuthorPages(), path[1:]
 
         elif component == CFG_SITE_RECORD and path and path[0] == 'multiedit':
             return WebInterfaceMultiEditPages(), path[1:]

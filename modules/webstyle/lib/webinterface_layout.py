@@ -24,8 +24,6 @@ This module binds together Invenio's modules and maps them to
 their corresponding URLs (ie, /search to the websearch modules,...)
 """
 
-__revision__ = \
-    "$Id$"
 
 from invenio.webinterface_handler import create_handler
 from invenio.errorlib import register_exception
@@ -262,12 +260,6 @@ if CFG_DEVEL_SITE:
 else:
     test_exports = []
 
-try:
-    from invenio.editauthor_webinterface import WebInterfaceEditAuthorPages
-except:
-    register_exception(alert_admin=True, subject='EMERGENCY')
-    WebInterfaceEditAuthorPages = WebInterfaceDumbPages
-
 class WebInterfaceInvenio(WebInterfaceSearchInterfacePages):
     """ The global URL layout is composed of the search API plus all
     the other modules."""
@@ -296,7 +288,6 @@ class WebInterfaceInvenio(WebInterfaceSearchInterfacePages):
         'batchuploader',
         'inspire',
         'person',
-        'editauthors',
         'bibsword',
         'author',
         'info',
@@ -331,7 +322,6 @@ class WebInterfaceInvenio(WebInterfaceSearchInterfacePages):
     batchuploader = WebInterfaceBatchUploaderPages()
     bibsword = WebInterfaceSword()
     person = WebInterfaceBibAuthorIDPages()
-    editauthors = WebInterfaceEditAuthorPages()
     if CFG_INSPIRE_SITE:
         inspire = WebInterfaceInspirePages()
     #redirects author to the new webauthor

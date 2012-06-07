@@ -11,17 +11,18 @@ import invenio.webuser as webuser
 import invenio.access_control_engine as webuser_access
 import invenio.bibtask as bibtask
 import invenio.bibknowledge as bibknowledge
+from invenio.jsonutils import json, json_unicode_to_utf8, CFG_JSON_AVAILABLE
 
 
 class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
-    """Handle URLs is the /editauthors tree"""
+    """Handle URLs is the record/editauthors tree"""
 
     # List of valid URLs on this path
     _exports = ['', '/', 'rec', 'checkAffil', 'process']
 
     def __init__(self):
         self.title = "Author Special Mode" 
-        self.template = invenio.template.load('editauthor')
+        self.template = invenio.template.load('bibeditauthors')
         self.columns_to_show = 10
 
     def index(self, request, form):
@@ -105,7 +106,7 @@ class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
 
         form_data = wash_urlargd(form, get_washer(form))
             # clean up unicode entitites
-        form_data = utils.json_unicode_to_utf8(form_data)
+        form_data = json_unicode_to_utf8(form_data)
             # minus 'ln' key and 'recid' key, / paired items
         form_length = (len(form_data) - 2) / 2
 
@@ -161,7 +162,7 @@ def check_request_allowed(request):
     code, message = webuser_access.acc_authorize_action(request, 'runbibedit')
     if code != 0:
         return webuser.page_not_authorized(req = request,
-                                           referer = '/editauthors',
+                                           referer = '/record/editauthors',
                                            text = message)
     else:
         return True

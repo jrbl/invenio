@@ -54,7 +54,7 @@ class Template:
     //shared_data["valid_affils"] = %(valid_affils_list_json)s;
 </script>
 <div id="asm_form" title="Please wait while loading...">
-    <form method="post" action="%(site_URL)s/editauthors/process">
+    <form method="post" action="%(site_URL)s/record/editauthors/process">
         <div id="paging_navigation" style="display: none;"></div>
         <div id="NonTableHeaders"></div>
         <table id="asm_uitable" bgcolor="#ff2200">     <!-- Red means a javascript parse error -->
