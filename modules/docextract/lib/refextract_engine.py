@@ -914,9 +914,13 @@ def extract_one(config, kbs, num, pdf_path):
         # don't search for citations in the document body:
         # treat it as a reference section:
         refs_info = get_reference_section_beginning(docbody)
-        docbody = rebuild_reference_lines(docbody, refs_info['marker_pattern'])
-        reflines = docbody
-        how_found_start = 1
+        if refs_info is None:
+            how_found_start = 0
+            reflines = []
+        else:
+            how_found_start = 1
+            reflines = rebuild_reference_lines(docbody,
+                                               refs_info['marker_pattern'])
     else:
         write_message("* processing pdffile: %s" % pdf_path, verbose=2)
 

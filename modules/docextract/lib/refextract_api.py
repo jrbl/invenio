@@ -110,8 +110,11 @@ def extract_references_from_string_xml(source, inspire=CFG_INSPIRE_SITE):
     """
     docbody = source.split('\n')
     refs_info = get_reference_section_beginning(docbody)
-    docbody = rebuild_reference_lines(docbody, refs_info['marker_pattern'])
-    reflines, dummy, dummy = extract_references_from_fulltext(docbody)
+    if refs_info:
+        docbody = rebuild_reference_lines(docbody, refs_info['marker_pattern'])
+        reflines, dummy, dummy = extract_references_from_fulltext(docbody)
+    else:
+        reflines = []
     return parse_references(reflines, inspire=inspire)
 
 
