@@ -1419,7 +1419,7 @@ function onASMClick(){
      * Handle 'ASM' button (author special mode).
      */
     var asmwin = window.open(
-            "/record/editauthors/?recID="+gRecID,
+            "/record/editauthors/?recid="+gRecID,
             "Author Special Mode",
             "top=20,width=900,height=600,toolbar=1,resizeable=1,scrollbars=1");
     asmwin.focus();

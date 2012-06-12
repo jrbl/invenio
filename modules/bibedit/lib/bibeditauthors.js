@@ -126,10 +126,10 @@ function calculate_box_sizes(affiliations) {
         $(tgto).css('padding-left', $(tgfrom).css('padding-left')); 
     }
 
-    //$('#asm_form').width(form_base_w);
+    //$('#editauthors_form').width(form_base_w);
     //$('#asm_uitable').width(rownum_w + auth_w + affi_w + plus_sign_w + (column_w * (affiliations.length + 1)));
     //$('#NonTableHeaders').width( $('#asm_uitable').width() );
-    $('#asm_form').width(Math.min(form_base_w, Math.floor(1.5 * header_w)));
+    $('#editauthors_form').width(Math.min(form_base_w, Math.floor(1.5 * header_w)));
     $('#asm_uitable').width(header_w);
     $('#NonTableHeaders').width(header_w);
     $('#TableContents').height(t_height);

@@ -1,5 +1,3 @@
-import simplejson                 # FIXME: Remember to be defensive
-
 import invenio.webpage
 import invenio.template
 from invenio.config import CFG_SITE_URL, CFG_SITE_RECORD
@@ -32,12 +30,12 @@ class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
             return permission
 
         f = wash_urlargd(form, {
-                'recID':   (int, -1),
+                'recid':   (int, -1),
                 'offset':  (int, 0),
                 'perPage': (int, 30),
                 })
 
-        if f['recID'] != -1:
+        if f['recid'] != -1:
             return self.rec(request, f)
 
         return invenio.webpage.page(title = self.title,
@@ -50,10 +48,10 @@ class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
         if permission != True:
             return permission
 
-        if not 'recID' in form or form['recID'] == -1:
+        if not 'recid' in form or form['recid'] == -1:
             return self.index(request, {})
 
-        record_id = form['recID']
+        record_id = form['recid']
         offset    = form['offset']
         per_page  = form['perPage']
 
@@ -100,7 +98,7 @@ class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
             washer = {}
             for key in form:
                 tag = key[0:5]
-                if (tag == "autho") or (tag == "insts") or (tag == "recID"):
+                if (tag == "autho") or (tag == "insts") or (tag == "recid"):
                     washer[key] = (str, '')
             return washer
 
@@ -113,7 +111,7 @@ class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
         new_doc = '<?xml version="1.0" encoding="UTF-8"?>\n'
         new_doc += '<collection xmlns="http://www.loc.gov/MARC21/slim">\n'
         new_doc += "<record>\n  <controlfield tag=\"001\">"
-        new_doc += "%s</controlfield>\n" % form_data['recID']
+        new_doc += "%s</controlfield>\n" % form_data['recid']
         new_doc += "  <datafield tag=\"100\" ind1=\" \" ind2=\" \">\n"
         new_doc += "    <subfield code=\"a\">"
         new_doc += "%s</subfield>\n" % form_data['autho0']
@@ -134,7 +132,7 @@ class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
         new_doc += "</record>\n</collection>"
 
         # Don't use utils.save_xml_record because record isn't complete
-        newdoc_filename = utils._get_file_path(form_data['recID'],
+        newdoc_filename = utils._get_file_path(form_data['recid'],
                                                webuser.getUid(request))
         newdoc_file = open(newdoc_filename, 'w')
         newdoc_file.write(new_doc)
@@ -142,13 +140,13 @@ class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
         bibtask.task_low_level_submission('bibupload', 'bibedit', '-P',
                                           '5', '-c', newdoc_filename)
 
-        ret_title = "editauthors: Record %s submitted" % form_data['recID']
+        ret_title = "editauthors: Record %s submitted" % form_data['recid']
 #        ret_body = "The following record modification has been submitted for "
-#        ret_body += "record id %s:\n%s\n" % (form_data['recID'],
+#        ret_body += "record id %s:\n%s\n" % (form_data['recid'],
 #                                             debugPrint(form_data))
         ret_body = "The updated author list has been submitted to the job queue.  "
         ret_body += "Results are typically visible in five to ten minutes.  "
-        ret_body += "<a href='%s'>Click here to check.</a>" % (CFG_SITE_URL + '/' + CFG_SITE_RECORD + '/' + form_data['recID'])
+        ret_body += "<a href='%s'>Click here to check.</a>" % (CFG_SITE_URL + '/' + CFG_SITE_RECORD + '/' + form_data['recid'])
         return invenio.webpage.page(title = ret_title,
                                     body = ret_body,
                                     req = request)

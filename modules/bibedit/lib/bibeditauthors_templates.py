@@ -1,6 +1,6 @@
 import invenio.config
+from invenio.jsonutils import json, CFG_JSON_AVAILABLE
 
-import simplejson            # FIXME: remember to be defensive
 import math                  # floor()
 
 
@@ -45,6 +45,14 @@ class Template:
 
     def record(self, record_id, author_list, affiliations, offset=0, per_page=30, title='', valid_affils = []):
         """Template for individual record display/edit"""
+        if CFG_JSON_AVAILABLE:
+            return self._record_normal_display(record_id, author_list, 
+                                               affiliations, offset, per_page, 
+                                               title, valid_affils)
+        else:
+            return self._simplejson_error()
+
+    def _record_normal_display(self, record_id, author_list, affiliations, offset, per_page, title, valid_affils):
         return """%(script_parts)s
 <script type="text/javascript">
     shared_data["authors"] = %(author_list_json)s;
@@ -53,7 +61,7 @@ class Template:
     shared_data["headline"] = {recid: "%(record_id)s", title: "%(paper_title)s", };
     //shared_data["valid_affils"] = %(valid_affils_list_json)s;
 </script>
-<div id="asm_form" title="Please wait while loading...">
+<div id="editauthors_form" title="Please wait while loading...">
     <form method="post" action="%(site_URL)s/record/editauthors/process">
         <div id="paging_navigation" style="display: none;"></div>
         <div id="NonTableHeaders"></div>
@@ -62,7 +70,7 @@ class Template:
             </tbody>
         </table>
         <span id="formbuttons">
-            <input name="recID" type="hidden" value="%(record_id)s">
+            <input name="recid" type="hidden" value="%(record_id)s">
             <!-- Submit button is unhidden by jQuery code -->
             <input id="submit_button" name="submit_button" type="submit" value="Submit" class="formbutton" style="display: none;">
         </span>
@@ -70,15 +78,26 @@ class Template:
 </div>
 """ % {
        'script_parts'           : self.setup_scripts(),
-       'author_list_json'       : simplejson.dumps(author_list),
-       'affiliation_list_json'  : simplejson.dumps(affiliations),
-       'valid_affils_list_json' : simplejson.dumps(valid_affils),
+       'author_list_json'       : json.dumps(author_list),
+       'affiliation_list_json'  : json.dumps(affiliations),
+       'valid_affils_list_json' : json.dumps(valid_affils),
        'site_URL'               : invenio.config.CFG_SITE_URL,
        'record_id'              : str(record_id),
        'per_page'               : str(per_page),
        'offset'                 : str(offset),
        'paper_title'            : title,
       }
+
+    def _simplejson_error(self):
+        return """
+<div id="editauthors_form" title="Author editing missing dependency">
+    <p class="warningred">
+        Please notify your system administrator that the <i>simplejson</i> 
+        module is not usably installed, and that without it, bibeditauthors 
+        is unable to properly function.
+    </p>
+</div>"""
+
               
     def tPara(self, instr, indent=0, tagas=''):
         """Output an HTML paragraph"""
