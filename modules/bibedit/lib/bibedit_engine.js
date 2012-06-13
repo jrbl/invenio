@@ -1251,25 +1251,26 @@ function onSubmitPreviewSuccess(dialogPreview, html_preview){
         close: function() { updateStatus('ready'); },
         buttons: {
             "Submit changes": function() {
-                                    createReq({recID: gRecID, requestType: 'submit',
-                                        force: onSubmitClick.force}, function(json){
-                                            // Submission was successful.
-                                            changeAndSerializeHash({state: 'submit', recid: gRecID});
-                                            var resCode = json['resultCode'];
-                                            cleanUp(!gNavigatingRecordSet, '', null, true);
-                                            updateStatus('report', gRESULT_CODES[resCode]);
-                                            updateToolbar(false);
-                                            resetBibeditState();
-                                            displayMessage(resCode);
-                                            updateStatus('ready');
-                                    });
-                                    $( this ).remove();
-                                },
+                createReq({recID: gRecID, requestType: 'submit',
+                  force: onSubmitClick.force}, function(json){
+                      // Submission was successful.
+                      changeAndSerializeHash({state: 'submit', recid: gRecID});
+                      var resCode = json['resultCode'];
+                      cleanUp(!gNavigatingRecordSet, '', null, true);
+                      updateStatus('report', gRESULT_CODES[resCode]);
+                      updateToolbar(false);
+                      resetBibeditState();
+                      displayMessage(resCode);
+                      updateStatus('ready');
+              });
+              $( this ).remove();
+            },
             Cancel: function() {
                         updateStatus('ready');
                         $( this ).remove();
                     }
     }});
+  // Focus on the submit button
   $(dialogPreview.dialogDiv).parent().find('button:nth-child(1)').focus();
 
 }
@@ -1279,7 +1280,7 @@ function onSubmitClick(){
    * Handle 'Submit' button (submit record).
    */
   updateStatus('updating');
-  var dialogPreview = createDialog("Loading...", "Retrieving preview...", 750, 700);
+  var dialogPreview = createDialog("Loading...", "Retrieving preview...", 750, 700, true);
 
   // Get preview of the record and let the user confirm submit
   getPreview(dialogPreview, onSubmitPreviewSuccess);
@@ -1292,7 +1293,7 @@ function onPreviewClick(){
   /*
    * Handle 'Preview' button (preview record).
    */
-   var dialogPreview = createDialog("Loading...", "Retrieving preview...", 750, 700);
+   var dialogPreview = createDialog("Loading...", "Retrieving preview...", 750, 700, true);
    createReq({'new_window': true, recID: gRecID, requestType: 'preview'
        }, function(json){
        // Preview was successful.
@@ -1363,7 +1364,7 @@ function onRefExtractClick() {
     */
 
    /* Create the modal dialog that will contain the references */
-   var dialogReferences = createDialog("Loading...", "Extracting references...", 750, 700);
+   var dialogReferences = createDialog("Loading...", "Extracting references...", 750, 700, true);
 
     /* Create a request to extract references */
     var bibrecord, textmarc, xmlrecord;
@@ -1393,25 +1394,94 @@ function onRefExtractClick() {
                     title: "Apply references",
                     buttons: {
                         "Apply references": function() {
-                                                /* Update global record with the updated version */
-                                                gRecord = bibrecord;
-                                                /* Update cache in the server to have the updated record */
-                                                createReq({recID: gRecID, recXML: xmlrecord, requestType: 'updateCacheRef'});
-                                                /* Redraw whole content table and enable submit button */
-                                                $('#bibEditTable').remove();
-                                                displayRecord();
-                                                redrawFields();
-                                                reColorFields();
-                                                $('#btnSubmit').removeAttr('disabled');
-                                                $('#btnSubmit').css('background-color', 'lightgreen');
-                                                $( this ).remove();
-                                            },
+                            /* Update global record with the updated version */
+                            gRecord = bibrecord;
+                            /* Update cache in the server to have the updated record */
+                            createReq({recID: gRecID, recXML: xmlrecord, requestType: 'updateCacheRef'});
+                            /* Redraw whole content table and enable submit button */
+                            $('#bibEditTable').remove();
+                            displayRecord();
+                            redrawFields();
+                            reColorFields();
+                            $('#btnSubmit').removeAttr('disabled');
+                            $('#btnSubmit').css('background-color', 'lightgreen');
+                            $( this ).remove();
+                        },
                         Cancel: function() {
-                                    $( this ).remove();
-                                }
+                            $( this ).remove();
+                        }
                 }});
             }
         });
+}
+
+function onRefExtractFreeTextClick() {
+  /*
+   * Handler for free text refextract button. Allows to paste references
+   * and process them using refextract on the server side.
+   */
+  /* Create the modal dialog that will contain the references */
+  content = "Paste your references:<br/><textarea id='reffreetext' rows=38 cols=80></textarea>"
+  var dialogReferences = createDialog("Paste references", content, 750, 700);
+  dialogReferences.dialogDiv.dialog({
+      buttons: {
+        "Extract references": function() {
+          /* Read content from textarea before replacing it
+          with the loading gif */
+          var textReferences = $('#reffreetext').val();
+          dialogReferences.contentParagraph.addClass('dialog-box-centered');
+          dialogReferences.contentSpan.html("Loading...<br /><br /> <img src='/img/ajax-loader.gif'>");
+          createReq({ recID: gRecID,
+                      requestType: 'refextract',
+                      txt: textReferences },
+                    function(json) {
+                      var bibrecord, textmarc, xmlrecord, dialogTxt;
+                      bibrecord = json['ref_bibrecord'];
+                      textmarc = json['ref_textmarc'];
+                      xmlrecord = json['ref_xmlrecord'];
+                      var button_dict = {};
+                      if ($(textmarc).html() !== "") {
+                        dialogTxt =  "Do you want to apply the following references?";
+                        button_dict["Apply references"] = function() {
+                              /* Update global record with the updated version */
+                              gRecord = bibrecord;
+                              /* Update cache in the server to have the updated record */
+                              createReq({recID: gRecID, recXML: xmlrecord, requestType: 'updateCacheRef'});
+                              /* Redraw whole content table and enable submit button */
+                              $('#bibEditTable').remove();
+                              displayRecord();
+                              redrawFields();
+                              reColorFields();
+                              $('#btnSubmit').removeAttr('disabled');
+                              $('#btnSubmit').css('background-color', 'lightgreen');
+                              $( this ).remove();
+                        }
+                      }
+                      else {
+                        dialogTxt =  "No references extracted. The automatic " +
+                          "extraction did not recognize any reference in the " +
+                          "pasted text.<br />If you want to edit the references " +
+                          "manually, an easily recognizable format is:<br/><br/>" +
+                          "&nbsp;&nbsp;&nbsp;&nbsp;[1] Phys. Rev A71 (2005) 42<br />" +
+                          "&nbsp;&nbsp;&nbsp;&nbsp;[2] ATLAS-CMS-2007-333";
+                      }
+                      button_dict.Cancel = function() {
+                              $( this ).remove();
+                            }
+                      addContentToDialog(dialogReferences,
+                              textmarc,
+                              dialogTxt);
+                      dialogReferences.dialogDiv.dialog({
+                        title: "Apply references",
+                        buttons: button_dict
+                      });
+                  }
+        );
+      },
+        Cancel: function() {
+          $( this ).remove();
+        }
+      }});
 }
 
 function onCancelClick(){

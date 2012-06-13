@@ -79,6 +79,7 @@ img_DATA = add-small.png \
            drop_down_menu_arrow_down_lb.gif \
            drop_down_menu_arrow_down_w.gif \
            edit1.gif \
+           edit-paste.png \
            external-icon-light-8x8.gif \
            eye.png \
            feed-icon-12x12.gif \

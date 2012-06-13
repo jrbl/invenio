@@ -47,7 +47,7 @@ from invenio.bibedit_config import CFG_BIBEDIT_AJAX_RESULT_CODES, \
     CFG_BIBEDIT_KEYWORD_TAXONOMY, CFG_BIBEDIT_KEYWORD_TAG, \
     CFG_BIBEDIT_KEYWORD_RDFLABEL
 
-from invenio.config import CFG_SITE_LANG, CFG_DEVEL_SITE, CFG_INSPIRE_SITE
+from invenio.config import CFG_SITE_LANG, CFG_DEVEL_SITE
 from invenio.bibedit_dblayer import get_name_tags_all, reserve_record_id, \
     get_related_hp_changesets, get_hp_update_xml, delete_hp_change, \
     get_record_last_modification_date, get_record_revision_author, \
@@ -63,7 +63,7 @@ from invenio.bibedit_utils import cache_exists, cache_expired, \
     revision_to_timestamp, timestamp_to_revision, \
     get_record_revision_timestamps, record_revision_exists, \
     can_record_have_physical_copies, extend_record_with_template, \
-    merge_record_with_template, record_xml_output
+    merge_record_with_template, record_xml_output, replace_references
 
 from invenio.bibrecord import create_record, print_rec, record_add_field, \
     record_add_subfield_into, record_delete_field, \
@@ -90,7 +90,7 @@ from invenio.batchuploader_engine import perform_upload_check
 from invenio.bibcirculation_dblayer import get_number_copies, has_copies
 from invenio.bibcirculation_utils import create_item_details_url
 
-from invenio.refextract_api import replace_references, FullTextNotAvailable
+from invenio.refextract_api import FullTextNotAvailable
 from invenio import xmlmarc2textmarc as xmlmarc2textmarc
 
 from invenio.bibdocfile import BibRecDocs, InvenioWebSubmitFileError
@@ -332,8 +332,7 @@ def perform_request_newticket(recid, uid):
         errmsg = "No ticket system configured"
     return (errmsg, t_url)
 
-def perform_request_ajax(req, recid, uid, data, isBulk = False, \
-                         ln = CFG_SITE_LANG):
+def perform_request_ajax(req, recid, uid, data, isBulk = False):
     """Handle Ajax requests by redirecting to appropriate function."""
     response = {}
     request_type = data['requestType']
@@ -395,9 +394,12 @@ def perform_request_ajax(req, recid, uid, data, isBulk = False, \
     elif request_type in ('get_pdf_url', ):
         response.update(perform_request_get_pdf_url(recid))
     elif request_type in ('record_has_pdf', ):
-        response.update(perform_request_record_has_pdf(recid, uid))
+        response.update(perform_request_record_has_pdf(recid))
     elif request_type in ('refextract', ):
-        response.update(perform_request_ref_extract(recid, uid))
+        txt = None
+        if data.has_key('txt'):
+            txt = data["txt"]
+        response.update(perform_request_ref_extract(recid, uid, txt))
 
     return response
 
@@ -1216,9 +1218,18 @@ def perform_request_bibcatalog(request_type, recid, uid):
         response['resultCode'] = 31
     return response
 
-def perform_request_ref_extract(recid, uid):
+def perform_request_ref_extract(recid, uid, txt=None):
     """ Handle request to extract references in the given record
 
+    @param recid: record id from which the references should be extracted
+    @type recid: str
+    @param txt: string containing references
+    @type txt: str
+    @param uid: user id
+    @type uid: int
+
+    @return: xml record with references extracted
+    @rtype: dictionary
     """
 
     sysno = ""
@@ -1228,11 +1239,11 @@ def perform_request_ref_extract(recid, uid):
                "text-marc":1}
 
     response = {}
-    is_inspire = False
-    if CFG_INSPIRE_SITE:
-        is_inspire = True
     try:
-        recordExtended = replace_references(recid, inspire=is_inspire)
+        if txt:
+            recordExtended = replace_references(recid, txt.decode('utf-8'))
+        else:
+            recordExtended = replace_references(recid)
     except (FullTextNotAvailable, KeyError):
         response['ref_xmlrecord'] = False
         return response
@@ -1246,8 +1257,12 @@ def perform_request_ref_extract(recid, uid):
         for subfield_instance in field_instance[0]:
             if subfield_instance[0] == '9' and subfield_instance[1] == 'CURATOR':
                 # Add reference field on top of references, removing first $$o
-                field_instance = ([subfield for subfield in field_instance[0] if subfield[0] != 'o'], field_instance[1], field_instance[2], field_instance[3], field_instance[4])
-                record_add_fields(ref_bibrecord, '999', [field_instance], field_position_local=0)
+                field_instance = ([subfield for subfield in field_instance[0]
+                                   if subfield[0] != 'o'], field_instance[1],
+                                   field_instance[2], field_instance[3],
+                                   field_instance[4])
+                record_add_fields(ref_bibrecord, '999', [field_instance],
+                                  field_position_local=0)
 
     response['ref_bibrecord'] = ref_bibrecord
 
@@ -1291,7 +1306,7 @@ def perform_request_get_pdf_url(recid):
         response['pdf_url'] = ''
     return response
 
-def perform_request_record_has_pdf(recid, uid):
+def perform_request_record_has_pdf(recid):
     """ Check if record has a pdf attached
     """
     response = {'record_has_pdf': True}
