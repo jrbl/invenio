@@ -905,25 +905,12 @@ def write_raw_references_to_stream(recid, raw_refs, strm):
 
 def extract_one(config, kbs, num, pdf_path):
     """Extract references from one file"""
-    write_message("* processing pdffile: %s" % pdf_path, verbose=2)
-
-    # 1. Get this document body as plaintext:
-    (docbody, extract_error) = get_plaintext_document_body(pdf_path)
-
-    if extract_error == 1:
-        # Non-existent or unreadable pdf/text directory.
-        halt(msg="Error: Unable to open '%s' for extraction" \
-             % pdf_path, exit_code=1)
-    elif extract_error == 0 and len(docbody) == 0:
-        halt(msg="Error: Empty document text", exit_code=1)
-
-    write_message("* get_plaintext_document_body gave: " \
-                         "%d lines, overall error: %d" \
-                         % (len(docbody), extract_error), verbose=2)
 
     # the document body is not empty:
     # 2. If necessary, locate the reference section:
     if config.treat_as_reference_section:
+        docbody = open(pdf_path).read().decode('utf-8').split(u'\n')
+        extract_error = 0
         # don't search for citations in the document body:
         # treat it as a reference section:
         refs_info = get_reference_section_beginning(docbody)
@@ -931,6 +918,22 @@ def extract_one(config, kbs, num, pdf_path):
         reflines = docbody
         how_found_start = 1
     else:
+        write_message("* processing pdffile: %s" % pdf_path, verbose=2)
+
+        # 1. Get this document body as plaintext:
+        docbody, extract_error = get_plaintext_document_body(pdf_path)
+
+        if extract_error == 1:
+            # Non-existent or unreadable pdf/text directory.
+            halt(msg="Error: Unable to open '%s' for extraction" \
+                 % pdf_path, exit_code=1)
+        elif extract_error == 0 and len(docbody) == 0:
+            halt(msg="Error: Empty document text", exit_code=1)
+
+        write_message("* get_plaintext_document_body gave: " \
+                             "%d lines, overall error: %d" \
+                             % (len(docbody), extract_error), verbose=2)
+
         # launch search for the reference section in the document body:
         (reflines, extract_error, how_found_start) = \
                    extract_references_from_fulltext(docbody)
