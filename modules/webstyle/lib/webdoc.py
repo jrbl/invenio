@@ -251,6 +251,7 @@ def get_webdoc_parts(webdoc,
             # Could not find/read the folder where cache should
             # be. Generate on-the-fly, get all the parts at the
             # same time, and return
+            dirs = None
             if categ == "info":
                 dirs = locations
             (webdoc_source_path, \
