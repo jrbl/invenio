@@ -188,6 +188,17 @@ window.onload = function(){
   }
 };
 
+function resize_content() {
+  /*
+   * Resize content table to always fit in the avaiable screen and not have two
+   * different scroll bars
+   */
+  var bibedit_table_top = $("#bibEditContentTable").offset().top;
+  var bibedit_table_height = Math.round(.93 * ($(window).height() - bibedit_table_top));
+  bibedit_table_height = parseInt(bibedit_table_height) + 'px';
+  $("#bibEditContentTable").css('height',bibedit_table_height);
+}
+
 $(function(){
   /*
    * Initialize all components.
@@ -202,7 +213,11 @@ $(function(){
   gHashCheckTimerID = setInterval(initStateFromHash, gHASH_CHECK_INTERVAL);
   initHotkeys();
   initClipboardLibrary();
-  initClipboard()
+  initClipboard();
+  // Modify BibEdit content table height dinamically to avoid going over the
+  // viewport
+  resize_content();
+  $(window).bind('resize', resize_content);
 });
 
 

@@ -348,10 +348,7 @@ def page_style():
     style = """<style type="text/css">"""
     style += """
                 .pagefooter {
-                    position: fixed;
-                    bottom: 0px;
-                    height: 0px;
-                    margin-top: 0px;
+                    display: none;
                 }
 
                 .revisionLine {
@@ -378,7 +375,6 @@ def page_style():
 
                 #bibEditContentTable {
                     overflow: auto;
-                    height: 805px;
                     border-top:1px solid;
                     border-color: #575757;
                     margin-top: 5px;
