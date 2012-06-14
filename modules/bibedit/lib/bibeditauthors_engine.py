@@ -125,9 +125,9 @@ if __name__ == "__main__":
     search_names = recid2names(search_for)
 
     for author_name in search_names:
-        for recID, auth, affils in name2affils(author_name, search_for):
+        for recid, auth, affils in name2affils(author_name, search_for):
             if affils[0] != None:
-                print '\t%5d %35s' % (recID, '"'+auth+'"'),
+                print '\t%5d %35s' % (recid, '"'+auth+'"'),
                 for affil in affils:
                     print '%35s' % '"' + affil + '"',
                 print
