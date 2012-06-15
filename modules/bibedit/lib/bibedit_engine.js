@@ -196,7 +196,7 @@ function resize_content() {
   var bibedit_table_top = $("#bibEditContentTable").offset().top;
   var bibedit_table_height = Math.round(.93 * ($(window).height() - bibedit_table_top));
   bibedit_table_height = parseInt(bibedit_table_height) + 'px';
-  $("#bibEditContentTable").css('height',bibedit_table_height);
+  $("#bibEditContentTable").css('height', bibedit_table_height);
 }
 
 $(function(){
@@ -1324,7 +1324,9 @@ function onPrintClick() {
   /*
    * Print page, makes use of special css rules @media print
    */
+  $("#bibEditContentTable").css('height', "100%");
   window.print();
+  resize_content();
 }
 
 function onOpenPDFClick() {
