@@ -104,13 +104,12 @@ function updateTable(shared_data) {
  * sizes.  At least, theoretically.
  */
 function calculate_box_sizes(affiliations) {
-    var acc, affi_w, auth_w, column_w, header_w, form_base_w, max_header_height, plus_sign_w, rownum_w, scrollbar_padding_w, t_height, w_width, w_height;
+    var affi_w, auth_w, column_w, header_w, form_base_w, max_header_height, plus_sign_w, rownum_w, scrollbar_padding_w, t_height, w_width, w_height;
     w_width = $(window).width();
     w_height = $(window).height();
-    t_height = Math.floor(0.9 * w_height);
+    t_height = Math.floor(0.7 * w_height);
 
     form_base_w = Math.floor(0.95 * w_width);
-    acc = 0;
     scrollbar_padding_w = 40;
     rownum_w = 20;
     auth_w = 120;
@@ -126,6 +125,8 @@ function calculate_box_sizes(affiliations) {
         $(tgto).css('padding-left', $(tgfrom).css('padding-left')); 
     }
 
+    $('.pageheader').remove();         // remove the headers
+    $('.pagefooter').remove();         // remove the headers
     //$('#editauthors_form').width(form_base_w);
     //$('#asm_uitable').width(rownum_w + auth_w + affi_w + plus_sign_w + (column_w * (affiliations.length + 1)));
     //$('#NonTableHeaders').width( $('#asm_uitable').width() );
