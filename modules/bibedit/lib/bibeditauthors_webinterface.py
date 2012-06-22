@@ -82,44 +82,41 @@ class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
         if permission != True:
             return permission
 
-        def get_washer(form):
+            # Improve XSS safety then clean up unicode entitites
+        def tags_from(form):
             washer = {}
             for key in form:
                 tag = key[0:5]
                 if (tag == "autho") or (tag == "insts") or (tag == "recid"):
                     washer[key] = (str, '')
             return washer
+        form_data = json_unicode_to_utf8(wash_urlargd(form, tags_from(form)))
 
-        form_data = wash_urlargd(form, get_washer(form))
-            # clean up unicode entitites
-        form_data = json_unicode_to_utf8(form_data)
-            # minus 'ln' key and 'recid' key, / paired items
-        form_length = (len(form_data) - 2) / 2
-
+            # Not having a recid at this point is horrifically broken
         recid = form_data.get('recid')
-        if not recid or not form_data.get('autho0'):
+        if not recid: 
             return self._broken_record_error(form_data, request)
 
         new_doc = '<?xml version="1.0" encoding="UTF-8"?>\n'
         new_doc += '<collection xmlns="http://www.loc.gov/MARC21/slim">\n'
         new_doc += "<record>\n  <controlfield tag=\"001\">"
         new_doc += "%s</controlfield>\n" % recid
-        new_doc += "  <datafield tag=\"100\" ind1=\" \" ind2=\" \">\n"
-        new_doc += "    <subfield code=\"a\">"
-        new_doc += "%s</subfield>\n" % form_data['autho0']
-        for sub in form_data.get('insts0', '').split(';'):
-            sub = sub.strip()
-            if sub != '':
-                new_doc += "    <subfield code=\"u\">%s</subfield>\n" % sub
-        new_doc += "  </datafield>\n"
-        for i in range(1, form_length):
-            new_doc += "  <datafield tag=\"700\" ind1=\" \" ind2=\" \">\n"
-            new_doc += "    <subfield code=\"a\">"
-            new_doc += "%s</subfield>\n" % form_data.get('autho%s'%i, '')
-            for sub in form_data.get('insts%s'%i, '').split(';'):
-                sub = sub.strip()
-                if sub != '':
-                    new_doc += "    <subfield code=\"u\">%s</subfield>\n" % sub
+            # minus 'ln' key and 'recid' key, / pair sizes
+        form_length = (len(form_data) - 2) / 2
+        for i in range(form_length):
+            author = form_data.get('autho'+str(i), '')
+            insts = [inst.strip() for inst in form_data.get('insts'+str(i), '').split() if inst and not inst.isspace()]
+            if not author and not insts:
+                continue;
+            elif not author:
+                return self._broken_record_error(form_data, request)
+            if i:
+                new_doc += "  <datafield tag=\"700\" ind1=\" \" ind2=\" \">\n"
+            else:
+                new_doc += "  <datafield tag=\"100\" ind1=\" \" ind2=\" \">\n"
+            new_doc += "    <subfield code=\"a\">%s</subfield>\n" % author
+            for inst in insts:
+                new_doc += "    <subfield code=\"u\">%s</subfield>\n" % inst
             new_doc += "  </datafield>\n"
         new_doc += "</record>\n</collection>"
 
@@ -128,6 +125,9 @@ class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
         newdoc_file = open(newdoc_filename, 'w')
         newdoc_file.write(new_doc)
         newdoc_file.close()
+            # FIXME: this won't kill intentionally deleted subfields.  Instead,
+            #        pass data back to bibedit for merging with existing data
+            #        and subsequent whole-record replacement
         bibtask.task_low_level_submission('bibupload', 'bibedit', '-P', '5', '-c', newdoc_filename)
 
         ret_title = "editauthors: Record %s submitted" % recid
@@ -155,8 +155,8 @@ class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
         return_body = "<p>Warning: No data will be saved.  Something went wrong "
         return_body += "talking to the database or to your web browser, and we "
         return_body += "got a record to process which was missing either the record "
-        return_body += "id number, which should be impossible, or was missing its "
-        return_body += "first author designation.</p>"
+        return_body += "id number, which should be impossible, or had one or more "
+        return_body += "empty author designations.</p>"
         return_body += "<p>If you are sure that your first author was good and "
         return_body += "the website has been behaving well up until now, please "
         return_body += "report this problem to your site administrators immediately. "

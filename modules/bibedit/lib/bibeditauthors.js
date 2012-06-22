@@ -686,9 +686,19 @@ function addHandler_semicolonSepBoxToAffiliations(tg, shared_data) {
   $(tg).change(function() {
       var addColumn_flag, authorName, row, newRow, oldRow, 
       row = getRowNumber(this);
+      row_selector = getRowSelector(row);
       //oldRow = shared_data.authors[row];
       //authorName = oldRow[0];
       authorName = shared_data.authors[row][0];
+      if (authorName === '') {  // FIXME TODO FIXME This if/else should add decorators to broken rows. not here?
+        // add class decorator to this row's author if it's empty
+        alert('no author!');
+        $($(row_selector)[0].childNodes[1].firstChild).addClass('InstNoAuth');
+      } else {
+        alert('author!');
+        // remove class decorator from this row's author if it's empty
+        $($(row_selector)[0].childNodes[1].firstChild).removeClass('InstNoAuth');
+      }
       newRow = filter_SemicolonStringToArray(this.value);
       newRow.unshift(authorName);
       //addColumn_flag = false;
