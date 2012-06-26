@@ -30,7 +30,9 @@ if CFG_BIBCATALOG_SYSTEM == 'RT':
     from invenio.bibcatalog_system_rt import BibCatalogSystemRT
     bibcatalog_system = BibCatalogSystemRT()
 
-
+if CFG_BIBCATALOG_SYSTEM == 'EMAIL':
+    from invenio.bibcatalog_system_email import BibCatalogSystemEMAIL
+    bibcatalog_system = BibCatalogSystemEMAIL() 
 
 
 
