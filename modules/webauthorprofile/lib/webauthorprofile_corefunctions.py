@@ -164,7 +164,7 @@ def _get_self_pubs(person_id):
         cid = cid[0][0]
     except IndexError:
         cid = person_id
-    return perform_request_search(p='author=%s and authorcount=1' % cid)
+    return perform_request_search(p='author:%s and authorcount:1' % cid)
 
 def get_institute_pub_dict(person_id):
     """
