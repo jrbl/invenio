@@ -1042,7 +1042,7 @@ class SpiresToInvenioSyntaxConverter:
 
     def _create_author_search_pattern_from_fuzzy_name_dict(self, fuzzy_name):
         """Creates an invenio search pattern for an author from a fuzzy name dict"""
-
+        
         author_name = ''
         author_middle_name = ''
         author_surname = ''
@@ -1088,10 +1088,13 @@ class SpiresToInvenioSyntaxConverter:
         # ellis, jacqueline ---> "ellis, jacqueline" or "ellis, j.*" or "ellis, j" or "ellis, ja.*" or "ellis, ja" or "ellis, jacqueline *, ellis, j *"
         # in case we don't use SPIRES data, the ending dot is ommited.
         search_pattern = self._A_TAG + '"' + author_surname + ', ' + author_name + '*"'
-        search_pattern += " or " + self._EA_TAG + "\"%s, %s *\"" % (author_surname, author_name[0])
+        search_pattern += ' or %s"%s, %s *"' % (self._EA_TAG, author_surname, author_name[0])
         if NAME_IS_NOT_INITIAL:
             for i in range(1,len(author_name)):
-                search_pattern += ' or ' + self._EA_TAG + "\"%s, %s\"" % (author_surname, author_name[0:i])
+                search_pattern += ' or %s"%s, %s"' % (self._EA_TAG, author_surname, author_name[0:i])
+
+            if not author_middle_name:
+                search_pattern += ' or %s"%s, %s *"' % (self._A_TAG, author_surname, author_name[0])
 
         search_pattern += ' or %s"%s, *"' % (self._A_TAG, full_search)
 
