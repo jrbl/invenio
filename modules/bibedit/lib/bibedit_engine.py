@@ -1231,6 +1231,7 @@ def perform_request_ref_extract(recid, uid, txt=None):
     @return: xml record with references extracted
     @rtype: dictionary
     """
+    import copy
 
     sysno = ""
 
@@ -1241,9 +1242,9 @@ def perform_request_ref_extract(recid, uid, txt=None):
     response = {}
     try:
         if txt:
-            recordExtended = replace_references(recid, txt.decode('utf-8'))
+            recordExtended = replace_references(recid, txt.decode('utf-8'), uid=uid)
         else:
-            recordExtended = replace_references(recid)
+            recordExtended = replace_references(recid, uid=uid)
     except (FullTextNotAvailable, KeyError):
         response['ref_xmlrecord'] = False
         return response
@@ -1265,10 +1266,13 @@ def perform_request_ref_extract(recid, uid, txt=None):
                                   field_position_local=0)
 
     response['ref_bibrecord'] = ref_bibrecord
-
     response['ref_xmlrecord'] = record_xml_output(ref_bibrecord)
 
-    textmarc_references = [line.strip() for line in xmlmarc2textmarc.create_marc_record(ref_bibrecord,sysno,options).split('\n') if '999C5' in line]
+    # Using deepcopy as function create_marc_record() modifies the record passed
+    textmarc_references = [ line.strip() for line
+        in xmlmarc2textmarc.create_marc_record(
+            copy.deepcopy(ref_bibrecord), sysno, options).split('\n')
+        if '999C5' in line ]
     response['ref_textmarc'] = '<div class="refextracted">' + '<br />'.join(textmarc_references) + "</div>"
 
     return response

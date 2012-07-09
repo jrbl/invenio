@@ -700,7 +700,7 @@ def merge_record_with_template(rec, template_name):
 
 #################### Reference extraction ####################
 
-def replace_references(recid, txt=None, inspire=CFG_INSPIRE_SITE):
+def replace_references(recid, txt=None, inspire=CFG_INSPIRE_SITE, uid=None):
     """Replace references for a record
 
     The record itself is not updated, the marc xml of the document with updated
@@ -717,8 +717,8 @@ def replace_references(recid, txt=None, inspire=CFG_INSPIRE_SITE):
     else:
         references_xml = extract_references_from_string_xml(txt, inspire=inspire)
     references = create_record(references_xml.encode('utf-8'))
-    # Record marc xml
-    record = get_record(recid)
+
+    dummy1, dummy2, record, dummy3, dummy4, dummy5, dummy6 = get_cache_file_contents(recid, uid)
 
     if references[0]:
         fields_to_add = record_get_field_instances(references[0],
