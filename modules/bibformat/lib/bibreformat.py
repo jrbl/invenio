@@ -413,8 +413,12 @@ def task_run_core():
         fmts = 'HB' # default value if no format option given
     for fmt in fmts.split(','):
         sql = {
+
             "all" : "select br.id from bibrec as br, bibfmt as bf where bf.id_bibrec=br.id and bf.format ='%s'" % fmt,
-            "last": "select br.id from bibrec as br, bibfmt as bf where bf.id_bibrec=br.id and bf.format='%s' and bf.last_updated < br.modification_date" % fmt,
+            "last": """select br.id from bibrec as br, bibfmt as bf
+                       where bf.id_bibrec=br.id and bf.format='%(format)s'
+                       and br.modification_date >= (select max(bf2.last_updated) from bibfmt as bf2 where bf2.format='%(format)s')
+                       and bf.last_updated < br.modification_date""" % {'format': fmt},
             "q1"  : "select br.id from bibrec as br",
             "q2"  : "select br.id from bibrec as br, bibfmt as bf where bf.id_bibrec=br.id and bf.format ='%s'" % fmt
         }

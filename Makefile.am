@@ -597,5 +597,6 @@ update-db-from-v1.0-to-v1.1: # update DB from v1.0 release series to v1.1 releas
 	echo "INSERT INTO sbmFUNDESC VALUES ('Video_Processing','aspect');" | ${prefix}/bin/dbexec
 	echo "INSERT INTO sbmFUNDESC VALUES ('Video_Processing','batch_template');" | ${prefix}/bin/dbexec
 	echo "INSERT INTO sbmFUNDESC VALUES ('Video_Processing','title');" | ${prefix}/bin/dbexec
+	echo "ALTER TABLE bibfmt ADD INDEX `format_last_updated` (`format`, `last_updated`);" | ${prefix}/bin/dbexec
 
 CLEANFILES = *~ *.pyc *.tmp

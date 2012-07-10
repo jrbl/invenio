@@ -1736,7 +1736,8 @@ CREATE TABLE IF NOT EXISTS bibfmt (
   value longblob,
   PRIMARY KEY  (id),
   KEY id_bibrec (id_bibrec),
-  KEY format (format)
+  KEY format (format),
+  KEY last_updated (`format`, `last_updated`)
 ) ENGINE=MyISAM;
 
 -- tables for index files:
