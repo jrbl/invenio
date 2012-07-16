@@ -216,20 +216,7 @@ def without_fmt(sql):
     @param sql: a dictionary with sql queries to pick from
     @return: a list of record ID without pre-created format cache
     """
-
-    rec_ids_with_cache = []
-    all_rec_ids = []
-
-    q1 = sql['q1']
-    q2 = sql['q2']
-
-    ## get complete recID list
-    all_rec_ids = intbitset(run_sql(q1))
-
-    ## get complete recID list of formatted records
-    rec_ids_with_cache = intbitset(run_sql(q2))
-
-    return all_rec_ids - rec_ids_with_cache
+    return intbitset(run_sql(sql['missing']))
 
 
 ### Bibreformat all selected records (using new python bibformat)
@@ -413,14 +400,22 @@ def task_run_core():
         fmts = 'HB' # default value if no format option given
     for fmt in fmts.split(','):
         sql = {
-
-            "all" : "select br.id from bibrec as br, bibfmt as bf where bf.id_bibrec=br.id and bf.format ='%s'" % fmt,
-            "last": """select br.id from bibrec as br, bibfmt as bf
-                       where bf.id_bibrec=br.id and bf.format='%(format)s'
-                       and br.modification_date >= (select max(bf2.last_updated) from bibfmt as bf2 where bf2.format='%(format)s')
-                       and bf.last_updated < br.modification_date""" % {'format': fmt},
-            "q1"  : "select br.id from bibrec as br",
-            "q2"  : "select br.id from bibrec as br, bibfmt as bf where bf.id_bibrec=br.id and bf.format ='%s'" % fmt
+            "all" : """SELECT br.id FROM bibrec AS br, bibfmt AS bf
+                       WHERE bf.id_bibrec = br.id AND bf.format = '%s'""" % fmt,
+            "last": """SELECT br.id FROM bibrec AS br, bibfmt AS bf
+                       WHERE bf.id_bibrec=br.id AND bf.format='%(format)s'
+                       AND br.modification_date >= (
+                                            SELECT MAX(bf2.last_updated)
+                                            FROM bibfmt AS bf2
+                                            WHERE bf2.format='%(format)s')
+                       AND bf.last_updated < br.modification_date""" \
+                                                            % {'format': fmt},
+            "missing"  : """SELECT br.id
+                            FROM bibrec as br
+                            LEFT JOIN bibfmt as bf ON bf.id_bibrec=br.id
+                            WHERE bf.format ='%s'
+                            AND bf.id_bibrec IS NULL
+                         """ % fmt,
         }
         sql_queries = []
         cds_query = {}
