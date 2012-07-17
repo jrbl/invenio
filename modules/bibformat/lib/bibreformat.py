@@ -71,6 +71,8 @@ def bibreformat_task(fmt, sql, sql_queries, cds_query, process_format, process, 
     @param recids: a list of record IDs to reformat
     @return: None
     """
+    write_message("Processing format %s" % fmt)
+
     t1 = os.times()[4]
 
     start_date = datetime.now()
