@@ -404,10 +404,6 @@ def task_run_core():
                        WHERE bf.id_bibrec = br.id AND bf.format = '%s'""" % fmt,
             "last": """SELECT br.id FROM bibrec AS br, bibfmt AS bf
                        WHERE bf.id_bibrec=br.id AND bf.format='%(format)s'
-                       AND br.modification_date >= (
-                                            SELECT MAX(bf2.last_updated)
-                                            FROM bibfmt AS bf2
-                                            WHERE bf2.format='%(format)s')
                        AND bf.last_updated < br.modification_date""" \
                                                             % {'format': fmt},
             "missing"  : """SELECT br.id
