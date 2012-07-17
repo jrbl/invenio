@@ -30,6 +30,8 @@ class BibCatalogSystemEmailTest(unittest.TestCase):
 
     def setUp(self):
         self.email = bibcatalog_system_email.BibCatalogSystemEmail()
+        # TODO: fudging the email address is the right thing, but fudge with
+        # a different one - try CFG_SITE_SUPPORT_EMAIL or so
         bibcatalog_system_email.CFG_BIBCATALOG_SYSTEM_TICKETS_EMAIL = 'eduardo.benavidez@yahoo.com'
         bibcatalog_system_email.CFG_BIBCATALOG_SYSTEM = 'EMAIL'
         pass
@@ -47,9 +49,10 @@ class BibCatalogSystemEmailTest(unittest.TestCase):
     def test_ticket_submit_via_email(self):
         """bibcatalog_system_email - test creating ticket via email"""
 
+        # TODO: our return values are ticket id or none; check both cases
         self.assertTrue(self.email.ticket_submit(subject="Issue with RT", text="The RT system is not as good as the email ticketing"))
 
-
+    # TODO: implement tests for the other methods we should implement
 
 
 
