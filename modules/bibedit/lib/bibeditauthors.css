@@ -203,4 +203,8 @@ h3#paper_title {
     margin: 0 0 0 0;
 }
 
+.MalformedData {
+    background-color: #ff8888;
+}
+
 /* End: bibeditauthors.css */

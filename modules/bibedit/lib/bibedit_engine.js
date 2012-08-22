@@ -1441,7 +1441,6 @@ function onASMClick(){
     asmwin.focus();
 }
 
->>>>>>> bdf34a4... AuthorSpecialMode: 1st release candidate
 function onCancelClick(){
   /*
    * Handle 'Cancel' button (cancel editing).

@@ -25,35 +25,33 @@ class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
 
     def index(self, request, form):
 
-        permission = check_request_allowed(request)
-        if permission != True:
-            return permission
-
         f = wash_urlargd(form, {
                 'recid':   (int, -1),
                 'offset':  (int, 0),
                 'perPage': (int, 30),
                 })
 
-        if f['recid'] != -1:
-            return self.rec(request, f)
-
-        return invenio.webpage.page(title = self.title,
-                                    body = self.template.index(),
-                                    req = request)
-
-    def rec(self, request, form):
-
-        permission = check_request_allowed(request)
+        permission = check_request_allowed(request, f['recid'])
         if permission != True:
             return permission
 
-        if not 'recid' in form or form['recid'] == -1:
-            return self.index(request, {})
+        elif f['recid'] == -1:
+            return invenio.webpage.page(title = self.title,
+                                        body = self.template.index(),
+                                        req = request)
+        else:
+            return self.rec(request, f)
 
-        record_id = form['recid']
-        offset    = form['offset']
-        per_page  = form['perPage']
+    def rec(self, request, form):
+
+        record_id  = form.get('recid', -1)
+        uid        = webuser.getUid(request)
+        offset     = form.get('offset', 0)
+        per_page   = form.get('perPage', 25)
+        permission = check_request_allowed(request, record_id)
+
+        if permission != True:
+            return permission
 
         author_list_gen = engine.auPairs(record_id)
 
@@ -78,10 +76,6 @@ class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
 
     def process(self, request, form):
 
-        permission = check_request_allowed(request)
-        if permission != True:
-            return permission
-
             # Improve XSS safety then clean up unicode entitites
         def tags_from(form):
             washer = {}
@@ -94,31 +88,16 @@ class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
 
             # Not having a recid at this point is horrifically broken
         recid = form_data.get('recid')
+        permission = check_request_allowed(request, recid)
+        if permission != True:
+            return permission
+
         if not recid: 
             return self._broken_record_error(form_data, request)
 
-        new_doc = '<?xml version="1.0" encoding="UTF-8"?>\n'
-        new_doc += '<collection xmlns="http://www.loc.gov/MARC21/slim">\n'
-        new_doc += "<record>\n  <controlfield tag=\"001\">"
-        new_doc += "%s</controlfield>\n" % recid
-            # minus 'ln' key and 'recid' key, / pair sizes
-        form_length = (len(form_data) - 2) / 2
-        for i in range(form_length):
-            author = form_data.get('autho'+str(i), '')
-            insts = [inst.strip() for inst in form_data.get('insts'+str(i), '').split() if inst and not inst.isspace()]
-            if not author and not insts:
-                continue;
-            elif not author:
-                return self._broken_record_error(form_data, request)
-            if i:
-                new_doc += "  <datafield tag=\"700\" ind1=\" \" ind2=\" \">\n"
-            else:
-                new_doc += "  <datafield tag=\"100\" ind1=\" \" ind2=\" \">\n"
-            new_doc += "    <subfield code=\"a\">%s</subfield>\n" % author
-            for inst in insts:
-                new_doc += "    <subfield code=\"u\">%s</subfield>\n" % inst
-            new_doc += "  </datafield>\n"
-        new_doc += "</record>\n</collection>"
+        new_doc = _xml(form_data)
+        if not new_doc:
+            return self._broken_record_error(form_data, request)
 
             # Don't use utils.save_xml_record because record isn't complete
         newdoc_filename = utils._get_file_path(recid, webuser.getUid(request))
@@ -137,6 +116,35 @@ class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
         return invenio.webpage.page(title = ret_title,
                                     body = ret_body,
                                     req = request)
+
+    def _xml(self, form_data):
+        """Serialize the form_data to marcxml and return it as a string."""
+        recid = form_data['recid']
+        new_doc = u'<?xml version="1.0" encoding="UTF-8"?>\n'
+        new_doc += '<collection xmlns="http://www.loc.gov/MARC21/slim">\n'
+        new_doc += "<record>\n  <controlfield tag=\"001\">"
+        new_doc += "%s</controlfield>\n" % recid
+            # minus 'ln' key and 'recid' key, / pair sizes
+        form_length = (len(form_data) - 2) / 2
+        for i in range(form_length):
+            idx = str(i)
+            author = form_data.get('autho'+idx, '')
+            insts = [inst.strip() for inst in form_data.get('insts'+idx, '').split() if inst and not inst.isspace()]
+            if not author and not insts:
+                continue;
+            elif not author:
+                return False
+            new_doc += "  <datafield tag=\""
+            if i:
+                new_doc += "700"
+            else:
+                new_doc += "100"
+            new_doc += "\" ind1=\" \" ind2=\" \">\n    <subfield code=\"a\">%s</subfield>\n" % author
+            for inst in insts:
+                new_doc += "    <subfield code=\"u\">%s</subfield>\n" % inst
+            new_doc += "  </datafield>\n"
+        new_doc += "</record>\n</collection>"
+        return new_doc.encode('utf-8')
 
     def _debugPrint(self, form):
         t = ''
@@ -179,12 +187,24 @@ class WebInterfaceEditAuthorPages(WebInterfaceDirectory):
         return self.index(request, form)
 
 
-def check_request_allowed(request):
+def check_request_allowed(request, recid):
     """Is this request allowed to this user?  Return True or a failure page."""
+    ##### Various failure modes #####
+    # This user can't do record editing
+    uid = webuser.getUid(request)
     code, message = webuser_access.acc_authorize_action(request, 'runbibedit')
     if code != 0:
         return webuser.page_not_authorized(req = request,
                                            referer = '/record/editauthors',
                                            text = message)
+
+    # or some other user already has a lock on the record
+    elif utils.record_locked_by_other_user(recid, uid) or utils.record_locked_by_queue(record_id):
+        return invenio.webpage.page(title = self.title, body = self.template.lockedrecord(), req = request)
+
+    # No recid given or recid not currently locked
+    elif recid == -1 or not utils.cache_exists(recid, uid):
+        return self.index(request, {})       # TODO: fail back to bibedit
+
     else:
         return True

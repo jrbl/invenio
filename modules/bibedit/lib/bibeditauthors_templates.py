@@ -43,6 +43,12 @@ class Template:
                            "the records to work with.", tagas='FIXME_index')
         return ostr
 
+    def lockedrecord(self):
+        """Complain that the record is locked by some other user or possibly bibsched is running."""
+        ostr = self.tPara("Record is locked. It could be some other user is editing it, or that it's running through bibsched." +
+                           "Please ask your local Invenio developer to make this error message more helpful.", tagas='FIXME_lockedrecord')
+        return ostr
+
     def record(self, record_id, author_list, affiliations, offset=0, per_page=30, title='', valid_affils = []):
         """Template for individual record display/edit"""
         if CFG_JSON_AVAILABLE:

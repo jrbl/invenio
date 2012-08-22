@@ -690,14 +690,16 @@ function addHandler_semicolonSepBoxToAffiliations(tg, shared_data) {
       //oldRow = shared_data.authors[row];
       //authorName = oldRow[0];
       authorName = shared_data.authors[row][0];
-      if (authorName === '') {  // FIXME TODO FIXME This if/else should add decorators to broken rows. not here?
+      if (authorName === '') {  
+        // TODO: revisit this; a more discrete warning would be nicer, e.g.:
         // add class decorator to this row's author if it's empty
-        alert('no author!');
-        $($(row_selector)[0].childNodes[1].firstChild).addClass('InstNoAuth');
+        // doesn't work because we completely redraw the table periodically
+        //$(getRowSelector(row).concat(' > .author_box_td').concat(' > .author_box')).addClass('MalformedData')
+        alert('Row ' + row + ' has affiliations with no author name; this is not allowed. Please separate multiple affiliations for one author by using semicolons, and enter them in the same box.')
       } else {
-        alert('author!');
         // remove class decorator from this row's author if it's empty
-        $($(row_selector)[0].childNodes[1].firstChild).removeClass('InstNoAuth');
+        // doesn't work because we completely redraw the table periodically
+        //$(getRowSelector(row).concat(' > .author_box_td').concat(' > .author_box')).removeClass('MalformedData')
       }
       newRow = filter_SemicolonStringToArray(this.value);
       newRow.unshift(authorName);

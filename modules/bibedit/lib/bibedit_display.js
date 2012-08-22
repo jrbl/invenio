@@ -600,21 +600,28 @@ function createTopToolbar(){
   var icon_print = "<img id='img_print' class='bibEditImgCtrlDisabled' \n\
                           src='/img/document-print.png' width='40px' \n\
                           height='40px' title='Print page' />";
+  var icon_bea_asm = "<img id='img_asm' class='bibEditImgCtrlDisabled' \n\
+                          src='/img/author_special_mode-40x40.png' width=40px' \n\
+                          height='40px' title='Enter Author Special Mode' />";
 
   var toolbar_html = "<div class='floatRight'>" + icon_doc_preview + "</div>" +
                      "<div class='floatRight'>" + icon_open_pdf + "</div>" +
-                     "<div class='floatRight'>" + icon_print + "</div>";
+                     "<div class='floatRight'>" + icon_print + "</div>" +
+                     "<div class='floatRight'>" + icon_bea_asm + "</div>";
   $('#Toptoolbar').html(toolbar_html);
 
   $('#img_preview').bind('click', onPreviewClick);
   $('#img_open_pdf').bind('click', onOpenPDFClick);
   $('#img_print').bind('click', onPrintClick);
+  $('#img_asm').bind('click', onASMClick);
 
   $('#img_preview').unbind('click').removeClass(
     'bibEditImgCtrlEnabled').addClass('bibEditImgCtrlDisabled');
   $('#img_open_pdf').unbind('click').removeClass(
     'bibEditImgCtrlEnabled').addClass('bibEditImgCtrlDisabled');
   $('#img_print').unbind('click').removeClass(
+    'bibEditImgCtrlEnabled').addClass('bibEditImgCtrlDisabled');
+  $('#img_asm').unbind('click').removeClass(
     'bibEditImgCtrlEnabled').addClass('bibEditImgCtrlDisabled');
 }
 
@@ -623,6 +630,8 @@ function updateToolbar(enable) {
         $('#img_preview').bind('click', onPreviewClick).removeClass(
         'bibEditImgCtrlDisabled').addClass('bibEditImgCtrlEnabled');
         $('#img_print').unbind('click', onPrintClick).bind('click', onPrintClick).removeClass(
+        'bibEditImgCtrlDisabled').addClass('bibEditImgCtrlEnabled');
+        $('#img_asm').bind('click', onASMClick).removeClass(
         'bibEditImgCtrlDisabled').addClass('bibEditImgCtrlEnabled');
         if (record_has_pdf()) {
           $('#img_open_pdf').unbind('click', onOpenPDFClick).bind('click', onOpenPDFClick).removeClass(
@@ -636,6 +645,8 @@ function updateToolbar(enable) {
         $('#img_open_pdf').unbind('click', onOpenPDFClick).removeClass(
         'bibEditImgCtrlEnabled').addClass('bibEditImgCtrlDisabled');
         $('#img_print').unbind('click', onPrintClick).removeClass(
+        'bibEditImgCtrlEnabled').addClass('bibEditImgCtrlDisabled');
+        $('#img_asm').unbind('click', onASMClick).removeClass(
         'bibEditImgCtrlEnabled').addClass('bibEditImgCtrlDisabled');
         $('.revisionLine').hide();
         $('#bibEditMessage').hide();
